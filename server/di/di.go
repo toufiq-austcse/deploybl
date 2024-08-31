@@ -3,6 +3,7 @@ package di
 import (
 	_ "github.com/lib/pq" // <------------ here
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/pkg/db/providers/mongodb"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
 	"go.uber.org/dig"
@@ -15,6 +16,7 @@ func NewDiContainer() (*dig.Container, error) {
 	}{
 		mongodb.New,
 		github.NewGithubHttpClient,
+		service.NewDeploymentService,
 		controller.NewDeploymentController,
 	}
 	for _, provider := range providers {

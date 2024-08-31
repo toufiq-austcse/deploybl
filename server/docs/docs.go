@@ -82,23 +82,6 @@ const docTemplate = `{
             }
         },
         "/deployments/:id": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployments"
-                ],
-                "summary": "Show Deployment",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            },
             "put": {
                 "consumes": [
                     "application/json"
@@ -116,13 +99,40 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/deployments/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployments"
+                ],
+                "summary": "Show Deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "req.CreateDeploymentReqDto": {
             "type": "object",
             "required": [
-                "branch_name",
                 "repository_provider",
                 "repository_url"
             ],

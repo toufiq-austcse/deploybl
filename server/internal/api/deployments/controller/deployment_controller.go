@@ -4,18 +4,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
 type DeploymentController struct {
-	githubHttpClient *github.GithubHttpClient
+	githubHttpClient  *github.GithubHttpClient
+	deploymentService *service.DeploymentService
 }
 
-func NewDeploymentController(githubHttpClient *github.GithubHttpClient) *DeploymentController {
+func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deploymentService *service.DeploymentService) *DeploymentController {
 	return &DeploymentController{
-		githubHttpClient: githubHttpClient,
+		githubHttpClient:  githubHttpClient,
+		deploymentService: deploymentService,
 	}
 }
 
@@ -36,7 +41,7 @@ func DeploymentIndex() gin.HandlerFunc {
 
 // DeploymentCreate
 // @Summary  Create Deployment
-// @Param    request  body      req.CreateDeploymentReqDto  true  "Create Deployment Body"
+// @Param    request  body  req.CreateDeploymentReqDto  true  "Create Deployment Body"
 // @Tags     Deployments
 // @Accept   json
 // @Produce  json
@@ -49,7 +54,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, errRes)
 		return
 	}
-	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(body.RepositoryUrl)
+	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&body.RepositoryUrl)
 	if err != nil {
 		if code == http.StatusNotFound {
 			errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "invalid repository", nil)
@@ -65,8 +70,22 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
+	existingDeployment := controller.deploymentService.FindBySubDomainName(&githubRes.Name, context)
 
-	context.JSON(http.StatusOK, githubRes)
+	newDeployment := mapper.MapCreateDeploymentReqToSave(body, githubRes, existingDeployment)
+	createErr := controller.deploymentService.Create(newDeployment, context)
+	if createErr != nil {
+		if mongo.IsDuplicateKeyError(createErr) {
+			errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "this domain name already taken", nil)
+			context.AbortWithStatusJSON(errRes.Code, errRes)
+			return
+		}
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), createErr.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	createDeploymentRes := api_response.BuildResponse(http.StatusCreated, http.StatusText(http.StatusCreated), mapper.ToDeploymentRes(newDeployment))
+	context.JSON(createDeploymentRes.Code, createDeploymentRes)
 }
 
 // DeploymentUpdate
@@ -87,14 +106,20 @@ func DeploymentUpdate() gin.HandlerFunc {
 // DeploymentShow
 // @Summary  Show Deployment
 // @Tags     Deployments
+// @Param    id  path  string  true  "Deployment ID"
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/:id [get]
-func DeploymentShow() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"message": config.AppConfig.APP_NAME + " is Running",
-		})
+// @Router   /deployments/{id} [get]
+func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
+	deploymentId := context.Param("id")
+	deployment := controller.deploymentService.FindById(deploymentId, context)
+	if deployment == nil {
+		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
 	}
+
+	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), mapper.ToDeploymentDetailsRes(deployment))
+	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }

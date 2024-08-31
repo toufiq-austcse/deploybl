@@ -31,7 +31,8 @@ type (
 		DEBUG_ENABLED string
 	}
 	MONGO_DB_CONFIG struct {
-		URL string
+		URL     string
+		DB_NAME string
 	}
 )
 
@@ -60,6 +61,7 @@ func setFromEnv(config *Config) {
 	config.DB_CONFIG.USER = viper.GetString("DB_USER")
 	config.DB_CONFIG.DEBUG_ENABLED = viper.GetString("DB_DEBUG_ENABLED")
 	config.MONGO_DB_CONFIG.URL = viper.GetString("MONGO_DB_URL")
+	config.MONGO_DB_CONFIG.DB_NAME = viper.GetString("MONGO_DB_NAME")
 }
 
 func parseConfigFile(envFilePath, configName string) {

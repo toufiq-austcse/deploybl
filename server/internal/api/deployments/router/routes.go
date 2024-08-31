@@ -9,6 +9,6 @@ func Setup(group *gin.RouterGroup, controller *controller.DeploymentController) 
 	//group.GET("", controller.DeploymentIndex())
 	group.POST("", controller.DeploymentCreate)
 	//group.PUT(":id", controller.DeploymentUpdate())
-	//group.GET(":id", controller.DeploymentShow())
+	group.GET(":id", controller.DeploymentShow)
 
 }
