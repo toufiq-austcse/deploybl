@@ -5,11 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/toufiq-austcse/go-api-boilerplate/config"
-	"github.com/toufiq-austcse/go-api-boilerplate/di"
-	"github.com/toufiq-austcse/go-api-boilerplate/docs"
-	indexRouter "github.com/toufiq-austcse/go-api-boilerplate/internal/api/index/router"
-	"github.com/toufiq-austcse/go-api-boilerplate/internal/server"
+	"github.com/toufiq-austcse/deployit/config"
+	"github.com/toufiq-austcse/deployit/di"
+	"github.com/toufiq-austcse/deployit/docs"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
+	deploymentRouter "github.com/toufiq-austcse/deployit/internal/api/deployments/router"
+	indexRouter "github.com/toufiq-austcse/deployit/internal/api/index/router"
+	"github.com/toufiq-austcse/deployit/internal/server"
 	"time"
 )
 
@@ -22,9 +24,12 @@ func Run(configPath string) error {
 	if err != nil {
 		return err
 	}
-	err = container.Invoke(func() {
+	err = container.Invoke(func(deploymentController *controller.DeploymentController) {
 		indexRouterGroup := apiServer.GinEngine.Group("")
 		indexRouter.Setup(indexRouterGroup)
+
+		deploymentsRouterGroup := apiServer.GinEngine.Group("deployments")
+		deploymentRouter.Setup(deploymentsRouterGroup, deploymentController)
 
 	})
 	if err != nil {

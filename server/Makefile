@@ -1,5 +1,5 @@
 gen_docs:
-	swag init -g ./cmd/main.go --dir ./ --exclude ./ent
+	swag init  -g ./cmd/main.go
 swaggo_fmt:
 	 go run github.com/swaggo/swag/cmd/swag@v1.8.1 fmt  -g ./cmd/main.go --dir ./ --exclude ./ent
 

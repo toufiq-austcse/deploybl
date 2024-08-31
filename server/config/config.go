@@ -13,12 +13,14 @@ const (
 
 type (
 	Config struct {
-		PORT            string
-		APP_NAME        string
-		APP_URL         string
-		DB_DRIVER_NAME  string
-		DB_CONFIG       DB_CONFIG
-		MONGO_DB_CONFIG MONGO_DB_CONFIG
+		PORT                string
+		APP_NAME            string
+		APP_URL             string
+		GITHUB_API_TOKEN    string
+		GITHUB_API_BASE_URL string
+		DB_DRIVER_NAME      string
+		DB_CONFIG           DB_CONFIG
+		MONGO_DB_CONFIG     MONGO_DB_CONFIG
 	}
 	DB_CONFIG struct {
 		DB_NAME       string
@@ -48,6 +50,8 @@ func setFromEnv(config *Config) {
 	config.PORT = viper.GetString("PORT")
 	config.APP_NAME = viper.GetString("APP_NAME")
 	config.APP_URL = viper.GetString("APP_URL")
+	config.GITHUB_API_TOKEN = viper.GetString("GITHUB_API_TOKEN")
+	config.GITHUB_API_BASE_URL = viper.GetString("GITHUB_API_BASE_URL")
 	config.DB_CONFIG.DB_NAME = viper.GetString("DB_NAME")
 	config.DB_CONFIG.HOST = viper.GetString("DB_HOST")
 	config.DB_CONFIG.PORT = viper.GetString("DB_PORT")

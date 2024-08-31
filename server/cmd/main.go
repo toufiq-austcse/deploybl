@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/toufiq-austcse/go-api-boilerplate/internal/app"
+	"github.com/toufiq-austcse/deployit/internal/app"
 	"runtime/debug"
 )
 

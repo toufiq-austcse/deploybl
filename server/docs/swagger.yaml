@@ -1,40 +1,28 @@
 definitions:
-  api_response.Response:
+  req.CreateDeploymentReqDto:
     properties:
-      code:
-        description: This is Name
-        type: integer
-      data:
+      branch_name:
+        type: string
+      docker_file_path:
+        type: string
+      env:
+        additionalProperties: true
         type: object
-      errors:
-        items:
-          type: string
-        type: array
-      message:
+      repository_provider:
+        enum:
+        - github
         type: string
-    type: object
-  req.TodoCreateReqModel:
-    properties:
-      status:
+      repository_url:
         type: string
-      title:
+      root_dir:
         type: string
     required:
-    - status
-    - title
-    type: object
-  res.TodoRespData:
-    properties:
-      id:
-        type: string
-      status:
-        type: string
-      title:
-        type: string
+    - branch_name
+    - repository_provider
+    - repository_url
     type: object
 info:
   contact: {}
-  license: {}
 paths:
   /:
     get:
@@ -44,11 +32,11 @@ paths:
       - application/json
       responses:
         "200":
-          description: ""
+          description: OK
       summary: Health Check
       tags:
       - Index
-  /api/v1/todos:
+  /deployments:
     get:
       consumes:
       - application/json
@@ -57,66 +45,48 @@ paths:
       responses:
         "200":
           description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/api_response.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/res.TodoRespData'
-                  type: array
-              type: object
-      summary: List Todo
+      summary: Deployment Index
       tags:
-      - Todo
+      - Deployments
     post:
       consumes:
       - application/json
       parameters:
-      - description: Create Todo Payload
+      - description: Create Deployment Body
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/req.TodoCreateReqModel'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/api_response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/res.TodoRespData'
-              type: object
-      summary: Create Todo
-      tags:
-      - Todo
-  /api/v1/todos/{id}:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: todo id
-        in: path
-        name: id
-        required: true
-        type: string
+          $ref: '#/definitions/req.CreateDeploymentReqDto'
       produces:
       - application/json
       responses:
         "200":
           description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/api_response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/res.TodoRespData'
-              type: object
-      summary: List Todo
+      summary: Create Deployment
       tags:
-      - Todo
+      - Deployments
+  /deployments/:id:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Show Deployment
+      tags:
+      - Deployments
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Update Deployment
+      tags:
+      - Deployments
 swagger: "2.0"

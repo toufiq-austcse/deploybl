@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/toufiq-austcse/go-api-boilerplate/config"
+	"github.com/toufiq-austcse/deployit/config"
 )
 
 type Server struct {

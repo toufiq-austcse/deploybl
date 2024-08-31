@@ -2,7 +2,7 @@ package postgresql
 
 import (
 	"database/sql"
-	"github.com/toufiq-austcse/go-api-boilerplate/config"
+	"github.com/toufiq-austcse/deployit/config"
 	"time"
 )
 
