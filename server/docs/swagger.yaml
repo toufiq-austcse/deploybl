@@ -1,0 +1,122 @@
+definitions:
+  api_response.Response:
+    properties:
+      code:
+        description: This is Name
+        type: integer
+      data:
+        type: object
+      errors:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+    type: object
+  req.TodoCreateReqModel:
+    properties:
+      status:
+        type: string
+      title:
+        type: string
+    required:
+    - status
+    - title
+    type: object
+  res.TodoRespData:
+    properties:
+      id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+    type: object
+info:
+  contact: {}
+  license: {}
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Health Check
+      tags:
+      - Index
+  /api/v1/todos:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/res.TodoRespData'
+                  type: array
+              type: object
+      summary: List Todo
+      tags:
+      - Todo
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Todo Payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/req.TodoCreateReqModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.TodoRespData'
+              type: object
+      summary: Create Todo
+      tags:
+      - Todo
+  /api/v1/todos/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: todo id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.TodoRespData'
+              type: object
+      summary: List Todo
+      tags:
+      - Todo
+swagger: "2.0"

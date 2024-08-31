@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  go-gin-boilerplate:
+    build: .
+    restart: always
+    hostname: go-gin-boilerplate
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
