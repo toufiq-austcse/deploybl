@@ -9,8 +9,6 @@ import (
 	"github.com/toufiq-austcse/go-api-boilerplate/di"
 	"github.com/toufiq-austcse/go-api-boilerplate/docs"
 	indexRouter "github.com/toufiq-austcse/go-api-boilerplate/internal/api/index/router"
-	"github.com/toufiq-austcse/go-api-boilerplate/internal/api/todo/controller"
-	todoRouter "github.com/toufiq-austcse/go-api-boilerplate/internal/api/todo/router"
 	"github.com/toufiq-austcse/go-api-boilerplate/internal/server"
 	"time"
 )
@@ -24,14 +22,10 @@ func Run(configPath string) error {
 	if err != nil {
 		return err
 	}
-	err = container.Invoke(func(
-		controller *controller.TodoController,
-	) {
+	err = container.Invoke(func() {
 		indexRouterGroup := apiServer.GinEngine.Group("")
 		indexRouter.Setup(indexRouterGroup)
 
-		v1RouterGroup := apiServer.GinEngine.Group("api/v1")
-		todoRouter.Setup(v1RouterGroup, controller)
 	})
 	if err != nil {
 		return err
