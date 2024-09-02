@@ -39,6 +39,15 @@ paths:
     get:
       consumes:
       - application/json
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: string
       produces:
       - application/json
       responses:

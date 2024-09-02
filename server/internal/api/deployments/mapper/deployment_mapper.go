@@ -62,5 +62,15 @@ func ToDeploymentDetailsRes(model *model.Deployment) res.DeploymentDetailsRes {
 		CreatedAt:          model.CreatedAt,
 		UpdatedAt:          model.UpdatedAt,
 	}
+}
+
+func ToDeploymentListRes(deploymentModels []*model.Deployment) []res.DeploymentRes {
+	deployments := []res.DeploymentRes{}
+
+	for _, deployment := range deploymentModels {
+		deployments = append(deployments, ToDeploymentRes(deployment))
+	}
+
+	return deployments
 
 }

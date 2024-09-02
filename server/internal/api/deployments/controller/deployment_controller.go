@@ -10,6 +10,7 @@ import (
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
+	"strconv"
 )
 
 type DeploymentController struct {
@@ -27,15 +28,28 @@ func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deployme
 // DeploymentIndex
 // @Summary  Deployment Index
 // @Tags     Deployments
+// @Param        page    query  string  false  "Page"
+// @Param        limit   query  string  false  "Limit"
 // @Accept   json
 // @Produce  json
 // @Success  200
 // @Router   /deployments [get]
-func DeploymentIndex() gin.HandlerFunc {
+func (controller *DeploymentController) DeploymentIndex() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"message": config.AppConfig.APP_NAME + " is Running",
-		})
+		page, _ := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
+		limit, _ := strconv.ParseInt(context.DefaultQuery("limit", "10"), 10, 64)
+
+		deployments, pagination, err := controller.deploymentService.ListDeployment(page, limit, context)
+		if err != nil {
+			errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+			context.AbortWithStatusJSON(errRes.Code, errRes)
+			return
+		}
+
+		deploymentListRes := mapper.ToDeploymentListRes(deployments)
+		apiRes := api_response.BuildPaginationResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentListRes, pagination)
+
+		context.JSON(apiRes.Code, apiRes)
 	}
 }
 
