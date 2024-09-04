@@ -114,6 +114,25 @@ const docTemplate = `{
                 }
             }
         },
+        "/deployments/:id/env": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployments"
+                ],
+                "summary": "Update Deployment Env",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/deployments/{id}": {
             "get": {
                 "consumes": [

@@ -117,6 +117,39 @@ func DeploymentUpdate() gin.HandlerFunc {
 	}
 }
 
+// EnvUpdate
+// @Summary  Update Deployment Env
+// @Tags     Deployments
+// @Accept   json
+// @Produce  json
+// @Success  200
+// @Router   /deployments/:id/env [put]
+func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
+	var envBody map[string]interface{}
+	if err := context.BindJSON(&envBody); err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	deploymentId := context.Param("id")
+	deployment := controller.deploymentService.FindById(deploymentId, context)
+	if deployment == nil {
+		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	updatedDeployment, err := controller.deploymentService.UpdateEnv(deploymentId, envBody, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
+
+	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
+}
+
 // DeploymentShow
 // @Summary  Show Deployment
 // @Tags     Deployments

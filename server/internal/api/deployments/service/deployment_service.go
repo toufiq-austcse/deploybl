@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"go.mongodb.org/mongo-driver/bson"
@@ -83,4 +85,25 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 		LastPage:    lastPage,
 		PerPage:     limit,
 	}, nil
+}
+
+func (service *DeploymentService) UpdateEnv(deploymentId string, env map[string]interface{}, ctx context.Context) (*model.Deployment, error) {
+	oId, err := primitive.ObjectIDFromHex(deploymentId)
+	if err != nil {
+		return nil, err
+	}
+	updatedResult, err := service.deploymentCollection.UpdateByID(ctx, oId, bson.M{
+		"$set": bson.M{
+			"env": env,
+		},
+	})
+	if err != nil {
+		fmt.Println("err ", err)
+		return nil, err
+	}
+	if updatedResult.MatchedCount != 1 {
+		return nil, errors.New("update error")
+	}
+	return service.FindById(deploymentId, ctx), err
+
 }
