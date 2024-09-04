@@ -107,6 +107,15 @@ const docTemplate = `{
                     "Deployments"
                 ],
                 "summary": "Update Deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -126,6 +135,15 @@ const docTemplate = `{
                     "Deployments"
                 ],
                 "summary": "Update Deployment Env",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -151,6 +169,34 @@ const docTemplate = `{
                         "description": "Deployment ID",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/repositories": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Repositories"
+                ],
+                "summary": "Get Repo Details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repo Url",
+                        "name": "repo_url",
+                        "in": "query",
                         "required": true
                     }
                 ],

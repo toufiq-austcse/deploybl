@@ -4,6 +4,7 @@ import (
 	_ "github.com/lib/pq" // <------------ here
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
+	repoController "github.com/toufiq-austcse/deployit/internal/api/repositories/controller"
 	"github.com/toufiq-austcse/deployit/pkg/db/providers/mongodb"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
 	"go.uber.org/dig"
@@ -18,6 +19,7 @@ func NewDiContainer() (*dig.Container, error) {
 		github.NewGithubHttpClient,
 		service.NewDeploymentService,
 		controller.NewDeploymentController,
+		repoController.NewRepoController,
 	}
 	for _, provider := range providers {
 		if err := c.Provide(provider); err != nil {

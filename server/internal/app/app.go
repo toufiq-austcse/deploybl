@@ -11,6 +11,8 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
 	deploymentRouter "github.com/toufiq-austcse/deployit/internal/api/deployments/router"
 	indexRouter "github.com/toufiq-austcse/deployit/internal/api/index/router"
+	repoController "github.com/toufiq-austcse/deployit/internal/api/repositories/controller"
+	repoRouter "github.com/toufiq-austcse/deployit/internal/api/repositories/router"
 	"github.com/toufiq-austcse/deployit/internal/server"
 	"time"
 )
@@ -24,12 +26,15 @@ func Run(configPath string) error {
 	if err != nil {
 		return err
 	}
-	err = container.Invoke(func(deploymentController *controller.DeploymentController) {
+	err = container.Invoke(func(deploymentController *controller.DeploymentController, repoController *repoController.RepoController) {
 		indexRouterGroup := apiServer.GinEngine.Group("")
 		indexRouter.Setup(indexRouterGroup)
 
 		deploymentsRouterGroup := apiServer.GinEngine.Group("deployments")
 		deploymentRouter.Setup(deploymentsRouterGroup, deploymentController)
+
+		repositoriesRouterGroup := apiServer.GinEngine.Group("repositories")
+		repoRouter.Setup(repositoriesRouterGroup, repoController)
 
 	})
 	if err != nil {

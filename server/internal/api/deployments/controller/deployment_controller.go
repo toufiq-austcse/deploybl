@@ -105,6 +105,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 // DeploymentUpdate
 // @Summary  Update Deployment
 // @Tags     Deployments
+// @Param    id  path  string  true  "Deployment ID"
 // @Accept   json
 // @Produce  json
 // @Success  200
@@ -120,6 +121,7 @@ func DeploymentUpdate() gin.HandlerFunc {
 // EnvUpdate
 // @Summary  Update Deployment Env
 // @Tags     Deployments
+// @Param    id  path  string  true  "Deployment ID"
 // @Accept   json
 // @Produce  json
 // @Success  200

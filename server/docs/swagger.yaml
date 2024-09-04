@@ -78,6 +78,12 @@ paths:
     put:
       consumes:
       - application/json
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -90,6 +96,12 @@ paths:
     put:
       consumes:
       - application/json
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -116,4 +128,22 @@ paths:
       summary: Show Deployment
       tags:
       - Deployments
+  /repositories:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Repo Url
+        in: query
+        name: repo_url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Get Repo Details
+      tags:
+      - Repositories
 swagger: "2.0"
