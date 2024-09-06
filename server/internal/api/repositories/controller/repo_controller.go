@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker"
 	"github.com/toufiq-austcse/deployit/internal/api/repositories/mapper"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
@@ -11,11 +11,13 @@ import (
 
 type RepoController struct {
 	githubHttpClient *github.GithubHttpClient
+	subscriber       *worker.PullRepoWorker
 }
 
-func NewRepoController(githubHttpClient *github.GithubHttpClient, deploymentService *service.DeploymentService) *RepoController {
+func NewRepoController(githubHttpClient *github.GithubHttpClient, subscriber *worker.PullRepoWorker) *RepoController {
 	return &RepoController{
 		githubHttpClient: githubHttpClient,
+		subscriber:       subscriber,
 	}
 }
 
@@ -45,5 +47,21 @@ func (controller RepoController) GetRepoDetails(context *gin.Context) {
 
 	repoDetailsApiRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), detailsRes)
 	context.JSON(repoDetailsApiRes.Code, repoDetailsApiRes)
+}
 
+// PublishMsh
+// @Summary  Get Repo Details
+// @Tags     Repositories
+// @Param    repo_url  query  string  true  "Repo Url"
+// @Accept   json
+// @Produce  json
+// @Success  200
+// @Router   /publish [get]
+func (controller RepoController) PublishMsh(context *gin.Context) {
+	err := controller.subscriber.PublishPullRepoJob()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	context.JSON(http.StatusOK, nil)
 }

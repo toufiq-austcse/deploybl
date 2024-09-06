@@ -21,6 +21,7 @@ type (
 		DB_DRIVER_NAME      string
 		DB_CONFIG           DB_CONFIG
 		MONGO_DB_CONFIG     MONGO_DB_CONFIG
+		RABBIT_MQ_CONFIG    RABBIT_MQ_CONFIG
 	}
 	DB_CONFIG struct {
 		DB_NAME       string
@@ -33,6 +34,12 @@ type (
 	MONGO_DB_CONFIG struct {
 		URL     string
 		DB_NAME string
+	}
+	RABBIT_MQ_CONFIG struct {
+		URL                         string
+		EXCHANGE                    string
+		REPOSITORY_PULL_ROUTING_KEY string
+		REPOSITORY_PULL_QUEUE       string
 	}
 )
 
@@ -62,6 +69,10 @@ func setFromEnv(config *Config) {
 	config.DB_CONFIG.DEBUG_ENABLED = viper.GetString("DB_DEBUG_ENABLED")
 	config.MONGO_DB_CONFIG.URL = viper.GetString("MONGO_DB_URL")
 	config.MONGO_DB_CONFIG.DB_NAME = viper.GetString("MONGO_DB_NAME")
+	config.RABBIT_MQ_CONFIG.EXCHANGE = viper.GetString("RABBIT_MQ_EXCHANGE")
+	config.RABBIT_MQ_CONFIG.URL = viper.GetString("RABBIT_MQ_CONNECTION_URL")
+	config.RABBIT_MQ_CONFIG.REPOSITORY_PULL_ROUTING_KEY = viper.GetString("RABBIT_MQ_REPOSITORY_PULL_ROUTING_KEY")
+	config.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE = viper.GetString("RABBIT_MQ_REPOSITORY_PULL_QUEUE")
 }
 
 func parseConfigFile(envFilePath, configName string) {

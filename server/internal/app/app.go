@@ -10,10 +10,12 @@ import (
 	"github.com/toufiq-austcse/deployit/docs"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
 	deploymentRouter "github.com/toufiq-austcse/deployit/internal/api/deployments/router"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker"
 	indexRouter "github.com/toufiq-austcse/deployit/internal/api/index/router"
 	repoController "github.com/toufiq-austcse/deployit/internal/api/repositories/controller"
 	repoRouter "github.com/toufiq-austcse/deployit/internal/api/repositories/router"
 	"github.com/toufiq-austcse/deployit/internal/server"
+	"go.uber.org/dig"
 	"time"
 )
 
@@ -26,7 +28,25 @@ func Run(configPath string) error {
 	if err != nil {
 		return err
 	}
-	err = container.Invoke(func(deploymentController *controller.DeploymentController, repoController *repoController.RepoController) {
+	err = SetupRouters(apiServer, container)
+	if err != nil {
+		return err
+	}
+	err = SetupSubscribers(container)
+	if err != nil {
+		return err
+	}
+
+	err = apiServer.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func SetupRouters(apiServer *server.Server, container *dig.Container) error {
+	err := container.Invoke(func(deploymentController *controller.DeploymentController,
+		repoController *repoController.RepoController, subscriber *worker.PullRepoWorker) {
 		indexRouterGroup := apiServer.GinEngine.Group("")
 		indexRouter.Setup(indexRouterGroup)
 
@@ -40,8 +60,13 @@ func Run(configPath string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+func SetupSubscribers(container *dig.Container) error {
+	err := container.Invoke(func(repoWorker *worker.PullRepoWorker) {
+		repoWorker.InitPullRepoSubscriber()
 
-	err = apiServer.Run()
+	})
 	if err != nil {
 		return err
 	}

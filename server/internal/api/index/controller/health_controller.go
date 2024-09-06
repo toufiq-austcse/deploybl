@@ -15,6 +15,10 @@ import (
 // @Router   / [get]
 func Index() gin.HandlerFunc {
 	return func(context *gin.Context) {
+		//err := worker.PublishPullRepoJob()
+		//if err != nil {
+		//	fmt.Println("error while publishing ", err)
+		//}
 		context.JSON(http.StatusOK, gin.H{
 			"message": config.AppConfig.APP_NAME + " is Running",
 		})
