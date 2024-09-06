@@ -1,9 +1,11 @@
 package mapper
 
 import (
+	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/res"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github/api_res"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strconv"
@@ -20,11 +22,11 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, githubRes *ap
 		Id:                 primitive.NewObjectID(),
 		Title:              githubRes.Name,
 		SubDomainName:      subDomainName,
-		LatestStatus:       "queued",
+		LatestStatus:       enums.QUEUED,
 		LastDeployedAt:     nil,
 		RepositoryProvider: dto.RepositoryProvider,
 		RepositoryUrl:      dto.RepositoryUrl,
-		GitUrl:             githubRes.GitURL,
+		GitUrl:             githubRes.CloneURL,
 		BranchName:         dto.BranchName,
 		DockerFilePath:     "",
 		DockerImageTag:     nil,
@@ -73,5 +75,11 @@ func ToDeploymentListRes(deploymentModels []*model.Deployment) []res.DeploymentR
 	}
 
 	return deployments
-
+}
+func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWorkerPayload {
+	return payloads.PullRepoWorkerPayload{
+		DeploymentId: deployment.Id.Hex(),
+		BranchName:   deployment.BranchName,
+		GitUrl:       deployment.GitUrl,
+	}
 }

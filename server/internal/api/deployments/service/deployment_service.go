@@ -105,5 +105,24 @@ func (service *DeploymentService) UpdateEnv(deploymentId string, env map[string]
 		return nil, errors.New("update error")
 	}
 	return service.FindById(deploymentId, ctx), err
+}
 
+func (service *DeploymentService) UpdateStatus(deploymentId string, status string, ctx context.Context) (*model.Deployment, error) {
+	oId, err := primitive.ObjectIDFromHex(deploymentId)
+	if err != nil {
+		return nil, err
+	}
+	updatedResult, err := service.deploymentCollection.UpdateByID(ctx, oId, bson.M{
+		"$set": bson.M{
+			"latest_status": status,
+		},
+	})
+	if err != nil {
+		fmt.Println("err in updating status", err)
+		return nil, err
+	}
+	if updatedResult.MatchedCount != 1 {
+		return nil, errors.New("update error")
+	}
+	return service.FindById(deploymentId, ctx), err
 }

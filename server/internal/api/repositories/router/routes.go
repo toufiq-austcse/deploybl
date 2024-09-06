@@ -7,6 +7,5 @@ import (
 
 func Setup(group *gin.RouterGroup, controller *controller.RepoController) {
 	group.GET("", controller.GetRepoDetails)
-	group.GET("publish", controller.PublishMsh)
 
 }

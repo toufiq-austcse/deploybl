@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,12 +17,14 @@ import (
 type DeploymentController struct {
 	githubHttpClient  *github.GithubHttpClient
 	deploymentService *service.DeploymentService
+	worker            *worker.PullRepoWorker
 }
 
-func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deploymentService *service.DeploymentService) *DeploymentController {
+func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deploymentService *service.DeploymentService, repoWorker *worker.PullRepoWorker) *DeploymentController {
 	return &DeploymentController{
 		githubHttpClient:  githubHttpClient,
 		deploymentService: deploymentService,
+		worker:            repoWorker,
 	}
 }
 
@@ -80,7 +82,6 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	fmt.Println("githubRes ", githubRes)
 	if githubRes == nil {
 		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "invalid repository", nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
@@ -100,6 +101,8 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
+	controller.worker.PublishPullRepoWork(newDeployment)
+
 	createDeploymentRes := api_response.BuildResponse(http.StatusCreated, http.StatusText(http.StatusCreated), mapper.ToDeploymentRes(newDeployment))
 	context.JSON(createDeploymentRes.Code, createDeploymentRes)
 }
