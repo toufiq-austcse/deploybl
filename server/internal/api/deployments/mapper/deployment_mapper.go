@@ -24,6 +24,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, githubRes *ap
 		LastDeployedAt:     nil,
 		RepositoryProvider: dto.RepositoryProvider,
 		RepositoryUrl:      dto.RepositoryUrl,
+		GitUrl:             githubRes.GitURL,
 		BranchName:         dto.BranchName,
 		DockerFilePath:     "",
 		DockerImageTag:     nil,

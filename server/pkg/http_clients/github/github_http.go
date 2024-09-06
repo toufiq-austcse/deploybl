@@ -3,6 +3,7 @@ package github
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github/api_res"
@@ -27,7 +28,8 @@ func NewGithubHttpClient() *GithubHttpClient {
 func (httpClient *GithubHttpClient) ValidateRepository(repoOwner, repoName *string) (*api_res.GithubRepoRes, int, error) {
 	var githubRes *api_res.GithubRepoRes
 
-	getRes, err := httpClient.restyReq.SetResult(&githubRes).Get("repos/" + *repoOwner + "/" + *repoName)
+	getRes, err := httpClient.restyReq.SetResult(&githubRes).Get("/repos/" + *repoOwner + "/" + *repoName)
+	fmt.Println(" getRes ", config.AppConfig.GITHUB_API_BASE_URL+"/repos/"+*repoOwner+"/"+*repoName)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -49,6 +51,7 @@ func (httpClient *GithubHttpClient) ValidateRepository(repoOwner, repoName *stri
 func (httpClient *GithubHttpClient) ValidateRepositoryByUrl(repoUrl *string) (*api_res.GithubRepoRes, int, error) {
 	repoName, owner, err := httpClient.ParseRepoUrl(repoUrl)
 	if err != nil {
+		fmt.Println("error while validating repo url ", err.Error())
 		return nil, http.StatusBadRequest, err
 	}
 	return httpClient.ValidateRepository(owner, repoName)
@@ -61,7 +64,8 @@ func (httpClient *GithubHttpClient) ParseRepoUrl(repoUrl *string) (repoOwner *st
 	if len(parts) != 3 {
 		return nil, nil, errors.New("invalid repo url")
 	}
-	name := strings.TrimRight(parts[len(parts)-1], ".git")
+	fmt.Println("parts ", parts)
+	name := parts[len(parts)-1]
 	owner := parts[len(parts)-2]
 	return &name, &owner, err
 
