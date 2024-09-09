@@ -78,8 +78,16 @@ func ToDeploymentListRes(deploymentModels []*model.Deployment) []res.DeploymentR
 }
 func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWorkerPayload {
 	return payloads.PullRepoWorkerPayload{
-		DeploymentId: deployment.Id.Hex(),
-		BranchName:   deployment.BranchName,
-		GitUrl:       deployment.GitUrl,
+		DeploymentId:   deployment.Id.Hex(),
+		BranchName:     deployment.BranchName,
+		GitUrl:         deployment.GitUrl,
+		DockerFilePath: deployment.DockerFilePath,
+	}
+}
+
+func ToBuildRepoWorkerPayload(payload payloads.PullRepoWorkerPayload) payloads.BuildRepoWorkerPayload {
+	return payloads.BuildRepoWorkerPayload{
+		DeploymentId:   payload.DeploymentId,
+		DockerFilePath: payload.DockerFilePath,
 	}
 }

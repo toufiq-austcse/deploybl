@@ -37,10 +37,12 @@ type (
 		DB_NAME string
 	}
 	RABBIT_MQ_CONFIG struct {
-		URL                         string
-		EXCHANGE                    string
-		REPOSITORY_PULL_ROUTING_KEY string
-		REPOSITORY_PULL_QUEUE       string
+		URL                          string
+		EXCHANGE                     string
+		REPOSITORY_PULL_ROUTING_KEY  string
+		REPOSITORY_PULL_QUEUE        string
+		REPOSITORY_BUILD_ROUTING_KEY string
+		REPOSITORY_BUILD_QUEUE       string
 	}
 )
 
@@ -74,6 +76,8 @@ func setFromEnv(config *Config) {
 	config.RABBIT_MQ_CONFIG.URL = viper.GetString("RABBIT_MQ_CONNECTION_URL")
 	config.RABBIT_MQ_CONFIG.REPOSITORY_PULL_ROUTING_KEY = viper.GetString("RABBIT_MQ_REPOSITORY_PULL_ROUTING_KEY")
 	config.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE = viper.GetString("RABBIT_MQ_REPOSITORY_PULL_QUEUE")
+	config.RABBIT_MQ_CONFIG.REPOSITORY_BUILD_ROUTING_KEY = viper.GetString("RABBIT_MQ_REPOSITORY_BUILD_ROUTING_KEY")
+	config.RABBIT_MQ_CONFIG.REPOSITORY_BUILD_QUEUE = viper.GetString("RABBIT_MQ_REPOSITORY_BUILD_QUEUE")
 	config.REPOSITORIES_PATH = viper.GetString("REPOSITORIES_PATH")
 }
 

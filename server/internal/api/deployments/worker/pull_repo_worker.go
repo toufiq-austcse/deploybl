@@ -15,23 +15,27 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
+	"github.com/toufiq-austcse/deployit/pkg/utils"
 	"os/exec"
 )
 
 type PullRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
+	buildRepoWorker   *BuildRepoWorker
 }
 
-func NewPullRepoWorker(deploymentService *service.DeploymentService) *PullRepoWorker {
+func NewPullRepoWorker(deploymentService *service.DeploymentService, buildRepoWorker *BuildRepoWorker) *PullRepoWorker {
 	return &PullRepoWorker{config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 		"topic",
 		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE,
 		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_ROUTING_KEY),
-		deploymentService: deploymentService}
+		deploymentService: deploymentService,
+		buildRepoWorker:   buildRepoWorker}
 }
 
 func (worker *PullRepoWorker) InitPullRepoSubscriber() {
+
 	subscriber, err := amqp.NewSubscriber(worker.config, watermill.NewStdLogger(false, false))
 	if err != nil {
 		fmt.Println("error in pull repo subscriber ", err.Error())
@@ -43,33 +47,51 @@ func (worker *PullRepoWorker) InitPullRepoSubscriber() {
 		fmt.Println("error in pull repo subscriber ", err.Error())
 		return
 	}
-	go worker.ProcessMessage(messages)
+	go worker.ProcessPullRepoMessage(messages)
 
 }
-func (worker *PullRepoWorker) ProcessMessage(messages <-chan *message.Message) {
+func (worker *PullRepoWorker) ProcessPullRepoMessage(messages <-chan *message.Message) {
 	consumedPayload := payloads.PullRepoWorkerPayload{}
 	for msg := range messages {
+
 		err := json.Unmarshal(msg.Payload, &consumedPayload)
 		if err != nil {
 			fmt.Println("error in parsing rabbitmq message in pull repo worker", err)
+			msg.Ack()
 			continue
 		}
 		_, updateErr := worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.PULLING, context.Background())
 		if updateErr != nil {
 			fmt.Println("error while updating status... ", updateErr.Error())
+			msg.Ack()
 			continue
 		}
-		cloneError := worker.CloneRepo(consumedPayload.GitUrl, deployItConfig.AppConfig.REPOSITORIES_PATH+"/"+consumedPayload.DeploymentId)
+		localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId)
+		cloneError := worker.CloneRepo(consumedPayload.GitUrl, localRepoDir)
 		if cloneError != nil {
-			_, updateErr = worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.BUILDING, context.Background())
+			_, updateErr = worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.FAILED, context.Background())
 			if updateErr != nil {
 				fmt.Println("error while updating status... ", updateErr.Error())
-				continue
 			}
+			msg.Ack()
+			continue
+		}
+		fmt.Println("repository cloned successfully...")
+
+		buildRepoWorkPublishErr := worker.PublishBuildRepoWork(consumedPayload)
+		if buildRepoWorkPublishErr != nil {
+			_, updateErr = worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.FAILED, context.Background())
+			fmt.Println("error while updating status... ", updateErr.Error())
+			msg.Ack()
+			continue
+		}
+		_, updateErr = worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.BUILDING, context.Background())
+		if updateErr != nil {
+			fmt.Println("error while updating status... ", updateErr.Error())
+			msg.Ack()
+			continue
 		}
 
-		// we need to Acknowledge that we received and processed the message,
-		// otherwise, it will be resent over and over again.
 		msg.Ack()
 	}
 }
@@ -95,13 +117,7 @@ func (worker *PullRepoWorker) CloneRepo(gitUrl, path string) error {
 	cmd.Stdout = &out
 
 	fmt.Println("executing " + cmd.String())
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println("git clone error ", err.Error())
-		return err
-	}
-	fmt.Println(out.String())
-	return nil
+	return cmd.Run()
 }
 
 func (worker *PullRepoWorker) PublishPullRepoWork(deployment *model.Deployment) {
@@ -111,4 +127,9 @@ func (worker *PullRepoWorker) PublishPullRepoWork(deployment *model.Deployment) 
 		fmt.Println("error while publishing pull repo worker job ", err.Error())
 		return
 	}
+}
+
+func (worker *PullRepoWorker) PublishBuildRepoWork(pullRepoJob payloads.PullRepoWorkerPayload) error {
+	buildRepoWorkerPayload := mapper.ToBuildRepoWorkerPayload(pullRepoJob)
+	return worker.buildRepoWorker.PublishBuildRepoJob(buildRepoWorkerPayload)
 }

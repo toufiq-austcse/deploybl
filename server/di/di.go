@@ -22,6 +22,7 @@ func NewDiContainer() (*dig.Container, error) {
 		controller.NewDeploymentController,
 		repoController.NewRepoController,
 		worker.NewPullRepoWorker,
+		worker.NewBuildRepoWorker,
 	}
 	for _, provider := range providers {
 		if err := c.Provide(provider); err != nil {
