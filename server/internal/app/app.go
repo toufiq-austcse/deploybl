@@ -63,9 +63,10 @@ func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 	return nil
 }
 func SetupSubscribers(container *dig.Container) error {
-	err := container.Invoke(func(pullRepoWorker *worker.PullRepoWorker, buildRepoWorker *worker.BuildRepoWorker) {
+	err := container.Invoke(func(pullRepoWorker *worker.PullRepoWorker, buildRepoWorker *worker.BuildRepoWorker, runRepoWorker *worker.RunRepoWorker) {
 		pullRepoWorker.InitPullRepoSubscriber()
 		buildRepoWorker.InitBuildRepoSubscriber()
+		runRepoWorker.InitRunRepoSubscriber()
 
 	})
 	if err != nil {

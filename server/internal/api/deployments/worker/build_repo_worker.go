@@ -10,6 +10,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	deployItConfig "github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/enums"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
@@ -20,14 +21,16 @@ import (
 type BuildRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
+	runRepoWorker     *RunRepoWorker
 }
 
-func NewBuildRepoWorker(deploymentService *service.DeploymentService) *BuildRepoWorker {
+func NewBuildRepoWorker(deploymentService *service.DeploymentService, runRepoWorker *RunRepoWorker) *BuildRepoWorker {
 	return &BuildRepoWorker{config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 		"topic",
 		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_BUILD_QUEUE,
 		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_BUILD_ROUTING_KEY),
-		deploymentService: deploymentService}
+		deploymentService: deploymentService,
+		runRepoWorker:     runRepoWorker}
 }
 
 func (worker *BuildRepoWorker) InitBuildRepoSubscriber() {
@@ -79,6 +82,11 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(messages <-chan *message.
 			continue
 		}
 
+		publishRunRepoError := worker.PublishRunRepoWork(consumedPayload, *dockerImageTag)
+		if publishRunRepoError != nil {
+			fmt.Println("error in publishing run repo work ", publishRunRepoError.Error())
+		}
+
 		// we need to Acknowledge that we received and processed the message,
 		// otherwise, it will be resent over and over again.
 		msg.Ack()
@@ -119,4 +127,10 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 	}
 	fmt.Println(out.String())
 	return &dockerImageTag, nil
+}
+
+func (worker *BuildRepoWorker) PublishRunRepoWork(buildRepoWorkerPayload payloads.BuildRepoWorkerPayload, dockerImageTag string) error {
+	runRepoWorkerPayload := mapper.ToRunRepoWorkerPayload(buildRepoWorkerPayload, dockerImageTag)
+	fmt.Println("Publishing ", runRepoWorkerPayload)
+	return worker.runRepoWorker.PublishRunRepoJob(runRepoWorkerPayload)
 }

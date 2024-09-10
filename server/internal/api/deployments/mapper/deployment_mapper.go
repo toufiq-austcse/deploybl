@@ -82,6 +82,7 @@ func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWork
 		BranchName:     deployment.BranchName,
 		GitUrl:         deployment.GitUrl,
 		DockerFilePath: deployment.DockerFilePath,
+		Env:            deployment.Env,
 	}
 }
 
@@ -89,5 +90,13 @@ func ToBuildRepoWorkerPayload(payload payloads.PullRepoWorkerPayload) payloads.B
 	return payloads.BuildRepoWorkerPayload{
 		DeploymentId:   payload.DeploymentId,
 		DockerFilePath: payload.DockerFilePath,
+		Env:            payload.Env,
+	}
+}
+func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload, dockerIamegTag string) payloads.RunRepoWorkerPayload {
+	return payloads.RunRepoWorkerPayload{
+		DeploymentId:   payload.DeploymentId,
+		DockerImageTag: dockerIamegTag,
+		Env:            payload.Env,
 	}
 }

@@ -1,7 +1,7 @@
 package payloads
 
-type BuildRepoWorkerPayload struct {
+type RunRepoWorkerPayload struct {
 	DeploymentId   string                  `json:"deployment_id"`
-	DockerFilePath string                  `json:"docker_file_path"`
+	DockerImageTag string                  `bson:"docker_image_tag"`
 	Env            *map[string]interface{} `json:"env"`
 }
