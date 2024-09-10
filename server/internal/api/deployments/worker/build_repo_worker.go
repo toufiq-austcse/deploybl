@@ -9,9 +9,11 @@ import (
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
 	deployItConfig "github.com/toufiq-austcse/deployit/config"
+	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
+	"github.com/toufiq-austcse/deployit/pkg/utils"
 	"os/exec"
 )
 
@@ -46,25 +48,36 @@ func (worker *BuildRepoWorker) InitBuildRepoSubscriber() {
 func (worker *BuildRepoWorker) ProcessBuildRepoMessage(messages <-chan *message.Message) {
 	consumedPayload := payloads.BuildRepoWorkerPayload{}
 	for msg := range messages {
+		err := json.Unmarshal(msg.Payload, &consumedPayload)
+		if err != nil {
+			fmt.Println("error in parsing rabbitmq message in pull repo worker", err)
+			msg.Ack()
+			continue
+		}
 		fmt.Println("consumed build job ", consumedPayload)
-		//err := json.Unmarshal(msg.Payload, &consumedPayload)
-		//if err != nil {
-		//	fmt.Println("error in parsing rabbitmq message in pull repo worker", err)
-		//	continue
-		//}
-		//_, updateErr := worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.PULLING, context.Background())
-		//if updateErr != nil {
-		//	fmt.Println("error while updating status... ", updateErr.Error())
-		//	continue
-		//}
-		//cloneError := worker.BuildRepo(consumedPayload.GitUrl, deployItConfig.AppConfig.REPOSITORIES_PATH+"/"+consumedPayload.DeploymentId)
-		//if cloneError != nil {
-		//	_, updateErr = worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.BUILDING, context.Background())
-		//	if updateErr != nil {
-		//		fmt.Println("error while updating status... ", updateErr.Error())
-		//		continue
-		//	}
-		//}
+
+		dockerImageTag, buildRepoErr := worker.BuildRepo(consumedPayload)
+		if buildRepoErr != nil {
+			_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+				"latest_status": enums.FAILED,
+			}, context.Background())
+			if updateErr != nil {
+				fmt.Println("error while updating status... ", updateErr.Error())
+			}
+
+			msg.Ack()
+			continue
+		}
+		fmt.Println("Docker image built successfully")
+		_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+			"docker_image_tag": dockerImageTag,
+		}, context.Background())
+
+		if updateErr != nil {
+			fmt.Println("error while updating image tag... ", updateErr.Error())
+			msg.Ack()
+			continue
+		}
 
 		// we need to Acknowledge that we received and processed the message,
 		// otherwise, it will be resent over and over again.
@@ -87,17 +100,23 @@ func (worker *BuildRepoWorker) PublishBuildRepoJob(workerPayload payloads.BuildR
 	return publisher.Close()
 }
 
-func (worker *BuildRepoWorker) BuildRepo(gitUrl, path string) error {
-	cmd := exec.Command("git", "clone", gitUrl, path)
+func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload) (*string, error) {
+	localDir := utils.GetLocalRepoPath(payload.DeploymentId)
+	dockerFilePath := localDir
+	if payload.DockerFilePath != "." {
+		dockerFilePath += "/" + payload.DockerFilePath
+	}
+	dockerImageTag := payload.DeploymentId
+	cmd := exec.Command("docker", "build", dockerFilePath, "-t", dockerImageTag)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
 	fmt.Println("executing " + cmd.String())
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println("git clone error ", err.Error())
-		return err
+		fmt.Println("docker build err", err.Error())
+		return nil, err
 	}
 	fmt.Println(out.String())
-	return nil
+	return &dockerImageTag, nil
 }

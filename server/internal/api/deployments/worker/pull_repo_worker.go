@@ -60,7 +60,9 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(messages <-chan *message.Me
 			msg.Ack()
 			continue
 		}
-		_, updateErr := worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.PULLING, context.Background())
+		_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+			"latest_status": enums.PULLING,
+		}, context.Background())
 		if updateErr != nil {
 			fmt.Println("error while updating status... ", updateErr.Error())
 			msg.Ack()
@@ -69,7 +71,9 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(messages <-chan *message.Me
 		localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId)
 		cloneError := worker.CloneRepo(consumedPayload.GitUrl, localRepoDir)
 		if cloneError != nil {
-			_, updateErr = worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.FAILED, context.Background())
+			_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+				"latest_status": enums.FAILED,
+			}, context.Background())
 			if updateErr != nil {
 				fmt.Println("error while updating status... ", updateErr.Error())
 			}
@@ -80,12 +84,16 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(messages <-chan *message.Me
 
 		buildRepoWorkPublishErr := worker.PublishBuildRepoWork(consumedPayload)
 		if buildRepoWorkPublishErr != nil {
-			_, updateErr = worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.FAILED, context.Background())
+			_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+				"latest_status": enums.FAILED,
+			}, context.Background())
 			fmt.Println("error while updating status... ", updateErr.Error())
 			msg.Ack()
 			continue
 		}
-		_, updateErr = worker.deploymentService.UpdateStatus(consumedPayload.DeploymentId, enums.BUILDING, context.Background())
+		_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+			"latest_status": enums.BUILDING,
+		}, context.Background())
 		if updateErr != nil {
 			fmt.Println("error while updating status... ", updateErr.Error())
 			msg.Ack()
@@ -122,6 +130,7 @@ func (worker *PullRepoWorker) CloneRepo(gitUrl, path string) error {
 
 func (worker *PullRepoWorker) PublishPullRepoWork(deployment *model.Deployment) {
 	pullRepoWorkerPayload := mapper.ToPullRepoWorkerPayload(deployment)
+	fmt.Println("publishing pull repo worker payload ", pullRepoWorkerPayload)
 	err := worker.PublishPullRepoJob(pullRepoWorkerPayload)
 	if err != nil {
 		fmt.Println("error while publishing pull repo worker job ", err.Error())
@@ -131,5 +140,6 @@ func (worker *PullRepoWorker) PublishPullRepoWork(deployment *model.Deployment) 
 
 func (worker *PullRepoWorker) PublishBuildRepoWork(pullRepoJob payloads.PullRepoWorkerPayload) error {
 	buildRepoWorkerPayload := mapper.ToBuildRepoWorkerPayload(pullRepoJob)
+	fmt.Println("Publishing ", buildRepoWorkerPayload)
 	return worker.buildRepoWorker.PublishBuildRepoJob(buildRepoWorkerPayload)
 }
