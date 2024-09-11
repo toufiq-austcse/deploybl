@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -90,16 +89,36 @@ func (worker *RunRepoWorker) PublishRunRepoJob(runRepoPayload payloads.RunRepoWo
 }
 
 func (worker *RunRepoWorker) RunRepo(payload payloads.RunRepoWorkerPayload) error {
-	cmd := exec.Command("docker", "run", "-p", ":"+"4000", "-d", payload.DockerImageTag)
-	var out bytes.Buffer
-	cmd.Stdout = &out
+	//envString := worker.GetEnvString(*payload.Env)
+	imageID := "66e1ecce5e1128018ac9bd88"
+	port := "4000"
 
-	fmt.Println("executing " + cmd.String())
-	err := cmd.Run()
+	// Construct the command
+	cmd := exec.Command(
+		"/usr/local/bin/docker", "run",
+		"-e", fmt.Sprintf("PORT=%s", port), // No need for single quotes around env variables in exec.Command
+		"-p", fmt.Sprintf("%s:%s", port, port),
+		"-d", imageID,
+	)
+
+	// Run the command and capture the output
+	output, err := cmd.CombinedOutput()
+
+	// Handle errors if the command fails
 	if err != nil {
-		fmt.Println("docker build err", err.Error())
+		fmt.Printf("Error: %s\n", err)
+		fmt.Printf("Output: %s\n", string(output))
 		return err
 	}
-	fmt.Println(out.String())
+
+	// Print the container ID (which is the output of the docker run -d command)
+	fmt.Printf("Container ID: %s\n", string(output))
 	return nil
+}
+func (worker *RunRepoWorker) GetEnvString(env map[string]interface{}) string {
+	envString := "'PORT=4000'"
+	//for k, v := range env {
+	//	envString += " -e " + k + "=" + v.(string)
+	//}
+	return envString
 }
