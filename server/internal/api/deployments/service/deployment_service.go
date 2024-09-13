@@ -87,7 +87,7 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 	}, nil
 }
 
-func (service *DeploymentService) UpdateEnv(deploymentId string, env map[string]interface{}, ctx context.Context) (*model.Deployment, error) {
+func (service *DeploymentService) UpdateEnv(deploymentId string, env map[string]string, ctx context.Context) (*model.Deployment, error) {
 	oId, err := primitive.ObjectIDFromHex(deploymentId)
 	if err != nil {
 		return nil, err

@@ -132,7 +132,7 @@ func DeploymentUpdate() gin.HandlerFunc {
 // @Success  200
 // @Router   /deployments/:id/env [put]
 func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
-	var envBody map[string]interface{}
+	var envBody map[string]string
 	if err := context.BindJSON(&envBody); err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err.Error(), nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)

@@ -90,21 +90,26 @@ func (worker *RunRepoWorker) PublishRunRepoJob(runRepoPayload payloads.RunRepoWo
 
 func (worker *RunRepoWorker) RunRepo(payload payloads.RunRepoWorkerPayload) error {
 	//envString := worker.GetEnvString(*payload.Env)
-	imageID := "66e1ecce5e1128018ac9bd88"
 	port := "4000"
+
+	args := []string{"run"}
+	for k, v := range *payload.Env {
+		if k == "PORT" {
+			continue
+		}
+		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
+	}
+
+	args = append(args, "-e", fmt.Sprintf("PORT=%s", port), "-p", fmt.Sprintf(":%s", port), "-d", payload.DockerImageTag)
 
 	// Construct the command
 	cmd := exec.Command(
-		"/usr/local/bin/docker", "run",
-		"-e", fmt.Sprintf("PORT=%s", port), // No need for single quotes around env variables in exec.Command
-		"-p", fmt.Sprintf("%s:%s", port, port),
-		"-d", imageID,
+		"docker", args...,
 	)
+	fmt.Println("executing ", cmd.String())
 
-	// Run the command and capture the output
 	output, err := cmd.CombinedOutput()
 
-	// Handle errors if the command fails
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 		fmt.Printf("Output: %s\n", string(output))

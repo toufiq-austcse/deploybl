@@ -11,21 +11,21 @@ import (
 )
 
 type Deployment struct {
-	Id                 primitive.ObjectID      `bson:"_id"`
-	Title              string                  `bson:"title"`
-	SubDomainName      string                  `bson:"sub_domain_name"`
-	LatestStatus       string                  `bson:"latest_status"`
-	LastDeployedAt     *time.Time              `bson:"last_deployed_at"`
-	RepositoryProvider string                  `bson:"repository_provider"`
-	RepositoryUrl      string                  `bson:"repository_url"`
-	GitUrl             string                  `bson:"git_url"`
-	BranchName         string                  `bson:"branch_name"`
-	DockerFilePath     string                  `bson:"docker_file_path"`
-	DockerImageTag     *string                 `bson:"docker_image_tag"`
-	ContainerId        *string                 `bson:"container_id"`
-	Env                *map[string]interface{} `bson:"env"`
-	CreatedAt          time.Time               `bson:"created_at"`
-	UpdatedAt          time.Time               `bson:"updated_at"`
+	Id                 primitive.ObjectID `bson:"_id"`
+	Title              string             `bson:"title"`
+	SubDomainName      string             `bson:"sub_domain_name"`
+	LatestStatus       string             `bson:"latest_status"`
+	LastDeployedAt     *time.Time         `bson:"last_deployed_at"`
+	RepositoryProvider string             `bson:"repository_provider"`
+	RepositoryUrl      string             `bson:"repository_url"`
+	GitUrl             string             `bson:"git_url"`
+	BranchName         string             `bson:"branch_name"`
+	DockerFilePath     string             `bson:"docker_file_path"`
+	DockerImageTag     *string            `bson:"docker_image_tag"`
+	ContainerId        *string            `bson:"container_id"`
+	Env                *map[string]string `bson:"env"`
+	CreatedAt          time.Time          `bson:"created_at"`
+	UpdatedAt          time.Time          `bson:"updated_at"`
 }
 
 func CreateDeploymentIndex(deploymentCollection *mongo.Collection) {
