@@ -9,8 +9,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.test.rule=Host(`just-deploy.toufiq.dev`)"
       - "traefik.http.routers.deploy.entrypoints=web"
-
     env_file:
       - .env
     ports:
       - "3000:3000"
+    networks:
+      - web
+networks:
+  web:
+    external: true
