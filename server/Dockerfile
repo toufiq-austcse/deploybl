@@ -30,4 +30,6 @@ RUN cp /build/app .
 FROM golang:${GO_VERSION}-alpine
 COPY --from=builder /bin /
 COPY --from=builder /build/docs ./docs
+RUN apk add git
+RUN apk add docker
 CMD ["/app"]
