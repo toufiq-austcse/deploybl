@@ -23,6 +23,7 @@ type (
 		MONGO_DB_CONFIG     MONGO_DB_CONFIG
 		RABBIT_MQ_CONFIG    RABBIT_MQ_CONFIG
 		REPOSITORIES_PATH   string
+		BASE_DOMAIN         string
 	}
 	DB_CONFIG struct {
 		DB_NAME       string
@@ -83,6 +84,7 @@ func setFromEnv(config *Config) {
 	config.RABBIT_MQ_CONFIG.REPOSITORY_RUN_QUEUE = viper.GetString("RABBIT_MQ_REPOSITORY_RUN_QUEUE")
 	config.RABBIT_MQ_CONFIG.REPOSITORY_RUN_ROUTING_KEY = viper.GetString("RABBIT_MQ_REPOSITORY_RUN_ROUTING_KEY")
 	config.REPOSITORIES_PATH = viper.GetString("REPOSITORIES_PATH")
+	config.BASE_DOMAIN = viper.GetString("BASE_DOMAIN")
 }
 
 func parseConfigFile(envFilePath, configName string) {
