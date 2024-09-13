@@ -9,6 +9,7 @@ ENV GO111MODULE=on \
 
 # Move to working directory /build
 WORKDIR /build
+RUN apk add git
 
 # Copy and download dependency using go mod
 COPY go.mod .
