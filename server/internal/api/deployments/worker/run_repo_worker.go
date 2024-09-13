@@ -13,6 +13,7 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
 	"os/exec"
+	"time"
 )
 
 type RunRepoWorker struct {
@@ -53,7 +54,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(messages <-chan *message.Mess
 			continue
 		}
 		fmt.Println("consumed run job ", consumedPayload)
-		runErr := worker.RunRepo(consumedPayload)
+		containerId, runErr := worker.RunRepo(consumedPayload)
 		if runErr != nil {
 			_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 				"latest_status": enums.FAILED,
@@ -67,8 +68,17 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(messages <-chan *message.Mess
 		}
 		fmt.Println("docker image run successfully...")
 
-		// we need to Acknowledge that we received and processed the message,
-		// otherwise, it will be resent over and over again.
+		_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+			"latest_status":    enums.LIVE,
+			"last_deployed_at": time.Now(),
+			"container_id":     containerId,
+		}, context.Background())
+		if updateErr != nil {
+			fmt.Println("error while updating status... ", updateErr.Error())
+			msg.Ack()
+			continue
+		}
+
 		msg.Ack()
 	}
 }
@@ -88,8 +98,7 @@ func (worker *RunRepoWorker) PublishRunRepoJob(runRepoPayload payloads.RunRepoWo
 	return publisher.Close()
 }
 
-func (worker *RunRepoWorker) RunRepo(payload payloads.RunRepoWorkerPayload) error {
-	//envString := worker.GetEnvString(*payload.Env)
+func (worker *RunRepoWorker) RunRepo(payload payloads.RunRepoWorkerPayload) (*string, error) {
 	port := "4000"
 
 	args := []string{"run"}
@@ -113,17 +122,10 @@ func (worker *RunRepoWorker) RunRepo(payload payloads.RunRepoWorkerPayload) erro
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 		fmt.Printf("Output: %s\n", string(output))
-		return err
+		return nil, err
 	}
 
-	// Print the container ID (which is the output of the docker run -d command)
+	containerId := string(output)
 	fmt.Printf("Container ID: %s\n", string(output))
-	return nil
-}
-func (worker *RunRepoWorker) GetEnvString(env map[string]interface{}) string {
-	envString := "'PORT=4000'"
-	//for k, v := range env {
-	//	envString += " -e " + k + "=" + v.(string)
-	//}
-	return envString
+	return &containerId, nil
 }
