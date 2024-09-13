@@ -61,6 +61,7 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(messages <-chan *message.
 
 		dockerImageTag, buildRepoErr := worker.BuildRepo(consumedPayload)
 		if buildRepoErr != nil {
+			fmt.Println("build error ", buildRepoErr.Error())
 			_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 				"latest_status": enums.FAILED,
 			}, context.Background())

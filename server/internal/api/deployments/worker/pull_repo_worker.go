@@ -71,6 +71,7 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(messages <-chan *message.Me
 		localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId)
 		cloneError := worker.CloneRepo(consumedPayload.GitUrl, localRepoDir)
 		if cloneError != nil {
+			fmt.Println("Cloning error ", cloneError.Error())
 			_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 				"latest_status": enums.FAILED,
 			}, context.Background())

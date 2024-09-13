@@ -10,6 +10,8 @@ services:
       - "traefik.http.routers.test.rule=Host(`just-deploy-api.toufiq.dev`)"
     env_file:
       - .env
+    volumes:
+      - ./repos:$REPOSITORIES_PATH
     ports:
       - "3000:3000"
     networks:

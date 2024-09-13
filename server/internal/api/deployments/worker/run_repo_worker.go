@@ -56,6 +56,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(messages <-chan *message.Mess
 		fmt.Println("consumed run job ", consumedPayload)
 		containerId, runErr := worker.RunRepo(consumedPayload)
 		if runErr != nil {
+			fmt.Println("run err error ", runErr.Error())
 			_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 				"latest_status": enums.FAILED,
 			}, context.Background())
