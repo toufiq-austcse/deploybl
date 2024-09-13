@@ -13,17 +13,18 @@ const (
 
 type (
 	Config struct {
-		PORT                string
-		APP_NAME            string
-		APP_URL             string
-		GITHUB_API_TOKEN    string
-		GITHUB_API_BASE_URL string
-		DB_DRIVER_NAME      string
-		DB_CONFIG           DB_CONFIG
-		MONGO_DB_CONFIG     MONGO_DB_CONFIG
-		RABBIT_MQ_CONFIG    RABBIT_MQ_CONFIG
-		REPOSITORIES_PATH   string
-		BASE_DOMAIN         string
+		PORT                 string
+		APP_NAME             string
+		APP_URL              string
+		GITHUB_API_TOKEN     string
+		GITHUB_API_BASE_URL  string
+		DB_DRIVER_NAME       string
+		DB_CONFIG            DB_CONFIG
+		MONGO_DB_CONFIG      MONGO_DB_CONFIG
+		RABBIT_MQ_CONFIG     RABBIT_MQ_CONFIG
+		REPOSITORIES_PATH    string
+		BASE_DOMAIN          string
+		TRAEFIK_NETWORK_NAME string
 	}
 	DB_CONFIG struct {
 		DB_NAME       string
@@ -85,6 +86,7 @@ func setFromEnv(config *Config) {
 	config.RABBIT_MQ_CONFIG.REPOSITORY_RUN_ROUTING_KEY = viper.GetString("RABBIT_MQ_REPOSITORY_RUN_ROUTING_KEY")
 	config.REPOSITORIES_PATH = viper.GetString("REPOSITORIES_PATH")
 	config.BASE_DOMAIN = viper.GetString("BASE_DOMAIN")
+	config.TRAEFIK_NETWORK_NAME = viper.GetString("TRAEFIK_NETWORK_NAME")
 }
 
 func parseConfigFile(envFilePath, configName string) {

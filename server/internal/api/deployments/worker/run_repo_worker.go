@@ -101,7 +101,7 @@ func (worker *RunRepoWorker) PublishRunRepoJob(runRepoPayload payloads.RunRepoWo
 func (worker *RunRepoWorker) RunRepo(payload payloads.RunRepoWorkerPayload) (*string, error) {
 	port := "4000"
 
-	args := []string{"run"}
+	args := []string{"run", "--network", deployItConfig.AppConfig.TRAEFIK_NETWORK_NAME}
 	for k, v := range *payload.Env {
 		if k == "PORT" {
 			continue
