@@ -7,10 +7,11 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64
 
+WORKDIR /stuffs
+RUN apk add git
+RUN apk add docker
 # Move to working directory /build
 WORKDIR /build
-RUN apk add git
-
 # Copy and download dependency using go mod
 COPY go.mod .
 COPY go.sum .
@@ -30,6 +31,6 @@ RUN cp /build/app .
 FROM golang:${GO_VERSION}-alpine
 COPY --from=builder /bin /
 COPY --from=builder /build/docs ./docs
-RUN apk add git
-RUN apk add docker
+COPY --from=builder /stuffs .
+
 CMD ["/app"]
