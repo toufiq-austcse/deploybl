@@ -87,26 +87,6 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 	}, nil
 }
 
-func (service *DeploymentService) UpdateEnv(deploymentId string, env map[string]string, ctx context.Context) (*model.Deployment, error) {
-	oId, err := primitive.ObjectIDFromHex(deploymentId)
-	if err != nil {
-		return nil, err
-	}
-	updatedResult, err := service.deploymentCollection.UpdateByID(ctx, oId, bson.M{
-		"$set": bson.M{
-			"env": env,
-		},
-	})
-	if err != nil {
-		fmt.Println("err ", err)
-		return nil, err
-	}
-	if updatedResult.MatchedCount != 1 {
-		return nil, errors.New("update error")
-	}
-	return service.FindById(deploymentId, ctx), err
-}
-
 func (service *DeploymentService) UpdateDeployment(deploymentId string, updates map[string]interface{}, ctx context.Context) (*model.Deployment, error) {
 	oId, err := primitive.ObjectIDFromHex(deploymentId)
 	if err != nil {

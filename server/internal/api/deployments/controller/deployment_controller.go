@@ -145,7 +145,9 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	updatedDeployment, err := controller.deploymentService.UpdateEnv(deploymentId, envBody, context)
+	updatedDeployment, err := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
+		"env": envBody,
+	}, context)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
