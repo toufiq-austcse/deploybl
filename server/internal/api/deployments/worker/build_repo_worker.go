@@ -119,8 +119,8 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 	host := payload.SubDomainName + "." + deployItConfig.AppConfig.BASE_DOMAIN
 	hostRule := fmt.Sprintf("HOST(`%s`)", host)
 	labels := map[string]string{
-		"traefik.enable":                 "true",
-		"traefik.http.routers.test.rule": hostRule,
+		"traefik.enable": "true",
+		fmt.Sprintf("traefik.http.routers.%s.rule", payload.DeploymentId): hostRule,
 	}
 	args := []string{
 		"build", dockerFilePath, "-t", dockerImageTag,
