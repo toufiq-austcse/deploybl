@@ -161,6 +161,7 @@ const HomePage: NextPage = () => {
   let { listDeployments } = useHttpClient();
 
   useEffect(() => {
+    console.log('called');
     listDeployments(1, 0).then(data => {
       setDeploymentList(data);
     }).catch(err => console.log('error in list ', err));

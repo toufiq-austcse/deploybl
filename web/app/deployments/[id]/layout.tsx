@@ -1,9 +1,15 @@
-import { NextPage } from 'next';
-import Link from 'next/link';
+'use client';
+import '@/styles/globals.css';
+import * as React from 'react';
 import { badgeVariants } from '@/components/ui/badge';
+import Link from 'next/link';
+import { FaGithub } from 'react-icons/fa';
 import { Separator } from '@/components/ui/separator';
 
-const DeploymentDetailsPage: NextPage = () => {
+
+const DeploymentDetailsLayout = ({ children, params }: { children: React.ReactNode, params: { id: string } }) => {
+  const deploymentId = params.id;
+
   return (
     <div>
       <div className="flex gap-2">
@@ -11,6 +17,7 @@ const DeploymentDetailsPage: NextPage = () => {
         <div className={`${badgeVariants({ variant: 'secondary' })} capitalize`}>Live</div>
       </div>
       <Link href={''} className="flex gap-2">
+        <FaGithub />
         <p className="underline">toufiq-austcse/test</p>
         <p className="underline">master</p>
       </Link>
@@ -28,15 +35,14 @@ const DeploymentDetailsPage: NextPage = () => {
       <div className="flex h-screen">
         <nav className="flex flex-col w-1/6">
           <Link
-            href="#"
+            href={`/deployments/${deploymentId}/environments`}
             className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-            prefetch={false}
           >
             <span className="hidden sm:block">Environments</span>
           </Link>
 
           <Link
-            href="#"
+            href={`/deployments/${deploymentId}/settings`}
             className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             prefetch={false}
           >
@@ -45,10 +51,10 @@ const DeploymentDetailsPage: NextPage = () => {
         </nav>
         <Separator orientation="vertical" />
         <div className="p-2">
-          Hello
+          {children}
         </div>
       </div>
     </div>
   );
 };
-export default DeploymentDetailsPage;
+export default DeploymentDetailsLayout;
