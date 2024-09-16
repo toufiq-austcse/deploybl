@@ -62,7 +62,7 @@ export const columns: ColumnDef<DeploymentType>[] = [
     header: 'Title',
     cell: ({ row }) => {
       return (
-        <Link className="flex space-x-4" href={`/deployments/${row.original._id}`}>
+        <Link className="flex space-x-4" href={`/deployments/${row.original._id}/settings`}>
           <div className="lowercase font-medium">{row.getValue('title')}</div>
         </Link>
       );
