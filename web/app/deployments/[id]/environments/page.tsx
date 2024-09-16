@@ -19,7 +19,7 @@ const EnvironmentPage: NextPage = () => {
   const form = useForm();
   return (
     <div>
-      <h1>Environment Variables</h1>
+      <h1 className="font-bold">Environment Variables</h1>
       <Form {...form}>
         <form id="login-form">
           <div className="flex flex-row gap-2 justify-center m-2">
@@ -89,6 +89,7 @@ const EnvironmentPage: NextPage = () => {
           }}
           size="sm"
           className="my-2"
+          variant="outline"
         >
           Add environment variable
         </Button>
