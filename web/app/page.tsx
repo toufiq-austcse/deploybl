@@ -22,18 +22,22 @@ import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { NextPage } from 'next';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { DeploymentType } from '@/api/http/types/deployment_type';
+import { IoMdAdd } from 'react-icons/io';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
+import CreateNewModal from '@/components/ui/create-new-modal';
 
-export type Deployment = {
-  _id: string;
-  title: string;
-  last_deployed_at: string;
-  repository_provider: string
-  latest_status: 'pending' | 'processing' | 'success' | 'failed';
-  created_at: Date;
-  updated_at: Date;
-};
 
-export const columns: ColumnDef<DeploymentType>[] = [
+const columns: ColumnDef<DeploymentType>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -158,7 +162,7 @@ const HomePage: NextPage = () => {
   let pageSize = Number(process.env.NEXT_PUBLIC_VIDEO_LIST_PAGE_SIZE) || 4;
   let [pageIndex, setPageIndex] = React.useState(0);
   let [deploymentList, setDeploymentList] = React.useState<DeploymentType[]>([]);
-  let { listDeployments } = useHttpClient();
+  let { listDeployments, loading } = useHttpClient();
 
   useEffect(() => {
     console.log('called');
@@ -166,15 +170,6 @@ const HomePage: NextPage = () => {
       setDeploymentList(data);
     }).catch(err => console.log('error in list ', err));
   }, []);
-
-  // let { data, loading, error, fetchMore, refetch } = useQuery(LIST_ASSETS, {
-  //   variables: {
-  //     first: pageSize,
-  //     after: null,
-  //   },
-  // });
-
-  //console.log("data ", data);
 
   const nextFunction = () => {
     console.log('next');
@@ -211,12 +206,14 @@ const HomePage: NextPage = () => {
   };
 
   return (
-    <div>
-      <div className="flex">
 
+    <div className="space-y-2">
+
+      <div className="flex flex-row-reverse">
+        <CreateNewModal />
       </div>
+      {loading ? <div className="justify-center">Loading</div> : <AppTable<DeploymentType>
 
-      <AppTable<DeploymentType>
         totalPageCount={0}
         data={deploymentList}
         columns={columns}
@@ -224,7 +221,8 @@ const HomePage: NextPage = () => {
         pageSize={pageSize}
         next={nextFunction}
         prev={prevFunction}
-      />
+      />}
+
     </div>
   );
 };
