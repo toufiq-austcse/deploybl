@@ -1,19 +1,19 @@
+'use client';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { IoMdAdd } from 'react-icons/io';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { IoMdAdd } from 'react-icons/io';
 
 const CreateNewModal = () => {
   const router = useRouter();
   const form = useForm();
   return (
     <Dialog>
-      <DialogTrigger>
-        <Button variant="outline"><IoMdAdd className="m-2" />Create New</Button>
+      <DialogTrigger className="btn" asChild>
+        <Button variant="outline"> <IoMdAdd /> Create New</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

@@ -22,18 +22,6 @@ import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { NextPage } from 'next';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { DeploymentType } from '@/api/http/types/deployment_type';
-import { IoMdAdd } from 'react-icons/io';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from '@/components/ui/alert-dialog';
 import CreateNewModal from '@/components/ui/create-new-modal';
 
 
@@ -208,7 +196,6 @@ const HomePage: NextPage = () => {
   return (
 
     <div className="space-y-2">
-
       <div className="flex flex-row-reverse">
         <CreateNewModal />
       </div>

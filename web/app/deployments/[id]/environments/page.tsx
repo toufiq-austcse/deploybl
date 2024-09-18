@@ -29,7 +29,7 @@ const EnvironmentPage: NextPage = () => {
 
           {envs.map((value, index, array) => {
             return (
-              <div className="flex flex-row gap-2 justify-center m-2">
+              <div key={index} className="flex flex-row gap-2 justify-center m-2">
                 <div className="w-2/5">
                   <FormField
                     control={form.control}

@@ -1,13 +1,14 @@
 import { badgeVariants } from '@/components/ui/badge';
 import Link from 'next/link';
-import { FaCopy, FaGithub, FaRegCopy } from 'react-icons/fa';
+import { FaGithub, FaRegCopy } from 'react-icons/fa';
 import * as React from 'react';
+import { DeploymentDetailsType } from '@/api/http/types/deployment_type';
 
-const DeploymentDetails = () => {
+const DeploymentDetails = ({ deploymentDetails }: { deploymentDetails: DeploymentDetailsType }) => {
   return (
     <>
       <div className="flex gap-2">
-        <p className="text-3xl">Demo Service</p>
+        <p className="text-3xl">{deploymentDetails.title}</p>
         <div className={`${badgeVariants({ variant: 'secondary' })} capitalize`}>Live</div>
       </div>
       <Link href={''} className="flex gap-2">
@@ -16,7 +17,7 @@ const DeploymentDetails = () => {
         </div>
         <div className="flex flex-row gap-2">
           <p className="underline">toufiq-austcse/test</p>
-          <p className="underline">master</p>
+          <p className="underline">{deploymentDetails.branch_name}</p>
         </div>
       </Link>
 
