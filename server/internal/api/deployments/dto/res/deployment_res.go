@@ -19,7 +19,8 @@ type DeploymentRes struct {
 type DeploymentDetailsRes struct {
 	Id                 primitive.ObjectID `json:"_id"`
 	Title              string             `json:"title"`
-	SubDomainName      string             `json:"sub_domain_name"`
+	RepositoryName     string             `json:"repository_name"`
+	DomainUrl          *string            `json:"domain_url"`
 	LatestStatus       string             `json:"latest_status"`
 	LastDeployedAt     *time.Time         `json:"last_deployed_at"`
 	RepositoryProvider string             `json:"repository_provider"`
