@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/res"
@@ -48,11 +49,12 @@ func ToDeploymentRes(model *model.Deployment) res.DeploymentRes {
 		UpdatedAt:          model.UpdatedAt,
 	}
 }
-func ToDeploymentDetailsRes(model *model.Deployment) res.DeploymentDetailsRes {
-	return res.DeploymentDetailsRes{
+func ToDeploymentDetailsRes(model *model.Deployment, githubRes api_res.GithubRepoRes) res.DeploymentDetailsRes {
+	deploymentDetail := res.DeploymentDetailsRes{
 		Id:                 model.Id,
 		Title:              model.Title,
-		SubDomainName:      model.SubDomainName,
+		RepositoryName:     githubRes.FullName,
+		DomainUrl:          nil,
 		LatestStatus:       model.LatestStatus,
 		LastDeployedAt:     model.LastDeployedAt,
 		RepositoryProvider: model.RepositoryProvider,
@@ -65,6 +67,11 @@ func ToDeploymentDetailsRes(model *model.Deployment) res.DeploymentDetailsRes {
 		CreatedAt:          model.CreatedAt,
 		UpdatedAt:          model.UpdatedAt,
 	}
+	if model.LatestStatus == enums.LIVE {
+		domainUrl := GetDomainUrl(model.SubDomainName)
+		deploymentDetail.DomainUrl = &domainUrl
+	}
+	return deploymentDetail
 }
 
 func ToDeploymentListRes(deploymentModels []*model.Deployment) []res.DeploymentRes {
@@ -101,4 +108,7 @@ func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload, dockerImage
 		DockerImageTag: dockerImageTag,
 		Env:            payload.Env,
 	}
+}
+func GetDomainUrl(subDomainName string) string {
+	return "https://" + subDomainName + "." + config.AppConfig.BASE_DOMAIN
 }
