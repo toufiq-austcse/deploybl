@@ -13,9 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { MdDelete } from 'react-icons/md';
+import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 
 const EnvironmentPage: NextPage = () => {
-  const [envs, setEnvs] = useState([{}]);
+  const { deploymentDetails } = useDeploymentContext();
+  const [envs, setEnvs] = useState(deploymentDetails?.env);
+  console.log('envs ', envs);
   const form = useForm();
   return (
     <div>
@@ -26,50 +29,48 @@ const EnvironmentPage: NextPage = () => {
             <h1 className="w-2/5">Key</h1>
             <h1 className="w-2/5">Value</h1>
           </div>
-
-          {envs.map((value, index, array) => {
-            return (
-              <div key={index} className="flex flex-row gap-2 justify-center m-2">
-                <div className="w-2/5">
-                  <FormField
-                    control={form.control}
-                    name="key"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input placeholder="Name of variable" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="w-2/5">
-                  <FormField
-                    control={form.control}
-                    name="key"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input placeholder="Name of variable" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div>
-                  <MdDelete onClick={() => {
-                    envs.splice(index, 1);
-                    console.log('newEnvs ', envs);
-                    setEnvs(() => [...envs]);
-                  }} />
-                </div>
-
+          {envs && Object.keys(envs as any).map((key, index, array) => {
+            return <div key={index} className="flex flex-row gap-2 justify-center m-2">
+              <div className="w-2/5">
+                <FormField
+                  control={form.control}
+                  name="key"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} value={key} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            );
+
+              <div className="w-2/5">
+                <FormField
+                  control={form.control}
+                  name="key"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input  {...field} value={envs[key]} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div>
+                <MdDelete onClick={() => {
+                  envs.splice(index, 1);
+                  console.log('newEnvs ', envs);
+                  setEnvs(() => [...envs]);
+                }} />
+              </div>
+
+            </div>;
           })}
+
 
         </form>
       </Form>
