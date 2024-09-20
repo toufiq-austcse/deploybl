@@ -1,24 +1,24 @@
 'use client';
 import { NextPage } from 'next';
-import {
-  Form,
-  FormControl, FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MdDelete } from 'react-icons/md';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 
 const EnvironmentPage: NextPage = () => {
   const { deploymentDetails } = useDeploymentContext();
-  const [envs, setEnvs] = useState(deploymentDetails?.env);
-  console.log('envs ', envs);
+  const [envs, setEnvs] = useState<{ key: string, value: string }[]>([]);
+  useEffect(() => {
+    if (deploymentDetails) {
+      Object.keys(deploymentDetails.env).forEach((key) => {
+        setEnvs((prev) => [...prev, { key: key, value: deploymentDetails.env[key] }]);
+      });
+    }
+
+  }, []);
   const form = useForm();
   return (
     <div>
@@ -29,7 +29,8 @@ const EnvironmentPage: NextPage = () => {
             <h1 className="w-2/5">Key</h1>
             <h1 className="w-2/5">Value</h1>
           </div>
-          {envs && Object.keys(envs as any).map((key, index, array) => {
+          {envs && envs.map((env, index, array) => {
+            console.log('ev ', env);
             return <div key={index} className="flex flex-row gap-2 justify-center m-2">
               <div className="w-2/5">
                 <FormField
@@ -38,7 +39,7 @@ const EnvironmentPage: NextPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} value={key} />
+                        <Input {...field} value={env['key']} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -53,7 +54,7 @@ const EnvironmentPage: NextPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input  {...field} value={envs[key]} />
+                        <Input  {...field} value={envs['value']} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -86,7 +87,7 @@ const EnvironmentPage: NextPage = () => {
         </Button>
         <Button
           onClick={() => {
-            setEnvs(prev => [...prev, {}]);
+            setEnvs(prev => [...prev, { key: '', value: '' }]);
           }}
           size="sm"
           className="my-2"
