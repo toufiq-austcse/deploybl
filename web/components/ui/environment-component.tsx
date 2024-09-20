@@ -1,83 +1,64 @@
 'use client';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { MdDelete } from 'react-icons/md';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
-const EnvironmentComponent = () => {
-  const [envs, setEnvs] = useState([{}]);
-  const form = useForm();
+export interface EnvironmentVariableType {
+  key: string;
+  value: string;
+}
+
+const EnvironmentComponent = ({ envs = [], setEnvs }: { envs: EnvironmentVariableType[], setEnvs: Function }) => {
+  const handleKeyChange = (e: any, index: number) => {
+    setEnvs((prev: any) => {
+      prev[index].key = e.target.value;
+      return [...prev];
+    });
+  };
+
+  const handleValueChange = (e: any, index: number) => {
+    setEnvs((prev: any) => {
+      prev[index].value = e.target.value;
+      return [...prev];
+    });
+  };
+
 
   return (
     <div>
-      <Form {...form}>
-        <form id="login-form">
-          <div className="flex flex-row gap-2 justify-center m-2">
-            <h1 className="w-2/5">Key</h1>
-            <h1 className="w-2/5">Value</h1>
+      <div className="flex flex-row gap-2 justify-center m-2">
+        <h1 className="w-2/5">Key</h1>
+        <h1 className="w-2/5">Value</h1>
+      </div>
+
+      {envs.map((value, index, array) => {
+        return (
+          <div key={index} className="flex flex-row gap-2 justify-center m-2">
+            <div className="w-2/5">
+              <Input placeholder="Key of the varibale" value={envs[index].key}
+                     onChange={(e) => handleKeyChange(e, index)} />
+            </div>
+            <div className="w-2/5">
+              <Input placeholder="Value of the variable" value={envs[index].value}
+                     onChange={(e) => handleValueChange(e, index)} />
+            </div>
+
+            <div className="flex flex-col justify-center">
+              <MdDelete onClick={() => {
+                envs.splice(index, 1);
+                console.log('newEnvs ', envs);
+                setEnvs(() => [...envs]);
+              }} />
+            </div>
+
           </div>
-
-          {envs.map((value, index, array) => {
-            return (
-              <div key={index} className="flex flex-row gap-2 justify-center m-2">
-                <div className="w-2/5">
-                  <FormField
-                    control={form.control}
-                    name="key"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input placeholder="Name of variable" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="w-2/5">
-                  <FormField
-                    control={form.control}
-                    name="key"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input placeholder="Name of variable" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div>
-                  <MdDelete onClick={() => {
-                    envs.splice(index, 1);
-                    console.log('newEnvs ', envs);
-                    setEnvs(() => [...envs]);
-                  }} />
-                </div>
-
-              </div>
-            );
-          })}
-
-        </form>
-      </Form>
+        );
+      })}
       <div className="flex flex-row-reverse gap-2">
+
         <Button
           onClick={() => {
-            setEnvs(prev => [...prev, {}]);
-          }}
-          size="sm"
-          className="my-2"
-        >
-          Save, Redeploy
-        </Button>
-        <Button
-          onClick={() => {
-            setEnvs(prev => [...prev, {}]);
+            setEnvs((prev: any) => [...prev, {}]);
           }}
           size="sm"
           className="my-2"

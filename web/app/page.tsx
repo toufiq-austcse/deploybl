@@ -22,7 +22,8 @@ import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { NextPage } from 'next';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { DeploymentType } from '@/api/http/types/deployment_type';
-import CreateNewModal from '@/components/ui/create-new-modal';
+import { IoMdAdd } from 'react-icons/io';
+import { useRouter } from 'next/navigation';
 
 
 const columns: ColumnDef<DeploymentType>[] = [
@@ -147,6 +148,7 @@ const columns: ColumnDef<DeploymentType>[] = [
 ];
 
 const HomePage: NextPage = () => {
+  const router = useRouter();
   let pageSize = Number(process.env.NEXT_PUBLIC_VIDEO_LIST_PAGE_SIZE) || 4;
   let [pageIndex, setPageIndex] = React.useState(0);
   let [deploymentList, setDeploymentList] = React.useState<DeploymentType[]>([]);
@@ -197,7 +199,9 @@ const HomePage: NextPage = () => {
 
     <div className="space-y-2">
       <div className="flex flex-row-reverse">
-        <CreateNewModal />
+        <Button variant="outline" onClick={() => {
+          router.push('/deployments/new');
+        }}> <IoMdAdd /> Create New</Button>
       </div>
       {loading ? <div className="justify-center">Loading</div> : <AppTable<DeploymentType>
 

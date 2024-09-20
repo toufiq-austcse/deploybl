@@ -11,12 +11,12 @@ import { DeploymentDetailsType } from '@/api/http/types/deployment_type';
 
 const DeploymentDetailsLayout = ({ children, params }: { children: React.ReactNode, params: { id: string } }) => {
   const [deploymentDetails, setDeploymentDetails] = useState<DeploymentDetailsType>();
-  let { GetDeploymentDetails, loading } = useHttpClient();
+  let { getDeploymentDetails, loading } = useHttpClient();
 
   const deploymentId = params.id;
 
   useEffect(() => {
-    GetDeploymentDetails(deploymentId).then(data => {
+    getDeploymentDetails(deploymentId).then(data => {
       setDeploymentDetails(() => data);
       console.log('Loading ', loading);
     }).catch(err => {
