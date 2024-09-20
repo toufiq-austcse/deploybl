@@ -47,7 +47,7 @@ const NewDeploymentPage: NextPage = () => {
   const { loading, createDeployment, getRepoDetails } = useHttpClient();
   const [repoDetails, setRepoDetails] = useState<RepoDetailsType | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const [envs, setEnvs] = useState<EnvironmentVariableType[]>([{ key: '', value: '' }]);
+  const [envs, setEnvs] = useState<EnvironmentVariableType[]>([]);
 
   const validateRepositoryForm = useForm<z.infer<typeof validateRepositorySchema>>({
     resolver: zodResolver(validateRepositorySchema)
@@ -209,9 +209,11 @@ const NewDeploymentPage: NextPage = () => {
                   )} />
 
                 </div>
-                <label>Environment Variables</label>
-                <div className="border 2px">
-                  <EnvironmentComponent envs={envs} setEnvs={setEnvs} />
+                <div className="space-y-2">
+                  <label>Environment Variables</label>
+                  <div className="border 2px">
+                    <EnvironmentComponent envs={envs} setEnvs={setEnvs} />
+                  </div>
                 </div>
                 <div className="flex flex-row-reverse">
                   <Button

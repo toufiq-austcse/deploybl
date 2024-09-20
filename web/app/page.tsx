@@ -22,6 +22,8 @@ import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { NextPage } from 'next';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { DeploymentType } from '@/api/http/types/deployment_type';
+import CreateNewModal from '@/components/ui/create-new-modal';
+import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { IoMdAdd } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
 
@@ -66,40 +68,7 @@ const columns: ColumnDef<DeploymentType>[] = [
     header: 'Status',
     cell: ({ row }) => {
       let status: string = row.getValue('latest_status');
-      if (status === DEPLOYMENT_STATUS.FAILED) {
-
-        return (
-          <div
-            className={`${badgeVariants({ variant: 'destructive' })} capitalize`}
-          >
-            {status}
-          </div>
-        );
-      } else if (status === DEPLOYMENT_STATUS.PULLING) {
-        return (
-          <div
-            className={`${badgeVariants({ variant: 'default' })} capitalize`}
-          >
-            {status}
-          </div>
-        );
-      } else if (status === DEPLOYMENT_STATUS.BUILDING) {
-        return (
-          <div
-            className={`${badgeVariants({ variant: 'outline' })} capitalize`}
-          >
-            {status}
-          </div>
-        );
-      }
-
-      return (
-        <div
-          className={`${badgeVariants({ variant: 'secondary' })} capitalize`}
-        >
-          {status}
-        </div>
-      );
+      return <DeploymentStatusBadge status={status} />;
     }
   },
   {

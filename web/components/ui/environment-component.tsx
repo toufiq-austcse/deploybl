@@ -26,11 +26,11 @@ const EnvironmentComponent = ({ envs = [], setEnvs }: { envs: EnvironmentVariabl
 
   return (
     <div>
-      <div className="flex flex-row gap-2 justify-center m-2">
+
+      {envs.length > 0 && <div className="flex flex-row gap-2 justify-center m-2">
         <h1 className="w-2/5">Key</h1>
         <h1 className="w-2/5">Value</h1>
-      </div>
-
+      </div>}
       {envs.map((value, index, array) => {
         return (
           <div key={index} className="flex flex-row gap-2 justify-center m-2">
@@ -57,11 +57,12 @@ const EnvironmentComponent = ({ envs = [], setEnvs }: { envs: EnvironmentVariabl
       <div className="flex flex-row-reverse gap-2">
 
         <Button
-          onClick={() => {
+          onClick={(event) => {
+            event.preventDefault();
             setEnvs((prev: any) => [...prev, {}]);
           }}
           size="sm"
-          className="my-2"
+          className="m-2"
           variant="outline"
         >
           Add environment variable

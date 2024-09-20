@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, githubRes *api_res.GithubRepoRes, existingDeployment *model.Deployment) *model.Deployment {
+func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider string, githubRes *api_res.GithubRepoRes, existingDeployment *model.Deployment) *model.Deployment {
 	subDomainName := githubRes.Name
 	if existingDeployment != nil {
 		subDomainName += "-" + strconv.FormatInt(time.Now().UnixMilli(), 10)
@@ -25,7 +25,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, githubRes *ap
 		SubDomainName:      subDomainName,
 		LatestStatus:       enums.QUEUED,
 		LastDeployedAt:     nil,
-		RepositoryProvider: dto.RepositoryProvider,
+		RepositoryProvider: provider,
 		RepositoryUrl:      dto.RepositoryUrl,
 		GitUrl:             githubRes.CloneURL,
 		BranchName:         dto.BranchName,

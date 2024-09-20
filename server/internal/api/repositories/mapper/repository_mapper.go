@@ -7,9 +7,9 @@ import (
 
 func ToRepoDetailsRes(providerRes *api_res.GithubRepoRes) res.RepoDetailsRes {
 	return res.RepoDetailsRes{
-		GitUrl:        providerRes.GitURL,
+		SvnUrl:        providerRes.SvnURL,
 		DefaultBranch: providerRes.DefaultBranch,
-		FullName:      providerRes.FullName,
+		Name:          providerRes.Name,
 	}
 
 }
