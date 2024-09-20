@@ -14,6 +14,7 @@ const EnvironmentPage: NextPage = () => {
   useEffect(() => {
     if (deploymentDetails) {
       Object.keys(deploymentDetails.env).forEach((key) => {
+        // @ts-ignore
         setEnvs((prev) => [...prev, { key: key, value: deploymentDetails.env[key] }]);
       });
     }
@@ -39,7 +40,7 @@ const EnvironmentPage: NextPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} value={env['key']} />
+                        <Input {...field} value={env.key} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -54,7 +55,7 @@ const EnvironmentPage: NextPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input  {...field} value={envs['value']} />
+                        <Input  {...field} value={env.value} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -78,7 +79,7 @@ const EnvironmentPage: NextPage = () => {
       <div className="flex flex-row-reverse gap-2">
         <Button
           onClick={() => {
-            setEnvs(prev => [...prev, {}]);
+            setEnvs(prev => [...prev, { key: '', value: '' }]);
           }}
           size="sm"
           className="my-2"
