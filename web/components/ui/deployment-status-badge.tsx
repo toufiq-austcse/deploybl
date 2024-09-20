@@ -7,9 +7,16 @@ const DeploymentStatusBadge = ({ status }: { status: string }) => {
 
     return (
       <div
-        className={`${badgeVariants({ variant: 'destructive' })} capitalize`}
+        className={`${badgeVariants({ variant: 'destructive' })} capitalize gap-2`}
       >
-        {status}
+        <div>
+          {status}
+        </div>
+        <div className="flex flex-row">
+          <div className="h-1.5 w-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+          <div className="h-1.5 w-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+          <div className="h-1.5 w-1.5 bg-white rounded-full animate-bounce"></div>
+        </div>
       </div>
     );
   } else if (status === DEPLOYMENT_STATUS.PULLING) {
