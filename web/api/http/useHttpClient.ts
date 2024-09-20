@@ -72,6 +72,7 @@ export function useHttpClient() {
   };
 
   const createDeployment = async (body: {
+    title: string
     branch_name: string,
     docker_file_path: string,
     env: object,
@@ -90,7 +91,7 @@ export function useHttpClient() {
         error: null
       };
     } catch (err) {
-      return handleError(err).error;
+      return handleError(err);
     } finally {
       setLoading(false);
     }

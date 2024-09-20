@@ -135,7 +135,6 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 	fmt.Println("executing " + cmd.String())
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println("docker build err", err.Error())
 		return nil, err
 	}
 	fmt.Println(out.String())

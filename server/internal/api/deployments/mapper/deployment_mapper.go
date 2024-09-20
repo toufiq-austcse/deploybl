@@ -21,7 +21,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider stri
 
 	return &model.Deployment{
 		Id:                 primitive.NewObjectID(),
-		Title:              githubRes.Name,
+		Title:              dto.Title,
 		SubDomainName:      subDomainName,
 		LatestStatus:       enums.QUEUED,
 		LastDeployedAt:     nil,

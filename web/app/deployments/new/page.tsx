@@ -22,8 +22,10 @@ const validateRepositorySchema = z.object({
     })
 });
 const createDeploymentSchema = z.object({
-  name: z.string({
-    required_error: 'Name is required'
+  title: z.string({
+    required_error: 'Title is required'
+  }).min(1, {
+    message: 'title is required'
   }),
   repository_url: z.string({
     required_error: 'Repository URL is required'
@@ -35,10 +37,13 @@ const createDeploymentSchema = z.object({
   }),
   root_directory: z.string({
     required_error: 'Root directory is required'
+  }).min(1, {
+    message: 'Root directory is required'
   }),
   docker_file_path: z.string({
     required_error: 'Docker file path is required'
-
+  }).min(1, {
+    message: 'Docker file path is required'
   })
 });
 
@@ -57,10 +62,11 @@ const NewDeploymentPage: NextPage = () => {
   });
 
   const onRepoValidationFormSubmit = async (values: z.infer<typeof validateRepositorySchema>) => {
+    setError(null);
     let { data, error } = await getRepoDetails(values.repository_url);
     if (data) {
       setRepoDetails(data);
-      createDeploymentForm.setValue('name', data.name);
+      createDeploymentForm.setValue('title', data.name);
       createDeploymentForm.setValue('repository_url', data.svn_url);
       createDeploymentForm.setValue('branch_name', data.default_branch);
       createDeploymentForm.setValue('root_directory', '.');
@@ -79,8 +85,11 @@ const NewDeploymentPage: NextPage = () => {
     return obj;
   };
   const onCreateDeploymentFormSubmit = async (values: z.infer<typeof createDeploymentSchema>) => {
+    setError(null);
     let envObj = convertEnvToObj(envs);
+
     let { data, error } = await createDeployment({
+      title: values.title,
       branch_name: values.branch_name,
       docker_file_path: values.docker_file_path,
       env: envObj,
@@ -90,6 +99,7 @@ const NewDeploymentPage: NextPage = () => {
     if (data) {
       router.push(`/deployments/${data._id}/environments`);
     } else {
+      console.log('err ', error);
       setError(error);
     }
   };
@@ -135,6 +145,7 @@ const NewDeploymentPage: NextPage = () => {
 
         </div>}
         {repoDetails && <>
+          {error && <ErrorAlert error={error} />}
           <div className="flex flex-col space-y-2 ">
             <Form {...createDeploymentForm}>
               <form id="create-deployment-form"
@@ -142,9 +153,9 @@ const NewDeploymentPage: NextPage = () => {
                 <div className="flex flex-row gap-2 justify-between min-w-full">
                   <FormField control={
                     createDeploymentForm.control
-                  } name="name" render={({ field }) => (
+                  } name="title" render={({ field }) => (
                     <FormItem className="flex flex-row gap-2 w-full">
-                      <FormLabel className="w-1/3 flex flex-col justify-center">Name</FormLabel>
+                      <FormLabel className="w-1/3 flex flex-col justify-center">Title</FormLabel>
                       <FormControl className="w-2/3">
                         <Input  {...field} />
                       </FormControl>
@@ -217,6 +228,7 @@ const NewDeploymentPage: NextPage = () => {
                 </div>
                 <div className="flex flex-row-reverse">
                   <Button
+                    disabled={loading}
                     type="submit"
                     size="sm"
                     className="my-2"

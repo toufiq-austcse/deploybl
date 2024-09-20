@@ -35,11 +35,11 @@ const EnvironmentComponent = ({ envs = [], setEnvs }: { envs: EnvironmentVariabl
         return (
           <div key={index} className="flex flex-row gap-2 justify-center m-2">
             <div className="w-2/5">
-              <Input placeholder="Key of the varibale" value={envs[index].key}
+              <Input placeholder="Name of the varibale" value={envs[index].key}
                      onChange={(e) => handleKeyChange(e, index)} />
             </div>
             <div className="w-2/5">
-              <Input placeholder="Value of the variable" value={envs[index].value}
+              <Input placeholder="value" value={envs[index].value}
                      onChange={(e) => handleValueChange(e, index)} />
             </div>
 
