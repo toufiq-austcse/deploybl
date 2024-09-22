@@ -167,12 +167,21 @@ const HomePage: NextPage = () => {
   return (
 
     <div className="space-y-2">
-      <div className="flex flex-row-reverse">
-        <Button variant="outline" onClick={() => {
-          router.push('/deployments/new');
-        }}> <IoMdAdd /> Create New</Button>
+      <div className="flex flex-row-reverse gap-2">
+        <div className="flex flex-row">
+          <Button variant="outline" onClick={() => {
+            router.push('/deployments/new');
+          }}>
+            <div className="flex flex-row justify-between gap-2">
+              <div className="flex flex-col justify-center">
+                <IoMdAdd />
+              </div>
+              <div>Create New</div>
+            </div>
+          </Button>
+        </div>
       </div>
-      {loading ? <div className="justify-center">Loading</div> : <AppTable<DeploymentType>
+      {loading ? <div className="justify-end">Loading</div> : <AppTable<DeploymentType>
 
         totalPageCount={0}
         data={deploymentList}
