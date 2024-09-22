@@ -17,7 +17,7 @@ export const useDeploymentContext = () => {
 
 export const DeploymentContextProvider = ({ children, params }: DeploymentContextProviderProps) => {
   const [deploymentDetails, setDeploymentDetails] = React.useState<DeploymentDetailsType | null>(null);
-  const { loading, getDeploymentDetails } = useHttpClient();
+  const { loading, getDeploymentDetails, getDeploymentLatestStatus } = useHttpClient();
 
   useEffect(() => {
     getDeploymentDetails(params.id).then(data => {
@@ -25,6 +25,8 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
     }).catch(err => {
       console.log(err);
     });
+
+
   }, []);
 
   const value: DeploymentContextType = {

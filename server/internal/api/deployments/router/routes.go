@@ -11,5 +11,6 @@ func Setup(group *gin.RouterGroup, controller *controller.DeploymentController) 
 	//group.PUT(":id", controller.DeploymentUpdate())
 	group.PUT(":id/env", controller.EnvUpdate)
 	group.GET(":id", controller.DeploymentShow)
+	group.GET("latest-status", controller.DeploymentLatestStatus)
 
 }

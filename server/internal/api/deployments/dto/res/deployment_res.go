@@ -33,3 +33,9 @@ type DeploymentDetailsRes struct {
 	CreatedAt          time.Time          `json:"created_at"`
 	UpdatedAt          time.Time          `json:"updated_at"`
 }
+
+type DeploymentLatestStatusRes struct {
+	Id             primitive.ObjectID `json:"_id"`
+	LatestStatus   string             `json:"latest_status"`
+	LastDeployedAt *time.Time         `json:"last_deployed_at"`
+}

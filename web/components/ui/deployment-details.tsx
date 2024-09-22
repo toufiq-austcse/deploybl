@@ -4,10 +4,34 @@ import * as React from 'react';
 import moment from 'moment';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
+import { useEffect } from 'react';
+import { useHttpClient } from '@/api/http/useHttpClient';
 
 const DeploymentDetails = () => {
+  const { loading, getDeploymentLatestStatus } = useHttpClient();
   const { deploymentDetails } = useDeploymentContext();
   console.log('deploymentDetails ', deploymentDetails);
+
+  useEffect(() => {
+    if (deploymentDetails) {
+      const interval = setInterval(() => {
+        console.log('called');
+        getDeploymentLatestStatus([deploymentDetails?._id]).then(response => {
+          if (response.error) {
+            console.log(response.error);
+          } else {
+            if (response.data?.length > 0) {
+              deploymentDetails.latest_status = response.data[0].latest_status;
+              deploymentDetails.last_deployed_at = response.data[0].last_deployed_at;
+            }
+          }
+        });
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [deploymentDetails]);
+
   return (
     <>
       <div className="flex gap-2">

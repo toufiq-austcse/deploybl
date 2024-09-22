@@ -122,12 +122,19 @@ const HomePage: NextPage = () => {
   let [pageIndex, setPageIndex] = React.useState(0);
   let [deploymentList, setDeploymentList] = React.useState<DeploymentType[]>([]);
   let { listDeployments, loading } = useHttpClient();
+  const [isInitialLoadingDone, setIsInitialLoadingDone] = React.useState(false);
 
   useEffect(() => {
-    console.log('called');
-    listDeployments(1, 0).then(data => {
-      setDeploymentList(data);
-    }).catch(err => console.log('error in list ', err));
+    const interval = setInterval(() => {
+      listDeployments(1, 0).then(data => {
+        if (!isInitialLoadingDone) {
+          setIsInitialLoadingDone(true);
+        }
+        setDeploymentList(data);
+      }).catch(err => console.log('error in list ', err));
+    }, +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as any));
+    return () => clearInterval(interval);
+
   }, []);
 
   const nextFunction = () => {
@@ -181,7 +188,7 @@ const HomePage: NextPage = () => {
           </Button>
         </div>
       </div>
-      {loading ? <div className="justify-end">Loading</div> : <AppTable<DeploymentType>
+      {loading && !isInitialLoadingDone ? <div className="justify-end">Loading</div> : <AppTable<DeploymentType>
 
         totalPageCount={0}
         data={deploymentList}
