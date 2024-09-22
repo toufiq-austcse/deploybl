@@ -17,10 +17,10 @@ export const useDeploymentContext = () => {
 
 export const DeploymentContextProvider = ({ children, params }: DeploymentContextProviderProps) => {
   const [deploymentDetails, setDeploymentDetails] = React.useState<DeploymentDetailsType | null>(null);
-  const { loading, GetDeploymentDetails } = useHttpClient();
+  const { loading, getDeploymentDetails } = useHttpClient();
 
   useEffect(() => {
-    GetDeploymentDetails(params.id).then(data => {
+    getDeploymentDetails(params.id).then(data => {
       setDeploymentDetails(() => data);
     }).catch(err => {
       console.log(err);

@@ -25,3 +25,20 @@ export interface DeploymentDetailsType {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface RepoDetailsType {
+  svn_url: string;
+  default_branch: string;
+  name: string;
+}
+
+export interface CreateDeploymentApiRes {
+  _id: string;
+  title: string;
+  latest_status: string;
+  last_deployed_at: Date;
+  repository_provider: string;
+  branch_name: string;
+  created_at: Date;
+  updated_at: Date;
+}

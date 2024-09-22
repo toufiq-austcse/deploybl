@@ -88,6 +88,7 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 }
 
 func (service *DeploymentService) UpdateDeployment(deploymentId string, updates map[string]interface{}, ctx context.Context) (*model.Deployment, error) {
+	fmt.Println("updating ", deploymentId, updates)
 	oId, err := primitive.ObjectIDFromHex(deploymentId)
 	if err != nil {
 		return nil, err

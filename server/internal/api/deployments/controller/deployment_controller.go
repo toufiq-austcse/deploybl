@@ -89,7 +89,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 	}
 	existingDeployment := controller.deploymentService.FindBySubDomainName(&githubRes.Name, context)
 
-	newDeployment := mapper.MapCreateDeploymentReqToSave(body, githubRes, existingDeployment)
+	newDeployment := mapper.MapCreateDeploymentReqToSave(body, "github", githubRes, existingDeployment)
 	createErr := controller.deploymentService.Create(newDeployment, context)
 	if createErr != nil {
 		if mongo.IsDuplicateKeyError(createErr) {
