@@ -21,13 +21,15 @@ const DeploymentDetails = () => {
             console.log(response.error);
           } else {
             console.log(response);
+            // @ts-ignore
             if (response.data?.length > 0) {
               console.log('setting...');
-              setLatestDeploymentDetails((latestDeploymetnStatus) => {
+              setLatestDeploymentDetails((latestDeploymentStatus: any) => {
+                // @ts-ignore
                 return {
-                  ...latestDeploymetnStatus,
-                  latest_status: response.data[0].latest_status,
-                  last_deployed_at: response.data[0].last_deployed_at
+                  ...latestDeploymentStatus,
+                  latest_status: (response as any).data[0].latest_status,
+                  last_deployed_at: (response as any).data[0].last_deployed_at
                 };
               });
             }
@@ -59,7 +61,7 @@ const DeploymentDetails = () => {
       <div className="flex gap-2 justify-between">
         <div className="min-w-50">
           {deploymentDetails?.domain_url && <div className="flex flex-row gap-2 text-blue-500">
-            <Link href={''}>{latestDeploymentDetails.domain_url}</Link>
+            <Link href={''}>{latestDeploymentDetails?.domain_url}</Link>
             <div className="flex flex-col justify-center">
               <FaRegCopy />
             </div>
@@ -68,7 +70,7 @@ const DeploymentDetails = () => {
 
         <div className="flex flex-row-reverse min-w-50">
           {deploymentDetails?.last_deployed_at ?
-            <p>Last Deployed : {moment(latestDeploymentDetails.last_deployed_at).fromNow()}</p> :
+            <p>Last Deployed : {moment(latestDeploymentDetails?.last_deployed_at).fromNow()}</p> :
             <p>Not Deployed yet</p>}
         </div>
       </div>
