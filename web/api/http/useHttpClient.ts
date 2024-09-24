@@ -26,16 +26,21 @@ export function useHttpClient() {
     }
   };
 
-  const listDeployments = async (page: number, limit: number): Promise<DeploymentType[]> => {
+  const listDeployments = async (page: number, limit: number): Promise<{
+    data: DeploymentType[] | null;
+    error: string | null;
+  }> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments`;
 
       const response = await axios.get(url);
-      return response.data.data;
+      return {
+        data: response.data.data,
+        error: null
+      };
     } catch (err) {
-      let message = (err as any).message;
-      throw new Error(message);
+      return handleError(err);
     } finally {
       setLoading(false);
     }

@@ -14,7 +14,7 @@ const DeploymentDetails = () => {
   const [latestDeploymentDetails, setLatestDeploymentDetails] = React.useState(deploymentDetails);
   let interval: NodeJS.Timeout;
   useEffect(() => {
-    if (latestDeploymentDetails && latestDeploymentDetails.latest_status != DEPLOYMENT_STATUS.Live && latestDeploymentDetails.latest_status != DEPLOYMENT_STATUS.FAILED) {
+    if (latestDeploymentDetails && latestDeploymentDetails.latest_status != DEPLOYMENT_STATUS.LIVE && latestDeploymentDetails.latest_status != DEPLOYMENT_STATUS.FAILED) {
       interval = setInterval(() => {
         getDeploymentLatestStatus([latestDeploymentDetails?._id]).then(response => {
           if (response.error) {
@@ -33,10 +33,8 @@ const DeploymentDetails = () => {
             }
           }
         });
-      }, 3000);
+      }, +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string));
 
-      return () => clearInterval(interval);
-    } else {
       return () => clearInterval(interval);
     }
 
