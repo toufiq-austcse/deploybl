@@ -110,7 +110,10 @@ export function useHttpClient() {
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/latest-status?ids=${deploymentIds}`;
       const response = await axios.get(url);
-      return response.data.data;
+      return {
+        data: response.data.data,
+        error: null
+      };
     } catch (err) {
       return handleError(err);
     } finally {

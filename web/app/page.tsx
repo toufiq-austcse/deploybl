@@ -15,14 +15,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { badgeVariants } from '@/components/ui/badge';
 import Link from 'next/link';
 import AppTable from '@/components/ui/app-table';
-import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { NextPage } from 'next';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { DeploymentType } from '@/api/http/types/deployment_type';
-import CreateNewModal from '@/components/ui/create-new-modal';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { IoMdAdd } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
@@ -82,6 +79,10 @@ const columns: ColumnDef<DeploymentType>[] = [
     accessorKey: 'last_deployed_at',
     header: 'Last Deployed At',
     cell: ({ row }) => {
+      let lastDeployedAt = row.getValue('last_deployed_at');
+      if (!lastDeployedAt) {
+        return <div>Not Deployed Yet</div>;
+      }
       const date = new Date(row.getValue('last_deployed_at')).toDateString();
 
       return <div>{date}</div>;
