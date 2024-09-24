@@ -112,3 +112,16 @@ func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload, dockerImage
 func GetDomainUrl(subDomainName string) string {
 	return "https://" + subDomainName + "." + config.AppConfig.BASE_DOMAIN
 }
+func ToDeploymentLatestStatus(deployments []*model.Deployment) []res.DeploymentLatestStatusRes {
+	deploymentsLatestStatusRes := []res.DeploymentLatestStatusRes{}
+
+	for _, deployment := range deployments {
+		deploymentsLatestStatusRes = append(deploymentsLatestStatusRes, res.DeploymentLatestStatusRes{
+			Id:             deployment.Id,
+			LatestStatus:   deployment.LatestStatus,
+			LastDeployedAt: deployment.LastDeployedAt,
+		})
+	}
+	return deploymentsLatestStatusRes
+
+}

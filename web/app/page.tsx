@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 
@@ -15,17 +15,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { badgeVariants } from '@/components/ui/badge';
 import Link from 'next/link';
 import AppTable from '@/components/ui/app-table';
-import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { NextPage } from 'next';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { DeploymentType } from '@/api/http/types/deployment_type';
-import CreateNewModal from '@/components/ui/create-new-modal';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { IoMdAdd } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
+import { DEPLOYMENT_STATUS } from '@/lib/constant';
 
 
 const columns: ColumnDef<DeploymentType>[] = [
@@ -82,6 +80,10 @@ const columns: ColumnDef<DeploymentType>[] = [
     accessorKey: 'last_deployed_at',
     header: 'Last Deployed At',
     cell: ({ row }) => {
+      let lastDeployedAt = row.getValue('last_deployed_at');
+      if (!lastDeployedAt) {
+        return <div>Not Deployed Yet</div>;
+      }
       const date = new Date(row.getValue('last_deployed_at')).toDateString();
 
       return <div>{date}</div>;
@@ -119,16 +121,65 @@ const columns: ColumnDef<DeploymentType>[] = [
 const HomePage: NextPage = () => {
   const router = useRouter();
   let pageSize = Number(process.env.NEXT_PUBLIC_VIDEO_LIST_PAGE_SIZE) || 4;
-  let [pageIndex, setPageIndex] = React.useState(0);
-  let [deploymentList, setDeploymentList] = React.useState<DeploymentType[]>([]);
-  let { listDeployments, loading } = useHttpClient();
+  let [pageIndex, setPageIndex] = useState(0);
+  let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
+  let { listDeployments, getDeploymentLatestStatus, loading } = useHttpClient();
+  const [isInitialLoadingDone, setIsInitialLoadingDone] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
 
   useEffect(() => {
-    console.log('called');
-    listDeployments(1, 0).then(data => {
-      setDeploymentList(data);
-    }).catch(err => console.log('error in list ', err));
-  }, []);
+    if (deploymentList.length === 0 && !isInitialLoadingDone) {
+      listDeployments(0, pageSize).then(response => {
+        if (response.error) {
+          console.log(response.error);
+        } else {
+          setDeploymentList(response.data as DeploymentType[]);
+          setIsInitialLoadingDone(true);
+        }
+      });
+    }
+
+    if (deploymentList.length > 0) {
+      const newIntervalId = setInterval(() => {
+        updateLatestStatus(deploymentList);
+      }, +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string));
+      return () => clearInterval(newIntervalId);
+    }
+
+
+  }, [deploymentList]);
+
+  const updateLatestStatus = (deployments: DeploymentType[]) => {
+    let deploymentIds = deployments.filter(deployment => deployment.latest_status !== DEPLOYMENT_STATUS.LIVE && deployment.latest_status !== DEPLOYMENT_STATUS.FAILED).map((deployment) => deployment._id);
+    if (deploymentIds.length === 0) {
+      return;
+    }
+    getDeploymentLatestStatus(deploymentIds).then(response => {
+      if (response.error) {
+        console.log(response.error);
+      } else {
+        console.log(response);
+        if (response.data?.length > 0) {
+          console.log('setting...');
+          setDeploymentList((deployments) => {
+            return deployments.map((deployment) => {
+              let latestStatus = response.data.find((status) => status._id === deployment._id);
+              if (latestStatus) {
+                return {
+                  ...deployment,
+                  latest_status: latestStatus.latest_status,
+                  last_deployed_at: latestStatus.last_deployed_at
+                };
+              }
+              return deployment;
+            });
+          });
+        }
+      }
+    });
+
+
+  };
 
   const nextFunction = () => {
     console.log('next');
@@ -181,7 +232,7 @@ const HomePage: NextPage = () => {
           </Button>
         </div>
       </div>
-      {loading ? <div className="justify-end">Loading</div> : <AppTable<DeploymentType>
+      {loading && !isInitialLoadingDone ? <div className="justify-end">Loading</div> : <AppTable<DeploymentType>
 
         totalPageCount={0}
         data={deploymentList}

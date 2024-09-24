@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type DeploymentController struct {
@@ -213,4 +214,25 @@ func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 
 	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), mapper.ToDeploymentDetailsRes(deployment, *githubRes))
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
+}
+
+func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Context) {
+	idsQuery, ok := context.GetQuery("ids")
+	if !ok {
+		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "ids is required in query param", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	idsArray := strings.Split(idsQuery, ",")
+
+	deployments, err := controller.deploymentService.GetLatestStatusByIds(idsArray, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+
+	deploymentsLatestStatusRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), mapper.ToDeploymentLatestStatus(deployments))
+
+	context.JSON(deploymentsLatestStatusRes.Code, deploymentsLatestStatusRes)
 }

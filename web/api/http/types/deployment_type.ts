@@ -42,3 +42,9 @@ export interface CreateDeploymentApiRes {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface DeploymentLatestStatusType {
+  _id: string;
+  latest_status: string;
+  last_deployed_at: Date;
+}

@@ -68,6 +68,8 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 	if err != nil {
 		return deployments, nil, err
 	}
+	defer cursor.Close(ctx)
+
 	for cursor.Next(ctx) {
 		var deployment *model.Deployment
 		decodeErr := cursor.Decode(&deployment)
@@ -77,7 +79,6 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 		}
 		deployments = append(deployments, deployment)
 	}
-	cursor.Close(ctx)
 
 	return deployments, &api_response.Pagination{
 		Total:       totalDocs,
@@ -104,4 +105,43 @@ func (service *DeploymentService) UpdateDeployment(deploymentId string, updates 
 		return nil, errors.New("update error")
 	}
 	return service.FindById(deploymentId, ctx), err
+}
+
+func (service *DeploymentService) GetLatestStatusByIds(ids []string, ctx context.Context) ([]*model.Deployment, error) {
+	objectIds := []primitive.ObjectID{}
+	deployments := []*model.Deployment{}
+
+	for _, id := range ids {
+		oId, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return deployments, err
+		}
+		objectIds = append(objectIds, oId)
+	}
+	filter := bson.M{"_id": bson.M{"$in": objectIds}}
+	projection := bson.M{
+		"latest_status":    1,
+		"last_deployed_at": 1,
+		"_id":              1,
+	}
+	findOptions := options.Find().SetProjection(projection)
+
+	cursor, err := service.deploymentCollection.Find(ctx, filter, findOptions)
+	defer cursor.Close(ctx)
+	if err != nil {
+		return deployments, err
+	}
+
+	for cursor.Next(ctx) {
+		var deployment *model.Deployment
+		decodeErr := cursor.Decode(&deployment)
+		if decodeErr != nil {
+			return deployments, decodeErr
+
+		}
+		deployments = append(deployments, deployment)
+	}
+
+	return deployments, nil
+
 }
