@@ -159,10 +159,12 @@ const HomePage: NextPage = () => {
         console.log(response.error);
       } else {
         console.log(response);
+        // @ts-ignore
         if (response.data?.length > 0) {
           console.log('setting...');
           setDeploymentList((deployments) => {
             return deployments.map((deployment) => {
+              // @ts-ignore
               let latestStatus = response.data.find((status) => status._id === deployment._id);
               if (latestStatus) {
                 return {
