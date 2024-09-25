@@ -25,12 +25,13 @@ const DeploymentDetails = () => {
             // @ts-ignore
             if (response.data?.length > 0) {
               console.log('setting...');
-              setLatestDeploymentDetails((latestDeploymentStatus: any) => {
+              setLatestDeploymentDetails((prevState: any) => {
                 // @ts-ignore
                 return {
-                  ...latestDeploymentStatus,
+                  ...prevState,
                   latest_status: (response as any).data[0].latest_status,
-                  last_deployed_at: (response as any).data[0].last_deployed_at
+                  last_deployed_at: (response as any).data[0].last_deployed_at,
+                  domain_url: (response as any).data[0].domain_url
                 };
               });
             }
@@ -44,7 +45,7 @@ const DeploymentDetails = () => {
   }, [latestDeploymentDetails]);
 
   const onCopyUrlClicked = async () => {
-    let res = await navigator.clipboard.writeText(latestDeploymentDetails?.domain_url as string);
+    await navigator.clipboard.writeText(latestDeploymentDetails?.domain_url as string);
     toast('Copied to clipboard');
   };
 
@@ -66,7 +67,7 @@ const DeploymentDetails = () => {
 
       <div className="flex gap-2 justify-between">
         <div className="min-w-50">
-          {deploymentDetails?.domain_url && <div className="flex flex-row gap-2 text-blue-500">
+          {latestDeploymentDetails?.domain_url && <div className="flex flex-row gap-2 text-blue-500">
             <Link href={latestDeploymentDetails?.domain_url as string}
                   target="_blank">{latestDeploymentDetails?.domain_url}</Link>
             <div className="flex flex-col justify-center">
@@ -76,7 +77,7 @@ const DeploymentDetails = () => {
         </div>
 
         <div className="flex flex-row-reverse min-w-50">
-          {deploymentDetails?.last_deployed_at ?
+          {latestDeploymentDetails?.last_deployed_at ?
             <p>Last Deployed : {moment(latestDeploymentDetails?.last_deployed_at).fromNow()}</p> :
             <p>Not Deployed yet</p>}
         </div>

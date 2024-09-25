@@ -38,4 +38,5 @@ type DeploymentLatestStatusRes struct {
 	Id             primitive.ObjectID `json:"_id"`
 	LatestStatus   string             `json:"latest_status"`
 	LastDeployedAt *time.Time         `json:"last_deployed_at"`
+	DomainUrl      *string            `json:"domain_url"`
 }

@@ -116,10 +116,16 @@ func ToDeploymentLatestStatus(deployments []*model.Deployment) []res.DeploymentL
 	deploymentsLatestStatusRes := []res.DeploymentLatestStatusRes{}
 
 	for _, deployment := range deployments {
+		var deploymentDomainUrl *string = nil
+		if deployment.LatestStatus == enums.LIVE {
+			domainUrl := GetDomainUrl(deployment.SubDomainName)
+			deploymentDomainUrl = &domainUrl
+		}
 		deploymentsLatestStatusRes = append(deploymentsLatestStatusRes, res.DeploymentLatestStatusRes{
 			Id:             deployment.Id,
 			LatestStatus:   deployment.LatestStatus,
 			LastDeployedAt: deployment.LastDeployedAt,
+			DomainUrl:      deploymentDomainUrl,
 		})
 	}
 	return deploymentsLatestStatusRes

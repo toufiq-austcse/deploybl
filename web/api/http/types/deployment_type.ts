@@ -47,4 +47,5 @@ export interface DeploymentLatestStatusType {
   _id: string;
   latest_status: string;
   last_deployed_at: Date;
+  domain_url: string;
 }

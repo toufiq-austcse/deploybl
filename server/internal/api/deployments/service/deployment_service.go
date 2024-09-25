@@ -123,6 +123,7 @@ func (service *DeploymentService) GetLatestStatusByIds(ids []string, ctx context
 		"latest_status":    1,
 		"last_deployed_at": 1,
 		"_id":              1,
+		"sub_domain_name":  1,
 	}
 	findOptions := options.Find().SetProjection(projection)
 
