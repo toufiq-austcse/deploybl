@@ -7,6 +7,7 @@ import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 import { useEffect } from 'react';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { DEPLOYMENT_STATUS } from '@/lib/constant';
+import { toast } from 'sonner';
 
 const DeploymentDetails = () => {
   const { loading, getDeploymentLatestStatus } = useHttpClient();
@@ -42,6 +43,11 @@ const DeploymentDetails = () => {
 
   }, [latestDeploymentDetails]);
 
+  const onCopyUrlClicked = async () => {
+    let res = await navigator.clipboard.writeText(latestDeploymentDetails?.domain_url as string);
+    toast('Copied to clipboard');
+  };
+
   return (
     <>
       <div className="flex gap-2">
@@ -61,9 +67,10 @@ const DeploymentDetails = () => {
       <div className="flex gap-2 justify-between">
         <div className="min-w-50">
           {deploymentDetails?.domain_url && <div className="flex flex-row gap-2 text-blue-500">
-            <Link href={''}>{latestDeploymentDetails?.domain_url}</Link>
+            <Link href={latestDeploymentDetails?.domain_url as string}
+                  target="_blank">{latestDeploymentDetails?.domain_url}</Link>
             <div className="flex flex-col justify-center">
-              <FaRegCopy />
+              <FaRegCopy className="cursor-pointer" onClick={onCopyUrlClicked} />
             </div>
           </div>}
         </div>

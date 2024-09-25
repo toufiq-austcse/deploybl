@@ -2,6 +2,7 @@
 import '@/styles/globals.css';
 import Navbar from '@/components/ui/navbar';
 import * as React from 'react';
+import { Toaster } from '@/components/ui/sonner';
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -12,6 +13,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="m-4 max-w-full px-5 sm:px-6 lg:px-20">
         {children}
       </div>
+      <Toaster />
     </div>
     </body>
     </html>
