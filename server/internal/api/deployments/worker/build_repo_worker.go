@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -117,25 +118,27 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 	}
 	dockerImageTag := payload.DeploymentId
 	host := payload.SubDomainName + "." + deployItConfig.AppConfig.BASE_DOMAIN
-	hostRule := fmt.Sprintf("HOST(`%s`)", host)
+	hostRule := fmt.Sprintf("HOST('%s')", host)
 	labels := map[string]string{
 		"traefik.enable": "true",
 		fmt.Sprintf("traefik.http.routers.%s.rule", payload.DeploymentId): hostRule,
 	}
 	args := []string{
-		"build", dockerFilePath, "-t", dockerImageTag,
+		"build", "-f", dockerFilePath, localDir, "-t", dockerImageTag,
 	}
 	for k, v := range labels {
 		args = append(args, "--label", fmt.Sprintf("%s=%s", k, v))
 	}
 	cmd := exec.Command("docker", args...)
 	var out bytes.Buffer
+	var stdErr bytes.Buffer
 	cmd.Stdout = &out
+	cmd.Stderr = &stdErr
 
 	fmt.Println("executing " + cmd.String())
 	err := cmd.Run()
 	if err != nil {
-		return nil, err
+		return nil, errors.New(stdErr.String())
 	}
 	fmt.Println(out.String())
 	return &dockerImageTag, nil
