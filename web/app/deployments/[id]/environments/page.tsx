@@ -10,6 +10,7 @@ import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 
 const EnvironmentPage: NextPage = () => {
   const { deploymentDetails } = useDeploymentContext();
+<<<<<<< Updated upstream
   const [envs, setEnvs] = useState<{ key: string, value: string }[]>([]);
   useEffect(() => {
     if (deploymentDetails) {
@@ -20,6 +21,10 @@ const EnvironmentPage: NextPage = () => {
     }
 
   }, []);
+=======
+  const [envs, setEnvs] = useState(deploymentDetails?.env);
+  console.log('envs ', envs);
+>>>>>>> Stashed changes
   const form = useForm();
   return (
     <div>
@@ -30,8 +35,12 @@ const EnvironmentPage: NextPage = () => {
             <h1 className="w-2/5">Key</h1>
             <h1 className="w-2/5">Value</h1>
           </div>
+<<<<<<< Updated upstream
           {envs && envs.map((env, index, array) => {
             console.log('ev ', env);
+=======
+          {envs && Object.keys(envs as any).map((key, index, array) => {
+>>>>>>> Stashed changes
             return <div key={index} className="flex flex-row gap-2 justify-center m-2">
               <div className="w-2/5">
                 <FormField
@@ -40,7 +49,11 @@ const EnvironmentPage: NextPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
+<<<<<<< Updated upstream
                         <Input {...field} value={env.key} />
+=======
+                        <Input {...field} value={key} />
+>>>>>>> Stashed changes
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -55,7 +68,11 @@ const EnvironmentPage: NextPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
+<<<<<<< Updated upstream
                         <Input  {...field} value={env.value} />
+=======
+                        <Input  {...field} value={envs[key]} />
+>>>>>>> Stashed changes
                       </FormControl>
                       <FormMessage />
                     </FormItem>

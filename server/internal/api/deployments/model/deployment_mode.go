@@ -20,6 +20,7 @@ type Deployment struct {
 	RepositoryUrl      string             `bson:"repository_url"`
 	GitUrl             string             `bson:"git_url"`
 	BranchName         string             `bson:"branch_name"`
+	RootDirectory      *string            `bson:"root_directory"`
 	DockerFilePath     string             `bson:"docker_file_path"`
 	DockerImageTag     *string            `bson:"docker_image_tag"`
 	ContainerId        *string            `bson:"container_id"`

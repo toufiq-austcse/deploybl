@@ -20,10 +20,15 @@ import AppTable from '@/components/ui/app-table';
 import { NextPage } from 'next';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { DeploymentType } from '@/api/http/types/deployment_type';
+<<<<<<< Updated upstream
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { IoMdAdd } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
 import { DEPLOYMENT_STATUS } from '@/lib/constant';
+=======
+import CreateNewModal from '@/components/ui/create-new-modal';
+import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
+>>>>>>> Stashed changes
 
 
 const columns: ColumnDef<DeploymentType>[] = [

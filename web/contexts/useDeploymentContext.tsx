@@ -17,16 +17,26 @@ export const useDeploymentContext = () => {
 
 export const DeploymentContextProvider = ({ children, params }: DeploymentContextProviderProps) => {
   const [deploymentDetails, setDeploymentDetails] = React.useState<DeploymentDetailsType | null>(null);
+<<<<<<< Updated upstream
   const { loading, getDeploymentDetails, getDeploymentLatestStatus } = useHttpClient();
 
   useEffect(() => {
     getDeploymentDetails(params.id).then(data => {
+=======
+  const { loading, GetDeploymentDetails } = useHttpClient();
+
+  useEffect(() => {
+    GetDeploymentDetails(params.id).then(data => {
+>>>>>>> Stashed changes
       setDeploymentDetails(() => data);
     }).catch(err => {
       console.log(err);
     });
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
   }, []);
 
   const value: DeploymentContextType = {

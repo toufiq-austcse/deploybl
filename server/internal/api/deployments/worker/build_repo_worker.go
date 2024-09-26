@@ -111,11 +111,9 @@ func (worker *BuildRepoWorker) PublishBuildRepoJob(workerPayload payloads.BuildR
 }
 
 func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload) (*string, error) {
-	localDir := utils.GetLocalRepoPath(payload.DeploymentId)
-	dockerFilePath := localDir
-	if payload.DockerFilePath != "." {
-		dockerFilePath += "/" + payload.DockerFilePath
-	}
+	dockerBuildContextPath := utils.GetDockerBuildContextPath(payload)
+	dockerFilePath := worker.GetDockerFilePath(payload, dockerBuildContextPath)
+
 	dockerImageTag := payload.DeploymentId
 	host := payload.SubDomainName + "." + deployItConfig.AppConfig.BASE_DOMAIN
 	hostRule := fmt.Sprintf("HOST(`%s`)", host)
@@ -124,7 +122,7 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 		fmt.Sprintf("traefik.http.routers.%s.rule", payload.DeploymentId): hostRule,
 	}
 	args := []string{
-		"build", "-f", dockerFilePath, localDir, "-t", dockerImageTag,
+		"build", "-f", dockerFilePath, dockerBuildContextPath, "-t", dockerImageTag,
 	}
 	for k, v := range labels {
 		args = append(args, "--label", fmt.Sprintf("%s=%s", k, v))
@@ -142,6 +140,11 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 	}
 	fmt.Println(out.String())
 	return &dockerImageTag, nil
+}
+
+func (worker *BuildRepoWorker) GetDockerFilePath(payload payloads.BuildRepoWorkerPayload, localRepoDir string) string {
+	return localRepoDir + "/" + payload.DockerFilePath
+
 }
 
 func (worker *BuildRepoWorker) PublishRunRepoWork(buildRepoWorkerPayload payloads.BuildRepoWorkerPayload, dockerImageTag string) error {
