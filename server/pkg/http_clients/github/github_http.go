@@ -21,7 +21,8 @@ func NewGithubHttpClient() *GithubHttpClient {
 			New().
 			SetBaseURL(config.AppConfig.GITHUB_API_BASE_URL).
 			R().
-			SetHeader("Content-Type", "application/json"),
+			SetHeader("Content-Type", "application/json").
+			SetHeader("Authorization", "Bearer "+config.AppConfig.GITHUB_API_TOKEN),
 	}
 }
 
