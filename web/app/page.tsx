@@ -19,7 +19,7 @@ import Link from 'next/link';
 import AppTable from '@/components/ui/app-table';
 import { NextPage } from 'next';
 import { useHttpClient } from '@/api/http/useHttpClient';
-import { DeploymentType } from '@/api/http/types/deployment_type';
+import { DeploymentType, PaginationType } from '@/api/http/types/deployment_type';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { IoMdAdd } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
@@ -120,21 +120,22 @@ const columns: ColumnDef<DeploymentType>[] = [
 
 const HomePage: NextPage = () => {
   const router = useRouter();
-  let pageSize = Number(process.env.NEXT_PUBLIC_VIDEO_LIST_PAGE_SIZE) || 4;
-  let [pageIndex, setPageIndex] = useState(0);
+  let pageSize = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_LIST_PAGE_SIZE) || 10;
+  let [pageIndex, setPageIndex] = useState(1);
+  let [pagination, setPagination] = useState<PaginationType>();
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
   let { listDeployments, getDeploymentLatestStatus } = useHttpClient();
   let [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (deploymentList.length === 0) {
-      listDeployments(0, pageSize).then(response => {
+      listDeployments(pageIndex, pageSize).then(response => {
         if (response.error) {
           console.log(response.error);
         } else {
           setDeploymentList(response.data as DeploymentType[]);
+          setPagination(response.pagination as PaginationType);
         }
-      //  setIsInitialLoadingDone(true);
         setLoading(false);
       });
     }
@@ -184,37 +185,37 @@ const HomePage: NextPage = () => {
   };
 
   const nextFunction = () => {
-    console.log('next');
-    // fetchMore({
-    //   variables: {
-    //     first: pageSize,
-    //     after: data.ListAsset.page_info.next_cursor,
-    //   },
-    //   updateQuery: (prev, { fetchMoreResult }) => {
-    //     setPageIndex((prev) => prev + 1);
-    //     if (!fetchMoreResult) {
-    //       return prev;
-    //     }
-    //     return fetchMoreResult;
-    //   },
-    // });
+    console.log('next ', pageIndex, pagination?.last_page);
+    if (pageIndex === pagination?.last_page) {
+      return;
+    }
+
+    listDeployments(pageIndex + 1, pageSize).then(response => {
+      if (response.error) {
+        console.log(response.error);
+      } else {
+        setPageIndex((prev) => prev + 1);
+        setDeploymentList(response.data as DeploymentType[]);
+        setPagination(response.pagination as PaginationType);
+      }
+    });
+
   };
 
   const prevFunction = () => {
     console.log('prev');
-    // fetchMore({
-    //   variables: {
-    //     first: pageSize,
-    //     before: data.ListAsset.page_info.prev_cursor,
-    //   },
-    //   updateQuery: (prev, { fetchMoreResult }) => {
-    //     setPageIndex((prev) => prev - 1);
-    //     if (!fetchMoreResult) {
-    //       return prev;
-    //     }
-    //     return fetchMoreResult;
-    //   },
-    // });
+    if (pageIndex === 1) {
+      return;
+    }
+    listDeployments(pageIndex - 1, pageSize).then(response => {
+      if (response.error) {
+        console.log(response.error);
+      } else {
+        setPageIndex((prev) => prev - 1);
+        setDeploymentList(response.data as DeploymentType[]);
+        setPagination(response.pagination as PaginationType);
+      }
+    });
   };
 
   return (
@@ -236,7 +237,7 @@ const HomePage: NextPage = () => {
       </div>
       {loading ? <div className="justify-end">Loading...</div> : <AppTable<DeploymentType>
 
-        totalPageCount={0}
+        totalPageCount={pagination?.last_page as number}
         data={deploymentList}
         columns={columns}
         pageIndex={pageIndex}
