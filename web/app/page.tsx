@@ -124,7 +124,6 @@ const HomePage: NextPage = () => {
   let [pageIndex, setPageIndex] = useState(0);
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
   let { listDeployments, getDeploymentLatestStatus } = useHttpClient();
- // let [isInitialLoadingDone, setIsInitialLoadingDone] = useState(false);
   let [loading, setLoading] = useState(true);
 
   useEffect(() => {
