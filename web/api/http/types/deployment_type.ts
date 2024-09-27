@@ -49,3 +49,10 @@ export interface DeploymentLatestStatusType {
   last_deployed_at: Date;
   domain_url: string;
 }
+
+export interface PaginationType {
+  total: number;
+  current_page: number;
+  last_page: number;
+  per_page: number;
+}

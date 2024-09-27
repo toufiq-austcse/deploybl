@@ -42,6 +42,9 @@ func (controller *DeploymentController) DeploymentIndex() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		page, _ := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
 		limit, _ := strconv.ParseInt(context.DefaultQuery("limit", "10"), 10, 64)
+		if page < 1 {
+			page = 1
+		}
 
 		deployments, pagination, err := controller.deploymentService.ListDeployment(page, limit, context)
 		if err != nil {

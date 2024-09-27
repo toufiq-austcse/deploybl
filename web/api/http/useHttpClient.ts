@@ -4,7 +4,7 @@ import FormData from 'form-data';
 import {
   DeploymentDetailsType,
   DeploymentLatestStatusType,
-  DeploymentType,
+  DeploymentType, PaginationType,
   RepoDetailsType
 } from '@/api/http/types/deployment_type';
 
@@ -28,15 +28,17 @@ export function useHttpClient() {
 
   const listDeployments = async (page: number, limit: number): Promise<{
     data: DeploymentType[] | null;
+    pagination: PaginationType | null,
     error: string | null;
   }> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments?page=${page}&limit=${limit}`;
 
       const response = await axios.get(url);
       return {
         data: response.data.data,
+        pagination: response.data.pagination,
         error: null
       };
     } catch (err) {
@@ -55,10 +57,10 @@ export function useHttpClient() {
       } else {
         error = (err as AxiosError).message;
       }
-      return { data: null, error };
+      return { data: null, pagination: null, error };
     }
     let message = (err as any).message;
-    return { data: null, error: message };
+    return { data: null, pagination: null, error: message };
   };
 
   const getRepoDetails = async (repoUrl: string): Promise<{

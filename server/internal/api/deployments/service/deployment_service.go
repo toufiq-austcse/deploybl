@@ -58,10 +58,10 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 	if err != nil {
 		return deployments, nil, err
 	}
-	lastPage := int64(float64(totalDocs) / float64(totalDocs))
+	lastPage := int64(float64(totalDocs) / float64(limit))
 
 	findOptions := options.Find()
-	skip := int64(page*limit - limit)
+	skip := page*limit - limit
 	findOptions.SetSort(bson.M{"created_at": -1}).SetLimit(limit).SetSkip(skip)
 
 	cursor, err := service.deploymentCollection.Find(ctx, bson.D{}, findOptions)
