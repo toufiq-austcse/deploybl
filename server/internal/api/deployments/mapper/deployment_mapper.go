@@ -38,6 +38,24 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider stri
 		UpdatedAt:          time.Now(),
 	}
 }
+func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto, existingDeployment model.Deployment) map[string]interface{} {
+	updateFields := map[string]interface{}{}
+
+	if dto.Title != nil {
+		updateFields["title"] = *dto.Title
+	}
+	if dto.BranchName != nil {
+		updateFields["branch_name"] = *dto.BranchName
+	}
+	if dto.RootDir != nil {
+		updateFields["root_dir"] = *dto.RootDir
+	}
+	if dto.DockerFilePath != nil {
+		updateFields["docker_file_path"] = *dto.DockerFilePath
+	}
+	return updateFields
+}
+
 func ToDeploymentRes(model *model.Deployment) res.DeploymentRes {
 	return res.DeploymentRes{
 		Id:                 model.Id,

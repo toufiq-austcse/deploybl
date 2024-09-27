@@ -6,19 +6,33 @@ definitions:
       docker_file_path:
         type: string
       env:
-        additionalProperties: true
+        additionalProperties:
+          type: string
         type: object
-      repository_provider:
-        enum:
-        - github
-        type: string
       repository_url:
         type: string
       root_dir:
         type: string
+      title:
+        type: string
     required:
-    - repository_provider
+    - branch_name
     - repository_url
+    - title
+    type: object
+  req.UpdateDeploymentReqDto:
+    properties:
+      branch_name:
+        type: string
+      docker_file_path:
+        type: string
+      root_dir:
+        type: string
+      title:
+        type: string
+    required:
+    - branch_name
+    - title
     type: object
 info:
   contact: {}
@@ -74,24 +88,6 @@ paths:
       summary: Create Deployment
       tags:
       - Deployments
-  /deployments/:id:
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Deployment ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Update Deployment
-      tags:
-      - Deployments
   /deployments/:id/env:
     put:
       consumes:
@@ -126,6 +122,29 @@ paths:
         "200":
           description: OK
       summary: Show Deployment
+      tags:
+      - Deployments
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Update Deployment Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateDeploymentReqDto'
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Update Deployment
       tags:
       - Deployments
   /repositories:

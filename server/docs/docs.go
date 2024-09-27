@@ -95,34 +95,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments/:id": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployments"
-                ],
-                "summary": "Update Deployment",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Deployment ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
         "/deployments/:id/env": {
             "put": {
                 "consumes": [
@@ -177,6 +149,41 @@ const docTemplate = `{
                         "description": "OK"
                     }
                 }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployments"
+                ],
+                "summary": "Update Deployment",
+                "parameters": [
+                    {
+                        "description": "Update Deployment Body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/req.UpdateDeploymentReqDto"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
             }
         },
         "/repositories": {
@@ -212,8 +219,9 @@ const docTemplate = `{
         "req.CreateDeploymentReqDto": {
             "type": "object",
             "required": [
-                "repository_provider",
-                "repository_url"
+                "branch_name",
+                "repository_url",
+                "title"
             ],
             "properties": {
                 "branch_name": {
@@ -224,18 +232,38 @@ const docTemplate = `{
                 },
                 "env": {
                     "type": "object",
-                    "additionalProperties": true
-                },
-                "repository_provider": {
-                    "type": "string",
-                    "enum": [
-                        "github"
-                    ]
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "repository_url": {
                     "type": "string"
                 },
                 "root_dir": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "req.UpdateDeploymentReqDto": {
+            "type": "object",
+            "required": [
+                "branch_name",
+                "title"
+            ],
+            "properties": {
+                "branch_name": {
+                    "type": "string"
+                },
+                "docker_file_path": {
+                    "type": "string"
+                },
+                "root_dir": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }

@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
@@ -38,26 +37,24 @@ func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deployme
 // @Produce  json
 // @Success  200
 // @Router   /deployments [get]
-func (controller *DeploymentController) DeploymentIndex() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		page, _ := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
-		limit, _ := strconv.ParseInt(context.DefaultQuery("limit", "10"), 10, 64)
-		if page < 1 {
-			page = 1
-		}
-
-		deployments, pagination, err := controller.deploymentService.ListDeployment(page, limit, context)
-		if err != nil {
-			errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
-			context.AbortWithStatusJSON(errRes.Code, errRes)
-			return
-		}
-
-		deploymentListRes := mapper.ToDeploymentListRes(deployments)
-		apiRes := api_response.BuildPaginationResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentListRes, pagination)
-
-		context.JSON(apiRes.Code, apiRes)
+func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
+	page, _ := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
+	limit, _ := strconv.ParseInt(context.DefaultQuery("limit", "10"), 10, 64)
+	if page < 1 {
+		page = 1
 	}
+
+	deployments, pagination, err := controller.deploymentService.ListDeployment(page, limit, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+
+	deploymentListRes := mapper.ToDeploymentListRes(deployments)
+	apiRes := api_response.BuildPaginationResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentListRes, pagination)
+
+	context.JSON(apiRes.Code, apiRes)
 }
 
 // DeploymentCreate
@@ -113,18 +110,41 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 
 // DeploymentUpdate
 // @Summary  Update Deployment
-// @Tags     Deployments
+// @Param    request  body  req.UpdateDeploymentReqDto  true  "Update Deployment Body"
 // @Param    id  path  string  true  "Deployment ID"
+// @Tags     Deployments
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/:id [put]
-func DeploymentUpdate() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"message": config.AppConfig.APP_NAME + " is Running",
-		})
+// @Router   /deployments/{id} [put]
+func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
+	deploymentId := context.Param("id")
+	body := &req.UpdateDeploymentReqDto{}
+
+	if err := body.Validate(context); err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, "Bad Request", err.Error(), nil)
+		context.AbortWithStatusJSON(http.StatusBadRequest, errRes)
+		return
 	}
+
+	deployment := controller.deploymentService.FindById(deploymentId, context)
+	if deployment == nil {
+		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	updateFields := mapper.MapUpdateDeploymentReqToUpdate(body, *deployment)
+	updatedDeployment, err := controller.deploymentService.UpdateDeployment(deploymentId, updateFields, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	if service.ShouldRedeploy(updateFields) {
+		controller.worker.PublishPullRepoWork(updatedDeployment)
+	}
+	context.JSON(http.StatusOK, updatedDeployment)
+
 }
 
 // EnvUpdate
