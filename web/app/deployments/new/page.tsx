@@ -35,7 +35,7 @@ const createDeploymentSchema = z.object({
   branch_name: z.string({
     required_error: 'Branch name is required'
   }),
-  root_directory: z.null().optional().default(null),
+  root_directory: z.string().optional().default(''),
   docker_file_path: z.string({
     required_error: 'Docker file path is required'
   }).min(1, {
@@ -89,7 +89,7 @@ const NewDeploymentPage: NextPage = () => {
       docker_file_path: values.docker_file_path,
       env: envObj,
       repository_url: values.repository_url,
-      root_dir: values.root_directory
+      root_dir: values.root_directory === '' ? null : values.root_directory
     });
     if (data) {
       router.push(`/deployments/${data._id}/environments`);
