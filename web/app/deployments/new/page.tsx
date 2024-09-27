@@ -35,11 +35,7 @@ const createDeploymentSchema = z.object({
   branch_name: z.string({
     required_error: 'Branch name is required'
   }),
-  root_directory: z.string({
-    required_error: 'Root directory is required'
-  }).min(1, {
-    message: 'Root directory is required'
-  }),
+  root_directory: z.null().optional().default(null),
   docker_file_path: z.string({
     required_error: 'Docker file path is required'
   }).min(1, {
@@ -69,7 +65,6 @@ const NewDeploymentPage: NextPage = () => {
       createDeploymentForm.setValue('title', data.name);
       createDeploymentForm.setValue('repository_url', data.svn_url);
       createDeploymentForm.setValue('branch_name', data.default_branch);
-      createDeploymentForm.setValue('root_directory', '.');
       createDeploymentForm.setValue('docker_file_path', 'Dockerfile');
 
     } else {
@@ -108,7 +103,7 @@ const NewDeploymentPage: NextPage = () => {
   return (
     <div className="flex flex-col space-y-2">
       <div>
-        <p className="text-2xl">Creating a new deployment</p>
+        <p className="text-2xl">Creating new deployment</p>
       </div>
 
       <div>
@@ -156,10 +151,12 @@ const NewDeploymentPage: NextPage = () => {
                   } name="title" render={({ field }) => (
                     <FormItem className="flex flex-row gap-2 w-full">
                       <FormLabel className="w-1/3 flex flex-col justify-center">Title</FormLabel>
-                      <FormControl className="w-2/3">
-                        <Input  {...field} />
-                      </FormControl>
-                      <FormMessage />
+                      <div className="flex flex-col w-full">
+                        <FormControl>
+                          <Input  {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )} />
 
@@ -170,10 +167,12 @@ const NewDeploymentPage: NextPage = () => {
                   } name="repository_url" render={({ field }) => (
                     <FormItem className="flex flex-row gap-2 w-full">
                       <FormLabel className="w-1/3 flex flex-col justify-center">Repository URL</FormLabel>
-                      <FormControl className="w-2/3">
-                        <Input  {...field} readOnly={true} />
-                      </FormControl>
-                      <FormMessage />
+                      <div className="flex flex-col w-full">
+                        <FormControl>
+                          <Input  {...field} readOnly={true} />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )} />
 
@@ -184,10 +183,12 @@ const NewDeploymentPage: NextPage = () => {
                   } name="branch_name" render={({ field }) => (
                     <FormItem className="flex flex-row gap-2 w-full">
                       <FormLabel className="w-1/3 flex flex-col justify-center">Branch Name</FormLabel>
-                      <FormControl className="w-2/3">
-                        <Input  {...field} />
-                      </FormControl>
-                      <FormMessage />
+                      <div className="flex flex-col w-full">
+                        <FormControl>
+                          <Input  {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )} />
 
@@ -198,10 +199,12 @@ const NewDeploymentPage: NextPage = () => {
                   } name="root_directory" render={({ field }) => (
                     <FormItem className="flex flex-row gap-2 w-full">
                       <FormLabel className="w-1/3 flex flex-col justify-center">Root Directory</FormLabel>
-                      <FormControl className="w-2/3">
-                        <Input  {...field} />
-                      </FormControl>
-                      <FormMessage />
+                      <div className="flex flex-col w-full">
+                        <FormControl>
+                          <Input  {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )} />
 
@@ -212,10 +215,12 @@ const NewDeploymentPage: NextPage = () => {
                   } name="docker_file_path" render={({ field }) => (
                     <FormItem className="flex flex-row gap-2 w-full">
                       <FormLabel className="w-1/3 flex flex-col justify-center">Docker File Path</FormLabel>
-                      <FormControl className="w-2/3">
-                        <Input  {...field} />
-                      </FormControl>
-                      <FormMessage />
+                      <div className="flexf flex-col w-full">
+                        <FormControl>
+                          <Input  {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )} />
 
@@ -233,7 +238,7 @@ const NewDeploymentPage: NextPage = () => {
                     size="sm"
                     className="my-2"
                   >
-                    Save, Redeploy
+                    Deploy
                   </Button>
                 </div>
 

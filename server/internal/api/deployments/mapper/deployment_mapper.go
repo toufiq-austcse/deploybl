@@ -29,6 +29,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider stri
 		RepositoryUrl:      dto.RepositoryUrl,
 		GitUrl:             githubRes.CloneURL,
 		BranchName:         dto.BranchName,
+		RootDirectory:      dto.RootDir,
 		DockerFilePath:     *dto.DockerFilePath,
 		DockerImageTag:     nil,
 		ContainerId:        nil,
@@ -89,6 +90,7 @@ func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWork
 		BranchName:     deployment.BranchName,
 		SubDomainName:  deployment.SubDomainName,
 		GitUrl:         deployment.GitUrl,
+		RootDir:        deployment.RootDirectory,
 		DockerFilePath: deployment.DockerFilePath,
 		Env:            deployment.Env,
 	}
