@@ -123,9 +123,9 @@ const HomePage: NextPage = () => {
   let pageSize = Number(process.env.NEXT_PUBLIC_VIDEO_LIST_PAGE_SIZE) || 4;
   let [pageIndex, setPageIndex] = useState(0);
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
-  let { listDeployments, getDeploymentLatestStatus, loading } = useHttpClient();
-  const [isInitialLoadingDone, setIsInitialLoadingDone] = useState(false);
-  const [intervalId, setIntervalId] = useState(null);
+  let { listDeployments, getDeploymentLatestStatus } = useHttpClient();
+  let [isInitialLoadingDone, setIsInitialLoadingDone] = useState(false);
+  let [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (deploymentList.length === 0 && !isInitialLoadingDone) {
@@ -134,8 +134,9 @@ const HomePage: NextPage = () => {
           console.log(response.error);
         } else {
           setDeploymentList(response.data as DeploymentType[]);
-          setIsInitialLoadingDone(true);
         }
+        setIsInitialLoadingDone(true);
+        setLoading(false);
       });
     }
 
@@ -234,7 +235,7 @@ const HomePage: NextPage = () => {
           </Button>
         </div>
       </div>
-      {loading && !isInitialLoadingDone ? <div className="justify-end">Loading</div> : <AppTable<DeploymentType>
+      {loading ? <div className="justify-end">Loading...</div> : <AppTable<DeploymentType>
 
         totalPageCount={0}
         data={deploymentList}
