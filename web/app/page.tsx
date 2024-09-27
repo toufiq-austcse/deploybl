@@ -124,18 +124,18 @@ const HomePage: NextPage = () => {
   let [pageIndex, setPageIndex] = useState(0);
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
   let { listDeployments, getDeploymentLatestStatus } = useHttpClient();
-  let [isInitialLoadingDone, setIsInitialLoadingDone] = useState(false);
+ // let [isInitialLoadingDone, setIsInitialLoadingDone] = useState(false);
   let [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (deploymentList.length === 0 && !isInitialLoadingDone) {
+    if (deploymentList.length === 0) {
       listDeployments(0, pageSize).then(response => {
         if (response.error) {
           console.log(response.error);
         } else {
           setDeploymentList(response.data as DeploymentType[]);
         }
-        setIsInitialLoadingDone(true);
+      //  setIsInitialLoadingDone(true);
         setLoading(false);
       });
     }
