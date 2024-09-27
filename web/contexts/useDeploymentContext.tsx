@@ -17,7 +17,7 @@ export const useDeploymentContext = () => {
 
 export const DeploymentContextProvider = ({ children, params }: DeploymentContextProviderProps) => {
   const [deploymentDetails, setDeploymentDetails] = React.useState<DeploymentDetailsType | null>(null);
-  const { loading, getDeploymentDetails, getDeploymentLatestStatus } = useHttpClient();
+  const { loading, getDeploymentDetails } = useHttpClient();
 
   useEffect(() => {
     getDeploymentDetails(params.id).then(data => {
@@ -34,7 +34,7 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
   };
   return (
     <DeploymentContext.Provider value={value}>
-      {!loading && children}
+      {loading? <div>Loading...</div>: children}
     </DeploymentContext.Provider>
   );
 };

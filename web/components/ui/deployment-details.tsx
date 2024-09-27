@@ -50,7 +50,8 @@ const DeploymentDetails = () => {
   };
 
   return (
-    <>
+    deploymentDetails &&
+    <div>
       <div className="flex gap-2">
         <p className="text-3xl">{latestDeploymentDetails?.title}</p>
         <DeploymentStatusBadge status={latestDeploymentDetails?.latest_status as any} />
@@ -83,7 +84,7 @@ const DeploymentDetails = () => {
         </div>
       </div>
 
-    </>
+    </div>
   );
 };
 export default DeploymentDetails;
