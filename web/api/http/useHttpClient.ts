@@ -87,7 +87,7 @@ export function useHttpClient() {
     docker_file_path: string,
     env: object,
     repository_url: string,
-    root_dir: string
+    root_dir: string | null
   }): Promise<{
     data: DeploymentType | null;
     error: string | null;
