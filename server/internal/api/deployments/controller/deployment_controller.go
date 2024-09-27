@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
@@ -17,6 +18,7 @@ import (
 type DeploymentController struct {
 	githubHttpClient  *github.GithubHttpClient
 	deploymentService *service.DeploymentService
+	dockerService     *service.DockerService
 	worker            *worker.PullRepoWorker
 }
 
@@ -141,6 +143,21 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		return
 	}
 	if service.ShouldRedeploy(updateFields) {
+		if deployment.ContainerId != nil {
+			fmt.Println("removing old container ", *deployment.ContainerId)
+			removeErr := controller.dockerService.RemoveContainer(*deployment.ContainerId)
+			if removeErr != nil {
+				fmt.Println("error while removing container ", removeErr.Error())
+			}
+			_, updateErr := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
+				"container_id": nil,
+			}, context)
+
+			if updateErr != nil {
+				fmt.Println("error while updating container ", updateErr.Error())
+			}
+
+		}
 		controller.worker.PublishPullRepoWork(updatedDeployment)
 	}
 	context.JSON(http.StatusOK, updatedDeployment)

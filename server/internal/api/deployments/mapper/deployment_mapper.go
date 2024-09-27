@@ -119,6 +119,7 @@ func ToBuildRepoWorkerPayload(payload payloads.PullRepoWorkerPayload) payloads.B
 		DeploymentId:   payload.DeploymentId,
 		SubDomainName:  payload.SubDomainName,
 		DockerFilePath: payload.DockerFilePath,
+		BranchName:     payload.BranchName,
 		Env:            payload.Env,
 	}
 }
