@@ -16,7 +16,7 @@ const DeploymentStatusBadge = ({ status }: { status: string }) => {
 
       </div>
     );
-  } else if (status === DEPLOYMENT_STATUS.PULLING) {
+  } else if (status === DEPLOYMENT_STATUS.PULLING || status === DEPLOYMENT_STATUS.BUILDING || status === DEPLOYMENT_STATUS.QUEUED) {
     return (
       <div
         className={`${badgeVariants({ variant: 'default' })} capitalize gap-2`}
@@ -25,17 +25,6 @@ const DeploymentStatusBadge = ({ status }: { status: string }) => {
           {status}
         </div>
         <Loading className="bg-accent" />
-      </div>
-    );
-  } else if (status === DEPLOYMENT_STATUS.BUILDING) {
-    return (
-      <div
-        className={`${badgeVariants({ variant: 'default' })} capitalize gap-2`}
-      >
-        <div>
-          {status}
-        </div>
-        <Loading className="bg-white" />
       </div>
     );
   }
