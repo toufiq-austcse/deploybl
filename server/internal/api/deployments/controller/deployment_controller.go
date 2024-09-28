@@ -160,25 +160,27 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	if updatedDeployment.LatestStatus == enums.QUEUED {
-		if deployment.ContainerId != nil {
-			fmt.Println("removing old container ", *deployment.ContainerId)
-			containerId, removeErr := controller.dockerService.RemoveContainer(*deployment.ContainerId)
-			if removeErr != nil {
-				fmt.Println("error while removing container ", removeErr.Error())
-			}
-			fmt.Println("container removed ", containerId)
-			_, updateErr := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
-				"container_id": nil,
-			}, context)
+	go func() {
+		if updatedDeployment.LatestStatus == enums.QUEUED {
+			if deployment.ContainerId != nil {
+				fmt.Println("removing old container ", *deployment.ContainerId)
+				removeErr := controller.dockerService.RemoveContainer(*deployment.ContainerId)
+				if removeErr != nil {
+					fmt.Println("error while removing container ", removeErr.Error())
+				}
+				fmt.Println("container removed ", deployment.ContainerId)
+				_, updateErr := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
+					"container_id": nil,
+				}, context)
 
-			if updateErr != nil {
-				fmt.Println("error while updating container ", updateErr.Error())
-			}
+				if updateErr != nil {
+					fmt.Println("error while updating container ", updateErr.Error())
+				}
 
+			}
+			controller.worker.PublishPullRepoWork(updatedDeployment)
 		}
-		controller.worker.PublishPullRepoWork(updatedDeployment)
-	}
+	}()
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment, *githubRes)
 	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
