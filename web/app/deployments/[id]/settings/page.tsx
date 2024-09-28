@@ -45,7 +45,7 @@ const SettingsPage: NextPage = () => {
 
   useEffect(() => {
     validateGeneralUpdateForm.setValue('title', deploymentDetails?.title);
-    validateBuildAndDeployForm.setValue('root_directory', deploymentDetails?.root_directory);
+    validateBuildAndDeployForm.setValue('root_directory', deploymentDetails?.root_directory == null ? '' : deploymentDetails?.root_directory);
     validateBuildAndDeployForm.setValue('branch_name', deploymentDetails?.branch_name);
     validateBuildAndDeployForm.setValue('docker_file_path', deploymentDetails?.docker_file_path);
   }, [latestDeploymentDetails]);

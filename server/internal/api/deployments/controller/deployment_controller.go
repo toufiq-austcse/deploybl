@@ -163,10 +163,11 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	if updatedDeployment.LatestStatus == enums.QUEUED {
 		if deployment.ContainerId != nil {
 			fmt.Println("removing old container ", *deployment.ContainerId)
-			removeErr := controller.dockerService.RemoveContainer(*deployment.ContainerId)
+			containerId, removeErr := controller.dockerService.RemoveContainer(*deployment.ContainerId)
 			if removeErr != nil {
 				fmt.Println("error while removing container ", removeErr.Error())
 			}
+			fmt.Println("container removed ", containerId)
 			_, updateErr := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
 				"container_id": nil,
 			}, context)
