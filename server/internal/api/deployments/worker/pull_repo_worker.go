@@ -16,6 +16,7 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
 	"github.com/toufiq-austcse/deployit/pkg/utils"
+	"os"
 	"os/exec"
 )
 
@@ -69,6 +70,16 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(messages <-chan *message.Me
 			continue
 		}
 		localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId, consumedPayload.BranchName)
+		if removeErr := os.RemoveAll(localRepoDir); removeErr != nil {
+			_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+				"latest_status": enums.FAILED,
+			}, context.Background())
+			if updateErr != nil {
+				fmt.Println("error while updating status... ", updateErr.Error())
+			}
+			msg.Ack()
+			continue
+		}
 		cloneError := worker.CloneRepo(consumedPayload.GitUrl, consumedPayload.BranchName, localRepoDir)
 		if cloneError != nil {
 			fmt.Println("Cloning error ", cloneError.Error())

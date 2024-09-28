@@ -14,8 +14,8 @@ func NewDockerService() *DockerService {
 	return &DockerService{}
 }
 
-func (dockerService *DockerService) RemoveContainer(containerId string) error {
-	cmd := exec.Command("docker", "rm", "-f", containerId)
+func (dockerService *DockerService) RemoveContainer(containerId string) (*string, error) {
+	cmd := exec.Command("docker", "stop", containerId)
 	var out bytes.Buffer
 	var err bytes.Buffer
 
@@ -25,9 +25,16 @@ func (dockerService *DockerService) RemoveContainer(containerId string) error {
 	fmt.Println("executing " + cmd.String())
 	runErr := cmd.Run()
 	if runErr != nil {
-		return errors.New(err.String())
+		return nil, errors.New(err.String())
 	}
-	return nil
+	output, combinedOutputErr := cmd.CombinedOutput()
+	if combinedOutputErr != nil {
+		fmt.Printf("Error: %s\n", err)
+		fmt.Printf("Output: %s\n", string(output))
+		return nil, combinedOutputErr
+	}
+	ouputContainerid := string(output)
+	return &ouputContainerid, nil
 }
 
 func (dockerService *DockerService) RunContainer(imageTag string, env *map[string]string) (*string, error) {
