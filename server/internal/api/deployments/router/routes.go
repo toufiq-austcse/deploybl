@@ -6,9 +6,9 @@ import (
 )
 
 func Setup(group *gin.RouterGroup, controller *controller.DeploymentController) {
-	group.GET("", controller.DeploymentIndex())
+	group.GET("", controller.DeploymentIndex)
 	group.POST("", controller.DeploymentCreate)
-	//group.PUT(":id", controller.DeploymentUpdate())
+	group.PATCH(":id", controller.DeploymentUpdate)
 	group.PUT(":id/env", controller.EnvUpdate)
 	group.GET(":id", controller.DeploymentShow)
 	group.GET("latest-status", controller.DeploymentLatestStatus)

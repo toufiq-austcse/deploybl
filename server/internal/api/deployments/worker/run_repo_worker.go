@@ -12,13 +12,13 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
-	"os/exec"
 	"time"
 )
 
 type RunRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
+	dockerService     *service.DockerService
 }
 
 func NewRunRepoWorker(deploymentService *service.DeploymentService) *RunRepoWorker {
@@ -54,7 +54,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(messages <-chan *message.Mess
 			continue
 		}
 		fmt.Println("consumed run job ", consumedPayload)
-		containerId, runErr := worker.RunRepo(consumedPayload)
+		containerId, runErr := worker.dockerService.RunContainer(consumedPayload.DockerImageTag, consumedPayload.Env)
 		if runErr != nil {
 			fmt.Println("run err error ", runErr.Error())
 			_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
@@ -97,36 +97,4 @@ func (worker *RunRepoWorker) PublishRunRepoJob(runRepoPayload payloads.RunRepoWo
 		return err
 	}
 	return publisher.Close()
-}
-
-func (worker *RunRepoWorker) RunRepo(payload payloads.RunRepoWorkerPayload) (*string, error) {
-	port := "4000"
-
-	args := []string{"run", "--network", deployItConfig.AppConfig.TRAEFIK_NETWORK_NAME}
-	for k, v := range *payload.Env {
-		if k == "PORT" {
-			continue
-		}
-		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
-	}
-
-	args = append(args, "-e", fmt.Sprintf("PORT=%s", port), "-p", fmt.Sprintf(":%s", port), "-d", payload.DockerImageTag)
-
-	// Construct the command
-	cmd := exec.Command(
-		"docker", args...,
-	)
-	fmt.Println("executing ", cmd.String())
-
-	output, err := cmd.CombinedOutput()
-
-	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		fmt.Printf("Output: %s\n", string(output))
-		return nil, err
-	}
-
-	containerId := string(output)
-	fmt.Printf("Container ID: %s\n", string(output))
-	return &containerId, nil
 }

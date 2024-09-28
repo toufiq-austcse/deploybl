@@ -14,12 +14,13 @@ import (
 
 type DeploymentService struct {
 	deploymentCollection *mongo.Collection
+	dockerService        *DockerService
 }
 
-func NewDeploymentService(database *mongo.Database) *DeploymentService {
+func NewDeploymentService(database *mongo.Database, dockerService *DockerService) *DeploymentService {
 	collection := database.Collection("deployments")
 	model.CreateDeploymentIndex(collection)
-	return &DeploymentService{deploymentCollection: collection}
+	return &DeploymentService{deploymentCollection: collection, dockerService: dockerService}
 }
 
 func (service *DeploymentService) Create(model *model.Deployment, ctx context.Context) error {

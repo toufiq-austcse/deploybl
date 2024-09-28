@@ -5,7 +5,7 @@ import {
   DeploymentDetailsType,
   DeploymentLatestStatusType,
   DeploymentType, PaginationType,
-  RepoDetailsType
+  RepoDetailsType, UpdateDeploymentReqBody
 } from '@/api/http/types/deployment_type';
 
 export function useHttpClient() {
@@ -128,6 +128,26 @@ export function useHttpClient() {
     }
   };
 
+  const updateDeployment = async (deploymentId: string, body: UpdateDeploymentReqBody): Promise<{
+    data: DeploymentDetailsType | null;
+    error: string | null;
+  }> => {
+    setLoading(true);
+    try {
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}`;
+      const response = await axios.patch(url, body);
+      return {
+        data: response.data.data,
+        error: null
+      };
+    } catch (err) {
+      return handleError(err);
+    } finally {
+      setLoading(false);
+    }
+
+  };
+
 
   return {
     getDeploymentDetails,
@@ -135,6 +155,7 @@ export function useHttpClient() {
     getRepoDetails,
     createDeployment,
     getDeploymentLatestStatus,
+    updateDeployment,
     loading
   };
 };

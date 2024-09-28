@@ -19,6 +19,7 @@ func NewDiContainer() (*dig.Container, error) {
 		mongodb.New,
 		github.NewGithubHttpClient,
 		service.NewDeploymentService,
+		service.NewDockerService,
 		controller.NewDeploymentController,
 		repoController.NewRepoController,
 		worker.NewPullRepoWorker,

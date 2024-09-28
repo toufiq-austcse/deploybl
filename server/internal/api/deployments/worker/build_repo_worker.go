@@ -111,7 +111,7 @@ func (worker *BuildRepoWorker) PublishBuildRepoJob(workerPayload payloads.BuildR
 }
 
 func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload) (*string, error) {
-	localDir := utils.GetLocalRepoPath(payload.DeploymentId)
+	localDir := utils.GetLocalRepoPath(payload.DeploymentId, payload.BranchName)
 	dockerFilePath := localDir
 	if payload.DockerFilePath != "." {
 		dockerFilePath += "/" + payload.DockerFilePath

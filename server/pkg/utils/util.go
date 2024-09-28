@@ -13,7 +13,7 @@ func GetDockerBuildContextPath(payload payloads.BuildRepoWorkerPayload) string {
 
 }
 
-func GetLocalRepoPath(DeploymentId string) string {
-	return deployItConfig.AppConfig.REPOSITORIES_PATH + "/" + DeploymentId
+func GetLocalRepoPath(DeploymentId string, branchName string) string {
+	return deployItConfig.AppConfig.REPOSITORIES_PATH + "/" + DeploymentId + "-" + branchName
 
 }

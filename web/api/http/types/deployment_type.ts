@@ -20,6 +20,7 @@ export interface DeploymentDetailsType {
   repository_provider: string;
   repository_url: string;
   branch_name: string;
+  root_directory: string;
   docker_file_path: string;
   env: object;
   created_at: Date;
@@ -55,4 +56,11 @@ export interface PaginationType {
   current_page: number;
   last_page: number;
   per_page: number;
+}
+
+export interface UpdateDeploymentReqBody {
+  title?: string;
+  branch_name?: string;
+  docker_file_path?: string;
+  root_dir?: string | null;
 }

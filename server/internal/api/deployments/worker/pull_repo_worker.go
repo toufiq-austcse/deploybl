@@ -68,8 +68,8 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(messages <-chan *message.Me
 			msg.Ack()
 			continue
 		}
-		localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId)
-		cloneError := worker.CloneRepo(consumedPayload.GitUrl, localRepoDir)
+		localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId, consumedPayload.BranchName)
+		cloneError := worker.CloneRepo(consumedPayload.GitUrl, consumedPayload.BranchName, localRepoDir)
 		if cloneError != nil {
 			fmt.Println("Cloning error ", cloneError.Error())
 			_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
@@ -120,8 +120,8 @@ func (worker *PullRepoWorker) PublishPullRepoJob(workerPayload payloads.PullRepo
 	return publisher.Close()
 }
 
-func (worker *PullRepoWorker) CloneRepo(gitUrl, path string) error {
-	cmd := exec.Command("git", "clone", gitUrl, path)
+func (worker *PullRepoWorker) CloneRepo(gitUrl, branch, path string) error {
+	cmd := exec.Command("git", "clone", "-b", branch, gitUrl, path)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
