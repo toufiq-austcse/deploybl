@@ -147,12 +147,3 @@ func (service *DeploymentService) GetLatestStatusByIds(ids []string, ctx context
 	return deployments, nil
 
 }
-
-func ShouldRedeploy(updatedFieldMap map[string]interface{}) bool {
-	for k := range updatedFieldMap {
-		if k == "branch_name" || k == "root_dir" || k == "docker_file_path" {
-			return true
-		}
-	}
-	return false
-}

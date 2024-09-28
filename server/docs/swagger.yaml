@@ -30,9 +30,6 @@ definitions:
         type: string
       title:
         type: string
-    required:
-    - branch_name
-    - title
     type: object
 info:
   contact: {}
@@ -124,7 +121,7 @@ paths:
       summary: Show Deployment
       tags:
       - Deployments
-    put:
+    patch:
       consumes:
       - application/json
       parameters:

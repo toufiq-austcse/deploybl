@@ -139,7 +139,7 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "consumes": [
                     "application/json"
                 ],
@@ -238,10 +238,6 @@
         },
         "req.UpdateDeploymentReqDto": {
             "type": "object",
-            "required": [
-                "branch_name",
-                "title"
-            ],
             "properties": {
                 "branch_name": {
                     "type": "string"

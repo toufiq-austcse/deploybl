@@ -38,7 +38,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider stri
 		UpdatedAt:          time.Now(),
 	}
 }
-func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto, existingDeployment model.Deployment) map[string]interface{} {
+func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto) map[string]interface{} {
 	updateFields := map[string]interface{}{}
 
 	if dto.Title != nil {
@@ -52,6 +52,10 @@ func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto, existingDep
 	}
 	if dto.DockerFilePath != nil {
 		updateFields["docker_file_path"] = *dto.DockerFilePath
+	}
+	if ShouldRedeploy(updateFields) {
+		updateFields["latest_status"] = enums.QUEUED
+		updateFields["last_deployed_at"] = nil
 	}
 	return updateFields
 }
@@ -79,6 +83,7 @@ func ToDeploymentDetailsRes(model *model.Deployment, githubRes api_res.GithubRep
 		RepositoryProvider: model.RepositoryProvider,
 		RepositoryUrl:      model.RepositoryUrl,
 		BranchName:         model.BranchName,
+		RootDirectory:      model.RootDirectory,
 		DockerFilePath:     model.DockerFilePath,
 		DockerImageTag:     model.DockerImageTag,
 		ContainerId:        model.ContainerId,
@@ -150,5 +155,13 @@ func ToDeploymentLatestStatus(deployments []*model.Deployment) []res.DeploymentL
 		})
 	}
 	return deploymentsLatestStatusRes
+}
 
+func ShouldRedeploy(updatedFieldMap map[string]interface{}) bool {
+	for k := range updatedFieldMap {
+		if k == "branch_name" || k == "root_dir" || k == "docker_file_path" {
+			return true
+		}
+	}
+	return false
 }

@@ -150,7 +150,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "consumes": [
                     "application/json"
                 ],
@@ -249,10 +249,6 @@ const docTemplate = `{
         },
         "req.UpdateDeploymentReqDto": {
             "type": "object",
-            "required": [
-                "branch_name",
-                "title"
-            ],
             "properties": {
                 "branch_name": {
                     "type": "string"

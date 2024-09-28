@@ -26,6 +26,7 @@ type DeploymentDetailsRes struct {
 	RepositoryProvider string             `json:"repository_provider"`
 	RepositoryUrl      string             `json:"repository_url"`
 	BranchName         string             `json:"branch_name"`
+	RootDirectory      *string            `json:"root_directory"`
 	DockerFilePath     string             `json:"docker_file_path"`
 	DockerImageTag     *string            `json:"docker_image_tag"`
 	ContainerId        *string            `json:"container_id"`

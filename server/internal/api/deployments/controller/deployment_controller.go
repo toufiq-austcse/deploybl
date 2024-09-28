@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
@@ -118,7 +119,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/{id} [put]
+// @Router   /deployments/{id} [patch]
 func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	deploymentId := context.Param("id")
 	body := &req.UpdateDeploymentReqDto{}
@@ -135,14 +136,31 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	updateFields := mapper.MapUpdateDeploymentReqToUpdate(body, *deployment)
+	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&deployment.RepositoryUrl)
+	if err != nil {
+		if code == http.StatusNotFound {
+			errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "invalid repository", nil)
+			context.AbortWithStatusJSON(errRes.Code, errRes)
+			return
+		}
+		errRes := api_response.BuildErrorResponse(code, http.StatusText(code), "", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	if githubRes == nil {
+		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "invalid repository", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+
+	updateFields := mapper.MapUpdateDeploymentReqToUpdate(body)
 	updatedDeployment, err := controller.deploymentService.UpdateDeployment(deploymentId, updateFields, context)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	if service.ShouldRedeploy(updateFields) {
+	if updatedDeployment.LatestStatus == enums.QUEUED {
 		if deployment.ContainerId != nil {
 			fmt.Println("removing old container ", *deployment.ContainerId)
 			removeErr := controller.dockerService.RemoveContainer(*deployment.ContainerId)
@@ -160,7 +178,10 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		}
 		controller.worker.PublishPullRepoWork(updatedDeployment)
 	}
-	context.JSON(http.StatusOK, updatedDeployment)
+
+	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment, *githubRes)
+	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 
 }
 
