@@ -1,7 +1,8 @@
 'use client';
-import { MdDelete } from 'react-icons/md';
+import { MdAdd, MdDelete } from 'react-icons/md';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { IoMdAdd } from 'react-icons/io';
 
 export interface EnvironmentVariableType {
   key: string;
@@ -25,20 +26,20 @@ const EnvironmentComponent = ({ envs = [], setEnvs }: { envs: EnvironmentVariabl
 
 
   return (
-    <div>
+    <div className="m-2">
 
-      {envs.length > 0 && <div className="flex flex-row gap-2 justify-center m-2">
-        <h1 className="w-2/5">Key</h1>
-        <h1 className="w-2/5">Value</h1>
+      {envs.length > 0 && <div className="flex flex-row m-2">
+        <h1 className="w-1/2">Key</h1>
+        <h1 className="w-1/2">Value</h1>
       </div>}
       {envs.map((value, index, array) => {
         return (
-          <div key={index} className="flex flex-row gap-2 justify-center m-2">
-            <div className="w-2/5">
+          <div key={index} className="flex flex-row m-2 gap-4">
+            <div className="w-1/2">
               <Input placeholder="Name of the varibale" value={envs[index].key}
                      onChange={(e) => handleKeyChange(e, index)} />
             </div>
-            <div className="w-2/5">
+            <div className="w-1/2">
               <Input placeholder="value" value={envs[index].value}
                      onChange={(e) => handleValueChange(e, index)} />
             </div>
@@ -54,7 +55,7 @@ const EnvironmentComponent = ({ envs = [], setEnvs }: { envs: EnvironmentVariabl
           </div>
         );
       })}
-      <div className="flex flex-row-reverse gap-2">
+      <div className="flex flex-row m-2">
 
         <Button
           onClick={(event) => {
@@ -62,10 +63,14 @@ const EnvironmentComponent = ({ envs = [], setEnvs }: { envs: EnvironmentVariabl
             setEnvs((prev: any) => [...prev, {}]);
           }}
           size="sm"
-          className="m-2"
           variant="outline"
         >
-          Add environment variable
+          <div className="flex flex-row justify-between gap-2">
+            <div className="flex flex-col justify-center">
+              <IoMdAdd />
+            </div>
+            <div>Add environment variable</div>
+          </div>
         </Button>
 
       </div>

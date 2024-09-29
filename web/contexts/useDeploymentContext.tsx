@@ -6,6 +6,7 @@ type DeploymentContextType = {
   deploymentDetails: DeploymentDetailsType | null;
   updateDeploymentDetails: (deploymentId: string, body: UpdateDeploymentReqBody) => Promise<{ error: string | null }>;
   updateLatestDeploymentStatus: (deploymentId: string) => Promise<{ error: string | null }>;
+  updateEnv: (deploymentId: string, env: object) => Promise<{ error: string | null }>;
   loading: boolean;
 }
 const DeploymentContext = React.createContext({} as DeploymentContextType);
@@ -20,7 +21,7 @@ export const useDeploymentContext = () => {
 
 export const DeploymentContextProvider = ({ children, params }: DeploymentContextProviderProps) => {
   const [deploymentDetails, setDeploymentDetails] = React.useState<DeploymentDetailsType | null>(null);
-  const { getDeploymentDetails, updateDeployment, getDeploymentLatestStatus } = useHttpClient();
+  const { getDeploymentDetails, updateDeployment, getDeploymentLatestStatus, updateDeploymentEnv } = useHttpClient();
   const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
@@ -77,10 +78,31 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
     };
   };
 
+  const updateEnv = async (deploymentId: string, env: object): Promise<{
+    error: string | null
+  }> => {
+    let response = await updateDeploymentEnv(deploymentId, env);
+    if (response.error) {
+      return {
+        error: response.error
+      };
+    }
+    setDeploymentDetails((prevState: any) => {
+      return {
+        ...prevState,
+        ...response.data
+      };
+    });
+    return {
+      error: null
+    };
+  };
+
   const value: DeploymentContextType = {
     deploymentDetails,
     updateDeploymentDetails,
     updateLatestDeploymentStatus,
+    updateEnv,
     loading
   };
   return (

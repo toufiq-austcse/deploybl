@@ -147,6 +147,24 @@ export function useHttpClient() {
     }
 
   };
+  const updateDeploymentEnv = async (deploymentId: string, env: object): Promise<{
+    data: DeploymentDetailsType | null;
+    error: string | null;
+  }> => {
+    setLoading(true);
+    try {
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/env`;
+      const response = await axios.patch(url, env);
+      return {
+        data: response.data.data,
+        error: null
+      };
+    } catch (err) {
+      return handleError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return {
@@ -156,6 +174,7 @@ export function useHttpClient() {
     createDeployment,
     getDeploymentLatestStatus,
     updateDeployment,
+    updateDeploymentEnv,
     loading
   };
 };

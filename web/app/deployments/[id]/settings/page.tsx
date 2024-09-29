@@ -123,7 +123,7 @@ const SettingsPage: NextPage = () => {
         <h1 className="font-bold text-xl">Build & Deploy</h1>
         {buildAndDeployError && <ErrorAlert error={buildAndDeployError} />}
         <Form {...validateBuildAndDeployForm}>
-          <form id="repo-url-form" onSubmit={validateBuildAndDeployForm.handleSubmit(onBuildAndDeployFormSubmit)}>
+          <form id="create-deployment-form" onSubmit={validateBuildAndDeployForm.handleSubmit(onBuildAndDeployFormSubmit)}>
             <div className="my-2">
               <FormField control={
                 validateBuildAndDeployForm.control

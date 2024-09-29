@@ -13,6 +13,7 @@ import ErrorAlert from '@/components/ui/error-alert';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { convertEnvToObj } from '@/lib/utils';
 
 const validateRepositorySchema = z.object({
   repository_url: z
@@ -72,13 +73,7 @@ const NewDeploymentPage: NextPage = () => {
     }
   };
 
-  const convertEnvToObj = (envs: EnvironmentVariableType[]): object => {
-    let obj: any = {};
-    envs.forEach((env) => {
-      obj[env.key] = env.value;
-    });
-    return obj;
-  };
+
   const onCreateDeploymentFormSubmit = async (values: z.infer<typeof createDeploymentSchema>) => {
     setError(null);
     let envObj = convertEnvToObj(envs);
