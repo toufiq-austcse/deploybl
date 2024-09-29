@@ -228,13 +228,35 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 	}
 
 	updatedDeployment, err := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
-		"env": envBody,
+		"env":           envBody,
+		"latest_status": enums.QUEUED,
 	}, context)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
+	go func() {
+		if updatedDeployment.LatestStatus == enums.QUEUED {
+			if deployment.ContainerId != nil {
+				fmt.Println("removing old container ", *deployment.ContainerId)
+				removeErr := controller.dockerService.RemoveContainer(*deployment.ContainerId)
+				if removeErr != nil {
+					fmt.Println("error while removing container ", removeErr.Error())
+				}
+				fmt.Println("container removed ", deployment.ContainerId)
+				_, updateErr := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
+					"container_id": nil,
+				}, context)
+
+				if updateErr != nil {
+					fmt.Println("error while updating container ", updateErr.Error())
+				}
+
+			}
+			controller.worker.PublishPullRepoWork(updatedDeployment)
+		}
+	}()
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment, *githubRes)
 
