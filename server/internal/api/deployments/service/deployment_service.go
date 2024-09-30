@@ -145,5 +145,41 @@ func (service *DeploymentService) GetLatestStatusByIds(ids []string, ctx context
 	}
 
 	return deployments, nil
+}
+func (service *DeploymentService) FindDeploymentByStatus(status string) []model.Deployment {
+	var deployments []model.Deployment
+	filter := bson.M{"latest_status": status}
+	cursor, err := service.deploymentCollection.Find(context.Background(), filter)
+	if err != nil {
+		return deployments
+	}
+	defer cursor.Close(context.Background())
+	for cursor.Next(context.Background()) {
+		var deployment model.Deployment
+		if err := cursor.Decode(&deployment); err != nil {
+			fmt.Println("error in decoding deployment ", err.Error())
+			continue
+		}
+		deployments = append(deployments, deployment)
+	}
+	return deployments
+}
+func (service *DeploymentService) GetContainerIdsFromDeployments(deployments []model.Deployment) []string {
+	var containerIds []string
+	for _, deployment := range deployments {
+		if deployment.ContainerId != nil {
+			containerIds = append(containerIds, *deployment.ContainerId)
+		}
+	}
+	return containerIds
+}
 
+func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(skipContainerIds []string, currentStatus string, updatedStatus string, ctx context.Context) (int64, error) {
+	filter := bson.M{"container_id": bson.M{"$nin": skipContainerIds}, "latest_status": currentStatus}
+	update := bson.M{"$set": bson.M{"latest_status": updatedStatus}}
+	result, err := service.deploymentCollection.UpdateMany(ctx, filter, update)
+	if err != nil {
+		return 0, err
+	}
+	return result.ModifiedCount, nil
 }
