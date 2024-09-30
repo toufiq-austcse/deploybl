@@ -12,5 +12,6 @@ func Setup(group *gin.RouterGroup, controller *controller.DeploymentController) 
 	group.PATCH(":id/env", controller.EnvUpdate)
 	group.GET(":id", controller.DeploymentShow)
 	group.GET("latest-status", controller.DeploymentLatestStatus)
+	group.GET("check-stopped-cron", controller.LiveCheckCron)
 
 }

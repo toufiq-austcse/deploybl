@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type DeploymentController struct {
@@ -321,4 +322,22 @@ func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Cont
 	deploymentsLatestStatusRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), mapper.ToDeploymentLatestStatus(deployments))
 
 	context.JSON(deploymentsLatestStatusRes.Code, deploymentsLatestStatusRes)
+}
+func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
+	runningContainerIds, err := controller.dockerService.ListRunningContainerIds()
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	updatedCount, err := controller.deploymentService.UpdateDeploymentStatusByContainerIds(runningContainerIds, enums.LIVE, enums.STOPPED, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	fmt.Println("Time : ", time.Now().Format(time.DateTime), " running containers ", len(runningContainerIds), " stopped ", updatedCount)
+	updatedCountRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), updatedCount)
+	context.JSON(updatedCountRes.Code, updatedCountRes)
+
 }

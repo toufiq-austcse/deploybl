@@ -6,4 +6,5 @@ const (
 	BUILDING string = "building"
 	LIVE     string = "live"
 	FAILED   string = "failed"
+	STOPPED  string = "stopped"
 )

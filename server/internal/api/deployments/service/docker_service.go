@@ -6,6 +6,7 @@ import (
 	"fmt"
 	deployItConfig "github.com/toufiq-austcse/deployit/config"
 	"os/exec"
+	"strings"
 )
 
 type DockerService struct {
@@ -61,4 +62,25 @@ func (dockerService *DockerService) RunContainer(imageTag string, env *map[strin
 	containerId := string(output)
 	fmt.Printf("Container ID: %s\n", string(output))
 	return &containerId, nil
+}
+
+func (dockerService *DockerService) ListRunningContainerIds() ([]string, error) {
+	containerIds := []string{}
+
+	cmd := exec.Command("docker", "ps", "--no-trunc", "--format", "{{.ID}}")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	fmt.Println("executing " + cmd.String())
+	err := cmd.Run()
+	if err != nil {
+		return []string{}, err
+	}
+	containerIdsStringRes := string(out.Bytes())
+	containerIds = strings.Split(containerIdsStringRes, "\n")
+	if len(containerIds) > 0 {
+		containerIds = containerIds[:len(containerIds)-1]
+	}
+
+	return containerIds, nil
 }
