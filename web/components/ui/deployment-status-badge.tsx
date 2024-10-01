@@ -16,7 +16,9 @@ const DeploymentStatusBadge = ({ status }: { status: string }) => {
 
       </div>
     );
-  } else if (status === DEPLOYMENT_STATUS.PULLING || status === DEPLOYMENT_STATUS.BUILDING || status === DEPLOYMENT_STATUS.QUEUED) {
+
+  }
+  if (status === DEPLOYMENT_STATUS.PULLING || status === DEPLOYMENT_STATUS.BUILDING || status === DEPLOYMENT_STATUS.QUEUED) {
     return (
       <div
         className={`${badgeVariants({ variant: 'default' })} capitalize gap-2`}
@@ -28,10 +30,18 @@ const DeploymentStatusBadge = ({ status }: { status: string }) => {
       </div>
     );
   }
-
+  if (status === DEPLOYMENT_STATUS.LIVE) {
+    return (
+      <div
+        className={`${badgeVariants({ variant: 'success' })} capitalize`}
+      >
+        {status}
+      </div>
+    );
+  }
   return (
     <div
-      className={`${badgeVariants({ variant: 'success' })} capitalize`}
+      className={`${badgeVariants({ variant: 'secondary' })} capitalize`}
     >
       {status}
     </div>

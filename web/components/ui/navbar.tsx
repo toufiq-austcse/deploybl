@@ -40,11 +40,11 @@ const Navbar = () => {
           </div>
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <Link className="flex flex-shrink-0 gap-2" href="/">
-              <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500&width=500"
-                alt="Your Company"
-              />
+              {/*<img*/}
+              {/*  className="h-8 w-auto"*/}
+              {/*  src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500&width=500"*/}
+              {/*  alt="Your Company"*/}
+              {/*/>*/}
               <h1 className="text-white text-2xl">Deployable</h1>
             </Link>
             {/*<div className="hidden sm:ml-6 sm:block">*/}
