@@ -59,7 +59,8 @@ func (dockerService *DockerService) RunContainer(imageTag string, env *map[strin
 		return nil, err
 	}
 
-	containerId := string(output)
+	outputString := string(output)
+	containerId := strings.Replace(outputString, "\n", "", -1)
 	fmt.Printf("Container ID: %s\n", string(output))
 	return &containerId, nil
 }
