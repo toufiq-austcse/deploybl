@@ -42,7 +42,7 @@ const EnvironmentPage: NextPage = () => {
       </div>
       <div className="flex flex-row-reverse gap-2">
         <Button
-          disabled={loading}
+          disabled={loading || envs.length === 0}
           onClick={handleSaveAndRedeploy}
           size="sm"
           className="my-2"

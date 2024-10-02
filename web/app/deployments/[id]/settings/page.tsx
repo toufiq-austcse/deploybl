@@ -37,10 +37,12 @@ const SettingsPage: NextPage = () => {
   const [buildAndDeployError, setBuildAndDeployError] = useState<string | null>(null);
 
   const validateGeneralUpdateForm = useForm<z.infer<typeof generalUpdateSchema>>({
-    resolver: zodResolver(generalUpdateSchema)
+    resolver: zodResolver(generalUpdateSchema),
+    mode: 'onChange'
   });
   const validateBuildAndDeployForm = useForm<z.infer<typeof buildAndDeploySchema>>({
-    resolver: zodResolver(buildAndDeploySchema)
+    resolver: zodResolver(buildAndDeploySchema),
+    mode: 'onChange'
   });
 
   useEffect(() => {
@@ -108,7 +110,7 @@ const SettingsPage: NextPage = () => {
             </div>
             <div className="flex flex-row-reverse">
               <Button
-                disabled={loading}
+                disabled={!validateGeneralUpdateForm.formState.isDirty || loading}
                 type="submit"
                 size="sm"
                 className="my-2"
@@ -191,7 +193,7 @@ const SettingsPage: NextPage = () => {
             </div>
             <div className="flex flex-row-reverse">
               <Button
-                disabled={loading}
+                disabled={loading || !validateBuildAndDeployForm.formState.isDirty}
                 type="submit"
                 size="sm"
                 className="my-2"

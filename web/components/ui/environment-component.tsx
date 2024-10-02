@@ -64,6 +64,7 @@ const EnvironmentComponent = ({ envs = [], setEnvs }: { envs: EnvironmentVariabl
           }}
           size="sm"
           variant="outline"
+
         >
           <div className="flex flex-row justify-between gap-2">
             <div className="flex flex-col justify-center">
