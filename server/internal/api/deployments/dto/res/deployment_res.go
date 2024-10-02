@@ -10,6 +10,7 @@ type DeploymentRes struct {
 	Title              string             `json:"title"`
 	LatestStatus       string             `json:"latest_status"`
 	LastDeployedAt     *time.Time         `json:"last_deployed_at"`
+	DomainUrl          *string            `json:"domain_url"`
 	RepositoryProvider string             `json:"repository_provider"`
 	BranchName         string             `json:"branch_name"`
 	CreatedAt          time.Time          `json:"created_at"`

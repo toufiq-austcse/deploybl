@@ -61,7 +61,7 @@ func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto) map[string]
 }
 
 func ToDeploymentRes(model *model.Deployment) res.DeploymentRes {
-	return res.DeploymentRes{
+	deploymentRes := res.DeploymentRes{
 		Id:                 model.Id,
 		Title:              model.Title,
 		LatestStatus:       model.LatestStatus,
@@ -71,6 +71,11 @@ func ToDeploymentRes(model *model.Deployment) res.DeploymentRes {
 		CreatedAt:          model.CreatedAt,
 		UpdatedAt:          model.UpdatedAt,
 	}
+	if model.LatestStatus == enums.LIVE {
+		domainUrl := GetDomainUrl(model.SubDomainName)
+		deploymentRes.DomainUrl = &domainUrl
+	}
+	return deploymentRes
 }
 func ToDeploymentDetailsRes(model *model.Deployment, githubRes api_res.GithubRepoRes) res.DeploymentDetailsRes {
 	deploymentDetail := res.DeploymentDetailsRes{

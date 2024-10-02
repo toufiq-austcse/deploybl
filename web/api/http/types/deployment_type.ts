@@ -4,6 +4,7 @@ export interface DeploymentType {
   latest_status: string;
   last_deployed_at: Date;
   repository_provider: string;
+  domain_url: string;
   branch_name: string;
   created_at: Date;
   updated_at: Date;
