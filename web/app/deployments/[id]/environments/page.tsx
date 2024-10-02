@@ -16,7 +16,7 @@ const EnvironmentPage: NextPage = () => {
   useEffect(() => {
     if (deploymentDetails) {
       let envsArray = convertObjToEnv(deploymentDetails.env);
-      setEnvs(() => [...envsArray]);
+      setEnvs((prevState) => [...prevState, ...envsArray]);
     }
 
   }, [deploymentDetails]);
