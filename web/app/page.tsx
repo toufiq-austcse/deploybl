@@ -108,7 +108,12 @@ const columns: ColumnDef<DeploymentType>[] = [
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(video._id)}
             >
-              Copy Url
+              Copy URL
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(video._id)}
+            >
+              Visit
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </DropdownMenuContent>
@@ -151,7 +156,7 @@ const HomePage: NextPage = () => {
   }, [deploymentList]);
 
   const updateLatestStatus = (deployments: DeploymentType[]) => {
-    let deploymentIds = deployments.filter(deployment => deployment.latest_status !== DEPLOYMENT_STATUS.LIVE && deployment.latest_status !== DEPLOYMENT_STATUS.FAILED).map((deployment) => deployment._id);
+    let deploymentIds = deployments.map((deployment) => deployment._id);
     if (deploymentIds.length === 0) {
       return;
     }
@@ -162,7 +167,6 @@ const HomePage: NextPage = () => {
         console.log(response);
         // @ts-ignore
         if (response.data?.length > 0) {
-          console.log('setting...');
           setDeploymentList((deployments) => {
             return deployments.map((deployment) => {
               // @ts-ignore
@@ -185,7 +189,6 @@ const HomePage: NextPage = () => {
   };
 
   const nextFunction = () => {
-    console.log('next ', pageIndex, pagination?.last_page);
     if (pageIndex === pagination?.last_page) {
       return;
     }
@@ -203,7 +206,6 @@ const HomePage: NextPage = () => {
   };
 
   const prevFunction = () => {
-    console.log('prev');
     if (pageIndex === 1) {
       return;
     }

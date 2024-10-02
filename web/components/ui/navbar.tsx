@@ -45,7 +45,7 @@ const Navbar = () => {
               {/*  src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500&width=500"*/}
               {/*  alt="Your Company"*/}
               {/*/>*/}
-              <h1 className="text-white text-2xl">Deployable</h1>
+              <h1 className="text-white text-2xl">Deploybl</h1>
             </Link>
             {/*<div className="hidden sm:ml-6 sm:block">*/}
             {/*  <div className="flex space-x-4">*/}

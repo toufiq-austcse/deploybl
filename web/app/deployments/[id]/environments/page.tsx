@@ -47,7 +47,7 @@ const EnvironmentPage: NextPage = () => {
           size="sm"
           className="my-2"
         >
-          Save, Rebuild & Redeploy
+          Save & Redeploy
         </Button>
 
       </div>

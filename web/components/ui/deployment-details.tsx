@@ -6,7 +6,6 @@ import moment from 'moment';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 import { toast } from 'sonner';
-import { DEPLOYMENT_STATUS } from '@/lib/constant';
 
 const DeploymentDetails = () => {
   const { deploymentDetails, updateLatestDeploymentStatus } = useDeploymentContext();
@@ -14,15 +13,11 @@ const DeploymentDetails = () => {
   let interval: NodeJS.Timeout;
 
   useEffect(() => {
-    console.log('deployment details changed');
+    interval = setInterval(() => {
+      updateLatestDeploymentStatus(deploymentDetails._id);
+    }, +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string));
 
-    if (deploymentDetails && deploymentDetails.latest_status != DEPLOYMENT_STATUS.LIVE && deploymentDetails.latest_status != DEPLOYMENT_STATUS.FAILED) {
-      interval = setInterval(() => {
-        updateLatestDeploymentStatus(deploymentDetails._id);
-      }, +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string));
-
-      return () => clearInterval(interval);
-    }
+    return () => clearInterval(interval);
 
   }, [deploymentDetails]);
 
@@ -42,10 +37,10 @@ const DeploymentDetails = () => {
         <div className="flex flex-col justify-center">
           <FaGithub />
         </div>
-        <div className="flex flex-row gap-2">
+        <Link className="flex flex-row gap-2" href={deploymentDetails.repository_url} target="_blank">
           <p className="underline">{deploymentDetails?.repository_name}</p>
           <p className="underline">{deploymentDetails?.branch_name}</p>
-        </div>
+        </Link>
       </Link>
 
       <div className="flex gap-2 justify-between">
@@ -61,7 +56,7 @@ const DeploymentDetails = () => {
 
         <div className="flex flex-row-reverse min-w-50">
           {deploymentDetails.last_deployed_at ?
-            <p>Last Deployed : {moment(deploymentDetails.last_deployed_at).fromNow()}</p> :
+            <p>Last Deployed At : {moment(deploymentDetails.last_deployed_at).fromNow()}</p> :
             <p>Not Deployed yet</p>}
         </div>
       </div>
