@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { EnvironmentVariableType } from '@/components/ui/environment-component';
+import { toast } from 'sonner';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,4 +31,8 @@ export const convertObjToEnv = (envs: object): EnvironmentVariableType[] => {
     arr.push({ key, value: envs[key] });
   }
   return arr;
+};
+export const onCopyUrlClicked = async (url: string) => {
+  await navigator.clipboard.writeText(url as string);
+  toast('Copied to clipboard');
 };

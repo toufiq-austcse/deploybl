@@ -6,6 +6,7 @@ import moment from 'moment';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 import { toast } from 'sonner';
+import { onCopyUrlClicked } from '@/lib/utils';
 
 const DeploymentDetails = () => {
   const { deploymentDetails, updateLatestDeploymentStatus } = useDeploymentContext();
@@ -20,11 +21,6 @@ const DeploymentDetails = () => {
     return () => clearInterval(interval);
 
   }, [deploymentDetails]);
-
-  const onCopyUrlClicked = async () => {
-    await navigator.clipboard.writeText(deploymentDetails?.domain_url as string);
-    toast('Copied to clipboard');
-  };
 
   return (
     deploymentDetails &&
@@ -49,7 +45,7 @@ const DeploymentDetails = () => {
             <Link href={deploymentDetails.domain_url as string}
                   target="_blank">{deploymentDetails.domain_url}</Link>
             <div className="flex flex-col justify-center">
-              <FaRegCopy className="cursor-pointer" onClick={onCopyUrlClicked} />
+              <FaRegCopy className="cursor-pointer" onClick={() => onCopyUrlClicked(deploymentDetails.domain_url)} />
             </div>
           </div>}
         </div>

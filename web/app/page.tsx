@@ -24,6 +24,7 @@ import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { IoMdAdd } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
 import { DEPLOYMENT_STATUS } from '@/lib/constant';
+import { onCopyUrlClicked } from '@/lib/utils';
 
 
 const columns: ColumnDef<DeploymentType>[] = [
@@ -93,7 +94,7 @@ const columns: ColumnDef<DeploymentType>[] = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const video = row.original;
+      const deployment = row.original;
 
       return (
         <DropdownMenu>
@@ -105,16 +106,17 @@ const columns: ColumnDef<DeploymentType>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(video._id)}
-            >
-              Copy URL
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(video._id)}
-            >
-              Visit
-            </DropdownMenuItem>
+            {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE ? <>
+              <DropdownMenuItem
+                onClick={() => onCopyUrlClicked(deployment.domain_url)}
+              >
+                Copy URL
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => window.open(deployment.domain_url, '_blank')}
+              >
+                Visit
+              </DropdownMenuItem></> : null}
             <DropdownMenuSeparator />
           </DropdownMenuContent>
         </DropdownMenu>
