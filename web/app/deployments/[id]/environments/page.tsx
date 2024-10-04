@@ -19,7 +19,7 @@ const EnvironmentPage: NextPage = () => {
       setEnvs((prevState) => [...prevState, ...envsArray]);
     }
 
-  }, [deploymentDetails]);
+  }, []);
   const handleSaveAndRedeploy = async () => {
     setLoading(true);
     setError(null);

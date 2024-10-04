@@ -21,14 +21,17 @@ type DeploymentController struct {
 	githubHttpClient  *github.GithubHttpClient
 	deploymentService *service.DeploymentService
 	dockerService     *service.DockerService
-	worker            *worker.PullRepoWorker
+	pullRepoWorker    *worker.PullRepoWorker
+	runRepoWorker     *worker.RunRepoWorker
 }
 
-func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deploymentService *service.DeploymentService, repoWorker *worker.PullRepoWorker) *DeploymentController {
+func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deploymentService *service.DeploymentService,
+	pullRepoWorker *worker.PullRepoWorker, runRepoWorker *worker.RunRepoWorker) *DeploymentController {
 	return &DeploymentController{
 		githubHttpClient:  githubHttpClient,
 		deploymentService: deploymentService,
-		worker:            repoWorker,
+		pullRepoWorker:    pullRepoWorker,
+		runRepoWorker:     runRepoWorker,
 	}
 }
 
@@ -106,7 +109,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	controller.worker.PublishPullRepoWork(newDeployment)
+	controller.pullRepoWorker.PublishPullRepoWork(newDeployment)
 
 	createDeploymentRes := api_response.BuildResponse(http.StatusCreated, http.StatusText(http.StatusCreated), mapper.ToDeploymentRes(newDeployment))
 	context.JSON(createDeploymentRes.Code, createDeploymentRes)
@@ -179,7 +182,7 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 				}
 
 			}
-			controller.worker.PublishPullRepoWork(updatedDeployment)
+			controller.pullRepoWorker.PublishPullRepoWork(updatedDeployment)
 		}
 	}()
 
@@ -238,24 +241,10 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		return
 	}
 	go func() {
-		if updatedDeployment.LatestStatus == enums.QUEUED {
-			if deployment.ContainerId != nil {
-				fmt.Println("removing old container ", *deployment.ContainerId)
-				removeErr := controller.dockerService.RemoveContainer(*deployment.ContainerId)
-				if removeErr != nil {
-					fmt.Println("error while removing container ", removeErr.Error())
-				}
-				fmt.Println("container removed ", deployment.ContainerId)
-				_, updateErr := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
-					"container_id": nil,
-				}, context)
-
-				if updateErr != nil {
-					fmt.Println("error while updating container ", updateErr.Error())
-				}
-
-			}
-			controller.worker.PublishPullRepoWork(updatedDeployment)
+		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeploymenet(*deployment)
+		publishJobErr := controller.runRepoWorker.PublishRunRepoJob(runRepoJobPayload)
+		if publishJobErr != nil {
+			fmt.Println("error while publishing job ", publishJobErr.Error())
 		}
 	}()
 
