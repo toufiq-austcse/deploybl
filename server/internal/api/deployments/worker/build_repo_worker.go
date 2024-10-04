@@ -84,7 +84,7 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(messages <-chan *message.
 			continue
 		}
 
-		publishRunRepoError := worker.PublishRunRepoWork(consumedPayload, *dockerImageTag)
+		publishRunRepoError := worker.PublishRunRepoWork(consumedPayload)
 		if publishRunRepoError != nil {
 			fmt.Println("error in publishing run repo work ", publishRunRepoError.Error())
 		}
@@ -144,8 +144,8 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 	return &dockerImageTag, nil
 }
 
-func (worker *BuildRepoWorker) PublishRunRepoWork(buildRepoWorkerPayload payloads.BuildRepoWorkerPayload, dockerImageTag string) error {
-	runRepoWorkerPayload := mapper.ToRunRepoWorkerPayload(buildRepoWorkerPayload, dockerImageTag)
+func (worker *BuildRepoWorker) PublishRunRepoWork(buildRepoWorkerPayload payloads.BuildRepoWorkerPayload) error {
+	runRepoWorkerPayload := mapper.ToRunRepoWorkerPayload(buildRepoWorkerPayload)
 	fmt.Println("Publishing ", runRepoWorkerPayload)
 	return worker.runRepoWorker.PublishRunRepoJob(runRepoWorkerPayload)
 }

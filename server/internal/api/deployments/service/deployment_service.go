@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 type DeploymentService struct {
@@ -90,6 +91,7 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 }
 
 func (service *DeploymentService) UpdateDeployment(deploymentId string, updates map[string]interface{}, ctx context.Context) (*model.Deployment, error) {
+	updates["updated_at"] = time.Now()
 	fmt.Println("updating ", deploymentId, updates)
 	oId, err := primitive.ObjectIDFromHex(deploymentId)
 	if err != nil {
@@ -176,10 +178,15 @@ func (service *DeploymentService) GetContainerIdsFromDeployments(deployments []m
 
 func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(skipContainerIds []string, currentStatus string, updatedStatus string, ctx context.Context) (int64, error) {
 	filter := bson.M{"container_id": bson.M{"$nin": skipContainerIds}, "latest_status": currentStatus}
-	update := bson.M{"$set": bson.M{"latest_status": updatedStatus}}
+	update := bson.M{"$set": bson.M{"latest_status": updatedStatus, "updated_at": time.Now()}}
 	result, err := service.deploymentCollection.UpdateMany(ctx, filter, update)
 	if err != nil {
 		return 0, err
 	}
 	return result.ModifiedCount, nil
+}
+func (service *DeploymentService) UpdateLatestStatus(deploymentId string, status string, context context.Context) (*model.Deployment, error) {
+	return service.UpdateDeployment(deploymentId, map[string]interface{}{
+		"latest_status": status,
+	}, context)
 }

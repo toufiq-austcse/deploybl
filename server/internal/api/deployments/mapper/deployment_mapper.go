@@ -135,11 +135,14 @@ func ToBuildRepoWorkerPayload(payload payloads.PullRepoWorkerPayload) payloads.B
 		Env:            payload.Env,
 	}
 }
-func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload, dockerImageTag string) payloads.RunRepoWorkerPayload {
+func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload) payloads.RunRepoWorkerPayload {
 	return payloads.RunRepoWorkerPayload{
-		DeploymentId:   payload.DeploymentId,
-		DockerImageTag: dockerImageTag,
-		Env:            payload.Env,
+		DeploymentId: payload.DeploymentId,
+	}
+}
+func ToRunRepoWorkerPayloadFromDeploymenet(deployment model.Deployment) payloads.RunRepoWorkerPayload {
+	return payloads.RunRepoWorkerPayload{
+		DeploymentId: deployment.Id.Hex(),
 	}
 }
 func GetDomainUrl(subDomainName string) string {

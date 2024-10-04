@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -45,43 +46,67 @@ func (worker *RunRepoWorker) InitRunRepoSubscriber() {
 
 }
 func (worker *RunRepoWorker) ProcessRunRepoMessage(messages <-chan *message.Message) {
-	consumedPayload := payloads.RunRepoWorkerPayload{}
 	for msg := range messages {
-		err := json.Unmarshal(msg.Payload, &consumedPayload)
+		deploymentId, err := worker.ProcessMessage(msg)
 		if err != nil {
-			fmt.Println("error in parsing rabbitmq message in pull repo worker", err)
-			msg.Ack()
-			continue
-		}
-		fmt.Println("consumed run job ", consumedPayload)
-		containerId, runErr := worker.dockerService.RunContainer(consumedPayload.DockerImageTag, consumedPayload.Env)
-		if runErr != nil {
-			fmt.Println("run err error ", runErr.Error())
-			_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-				"latest_status": enums.FAILED,
-			}, context.Background())
-			if updateErr != nil {
-				fmt.Println("error while updating status... ", updateErr.Error())
+			fmt.Println("error in processing run repo message ", err.Error())
+
+			if deploymentId != "" {
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(deploymentId, enums.FAILED, context.Background())
+				if updateErr != nil {
+					fmt.Println("error in updating deployment status ", updateErr.Error())
+				}
 			}
 
-			msg.Ack()
-			continue
 		}
-		fmt.Println("docker image run successfully...")
-
-		_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-			"latest_status":    enums.LIVE,
-			"last_deployed_at": time.Now(),
-			"container_id":     containerId,
-		}, context.Background())
-		if updateErr != nil {
-			fmt.Println("error while updating status... ", updateErr.Error())
-			msg.Ack()
-			continue
-		}
-
-		msg.Ack()
 	}
+}
+func (worker *RunRepoWorker) ProcessMessage(msg *message.Message) (string, error) {
+	defer msg.Ack()
+
+	consumedPayload := payloads.RunRepoWorkerPayload{}
+	if err := json.Unmarshal(msg.Payload, &consumedPayload); err != nil {
+		return "", err
+	}
+	fmt.Println("consumed run job ", consumedPayload)
+
+	deployment := worker.deploymentService.FindById(consumedPayload.DeploymentId, context.Background())
+	if deployment == nil {
+		return consumedPayload.DeploymentId, errors.New("deployment not found")
+	}
+	if deployment.DockerImageTag == nil {
+		return consumedPayload.DeploymentId, errors.New("docker image tag not found")
+	}
+	if deployment.ContainerId != nil {
+		if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
+			return consumedPayload.DeploymentId, removeErr
+		}
+
+		fmt.Println("container removed ", deployment.ContainerId)
+		if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+			"container_id": nil,
+		}, context.Background()); updateErr != nil {
+			return consumedPayload.DeploymentId, updateErr
+		}
+
+	}
+
+	containerId, runErr := worker.dockerService.RunContainer(*deployment.DockerImageTag, deployment.Env)
+	if runErr != nil {
+		return consumedPayload.DeploymentId, runErr
+	}
+	fmt.Println("docker image run successfully...")
+
+	_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+		"latest_status":    enums.LIVE,
+		"last_deployed_at": time.Now(),
+		"container_id":     containerId,
+	}, context.Background())
+
+	if updateErr != nil {
+		return consumedPayload.DeploymentId, updateErr
+	}
+	return consumedPayload.DeploymentId, nil
 }
 
 func (worker *RunRepoWorker) PublishRunRepoJob(runRepoPayload payloads.RunRepoWorkerPayload) error {
