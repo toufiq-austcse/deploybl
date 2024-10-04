@@ -1,4 +1,4 @@
-'use client';
+'use client'
 import { NextPage } from 'next';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 const formSchema = z.object({
+  name: z.string({
+    required_error: 'Name is required'
+  }),
   email: z.string().email({
     message: 'Please enter a valid email address'
   }),
@@ -19,7 +22,7 @@ const formSchema = z.object({
 });
 
 
-const LoginPage: NextPage = () => {
+const SignUpPage: NextPage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
   });
@@ -46,16 +49,29 @@ const LoginPage: NextPage = () => {
       <div className="m-auto h-1/4 w-1/4">
         <h1 className="text-4xl flex justify-center">Sign Up</h1>
         <p className="flex justify-center">
-          {`Don't have an account yet?`}
+          Already have an account
           <Link
-            href={'signup'}
+            href={'login'}
             className="mx-1 underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
           >
-            SignUp
+            Login
           </Link>
         </p>
         <Form {...form}>
           <form id="signup-form" onSubmit={form.handleSubmit(onFormSubmit)}>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"
@@ -95,7 +111,7 @@ const LoginPage: NextPage = () => {
                 form="signup-form"
                 className="my-2"
               >
-                Login
+                Signup
               </Button>
             </div>
           </form>
@@ -105,4 +121,4 @@ const LoginPage: NextPage = () => {
   );
 
 };
-export default LoginPage;
+export default SignUpPage;

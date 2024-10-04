@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 import moment from 'moment';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
-import { toast } from 'sonner';
 import { onCopyUrlClicked } from '@/lib/utils';
 
 const DeploymentDetails = () => {
