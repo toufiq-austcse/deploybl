@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import ErrorAlert from '@/components/ui/error-alert';
+import { toast } from 'sonner';
 
 const generalUpdateSchema = z.object({
   title: z.string({
@@ -58,6 +59,8 @@ const SettingsPage: NextPage = () => {
     updateDeploymentDetails(deploymentDetails?._id, { title: values.title }).then(response => {
       if (response.error) {
         serGeneralError(response.error);
+      } else {
+        toast('Successfully updated');
       }
     }).finally(() => {
       setLoading(false);
@@ -73,6 +76,8 @@ const SettingsPage: NextPage = () => {
     }).then(response => {
       if (response.error) {
         setBuildAndDeployError(response.error);
+      } else {
+        toast('Successfully updated');
       }
     }).finally(() => {
       setLoading(false);
