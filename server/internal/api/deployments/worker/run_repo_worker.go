@@ -42,12 +42,12 @@ func (worker *RunRepoWorker) InitRunRepoSubscriber() {
 		fmt.Println("error in run repo subscriber ", err.Error())
 		return
 	}
-	go worker.ProcessRunRepoMessage(messages)
+	go worker.ProcessRunRepoMessages(messages)
 
 }
-func (worker *RunRepoWorker) ProcessRunRepoMessage(messages <-chan *message.Message) {
+func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		deploymentId, err := worker.ProcessMessage(msg)
+		deploymentId, err := worker.ProcessRunRepoMessage(msg)
 		if err != nil {
 			fmt.Println("error in processing run repo message ", err.Error())
 
@@ -61,7 +61,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(messages <-chan *message.Mess
 		}
 	}
 }
-func (worker *RunRepoWorker) ProcessMessage(msg *message.Message) (string, error) {
+func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string, error) {
 	defer msg.Ack()
 
 	consumedPayload := payloads.RunRepoWorkerPayload{}
