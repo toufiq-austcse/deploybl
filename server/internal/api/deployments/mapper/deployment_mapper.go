@@ -27,6 +27,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider stri
 		LastDeployedAt:     nil,
 		RepositoryProvider: provider,
 		RepositoryUrl:      dto.RepositoryUrl,
+		RepositoryName:     githubRes.Name,
 		GitUrl:             githubRes.CloneURL,
 		BranchName:         dto.BranchName,
 		RootDirectory:      dto.RootDir,
@@ -38,7 +39,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider stri
 		UpdatedAt:          time.Now(),
 	}
 }
-func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto) map[string]interface{} {
+func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto, repoName string) map[string]interface{} {
 	updateFields := map[string]interface{}{}
 
 	if dto.Title != nil {
@@ -53,6 +54,7 @@ func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto) map[string]
 	if dto.DockerFilePath != nil {
 		updateFields["docker_file_path"] = *dto.DockerFilePath
 	}
+	updateFields["repository_name"] = repoName
 	if ShouldRedeploy(updateFields) {
 		updateFields["latest_status"] = enums.QUEUED
 		updateFields["last_deployed_at"] = nil
@@ -77,11 +79,11 @@ func ToDeploymentRes(model *model.Deployment) res.DeploymentRes {
 	}
 	return deploymentRes
 }
-func ToDeploymentDetailsRes(model *model.Deployment, githubRes api_res.GithubRepoRes) res.DeploymentDetailsRes {
+func ToDeploymentDetailsRes(model *model.Deployment) res.DeploymentDetailsRes {
 	deploymentDetail := res.DeploymentDetailsRes{
 		Id:                 model.Id,
 		Title:              model.Title,
-		RepositoryName:     githubRes.FullName,
+		RepositoryName:     model.RepositoryName,
 		DomainUrl:          nil,
 		LatestStatus:       model.LatestStatus,
 		LastDeployedAt:     model.LastDeployedAt,

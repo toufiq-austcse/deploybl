@@ -154,7 +154,7 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		return
 	}
 
-	updateFields := mapper.MapUpdateDeploymentReqToUpdate(body)
+	updateFields := mapper.MapUpdateDeploymentReqToUpdate(body, githubRes.FullName)
 	updatedDeployment, err := controller.deploymentService.UpdateDeployment(deploymentId, updateFields, context)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
@@ -183,7 +183,7 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		}
 	}()
 
-	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment, *githubRes)
+	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
 	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 
@@ -259,7 +259,7 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		}
 	}()
 
-	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment, *githubRes)
+	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
 
 	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
@@ -282,24 +282,7 @@ func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 		return
 	}
 
-	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&deployment.RepositoryUrl)
-	if err != nil {
-		if code == http.StatusNotFound {
-			errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "invalid repository", nil)
-			context.AbortWithStatusJSON(errRes.Code, errRes)
-			return
-		}
-		errRes := api_response.BuildErrorResponse(code, http.StatusText(code), "", nil)
-		context.AbortWithStatusJSON(errRes.Code, errRes)
-		return
-	}
-	if githubRes == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "invalid repository", nil)
-		context.AbortWithStatusJSON(errRes.Code, errRes)
-		return
-	}
-
-	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), mapper.ToDeploymentDetailsRes(deployment, *githubRes))
+	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), mapper.ToDeploymentDetailsRes(deployment))
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 

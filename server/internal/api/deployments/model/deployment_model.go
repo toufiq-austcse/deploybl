@@ -18,6 +18,7 @@ type Deployment struct {
 	LastDeployedAt     *time.Time         `bson:"last_deployed_at"`
 	RepositoryProvider string             `bson:"repository_provider"`
 	RepositoryUrl      string             `bson:"repository_url"`
+	RepositoryName     string             `bson:"repository_name"`
 	GitUrl             string             `bson:"git_url"`
 	BranchName         string             `bson:"branch_name"`
 	RootDirectory      *string            `bson:"root_directory"`
