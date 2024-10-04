@@ -46,53 +46,52 @@ func (worker *BuildRepoWorker) InitBuildRepoSubscriber() {
 		fmt.Println("error in build repo subscriber ", err.Error())
 		return
 	}
-	go worker.ProcessBuildRepoMessage(messages)
+	go worker.ProcessBuildRepoMessages(messages)
 
 }
-func (worker *BuildRepoWorker) ProcessBuildRepoMessage(messages <-chan *message.Message) {
-	consumedPayload := payloads.BuildRepoWorkerPayload{}
+func (worker *BuildRepoWorker) ProcessBuildRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		err := json.Unmarshal(msg.Payload, &consumedPayload)
+		deploymentId, err := worker.ProcessBuildRepoMessage(msg)
 		if err != nil {
-			fmt.Println("error in parsing rabbitmq message in pull repo worker", err)
-			msg.Ack()
-			continue
-		}
-		fmt.Println("consumed build job ", consumedPayload)
+			fmt.Println("error in processing build repo message ", err.Error())
 
-		dockerImageTag, buildRepoErr := worker.BuildRepo(consumedPayload)
-		if buildRepoErr != nil {
-			fmt.Println("build error ", buildRepoErr.Error())
-			_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-				"latest_status": enums.FAILED,
-			}, context.Background())
-			if updateErr != nil {
-				fmt.Println("error while updating status... ", updateErr.Error())
+			if deploymentId != "" {
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(deploymentId, enums.FAILED, context.Background())
+				if updateErr != nil {
+					fmt.Println("error in updating deployment status ", updateErr.Error())
+				}
 			}
-
-			msg.Ack()
-			continue
 		}
-		fmt.Println("Docker image built successfully")
-		_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-			"docker_image_tag": dockerImageTag,
-		}, context.Background())
-
-		if updateErr != nil {
-			fmt.Println("error while updating image tag... ", updateErr.Error())
-			msg.Ack()
-			continue
-		}
-
-		publishRunRepoError := worker.PublishRunRepoWork(consumedPayload)
-		if publishRunRepoError != nil {
-			fmt.Println("error in publishing run repo work ", publishRunRepoError.Error())
-		}
-
-		// we need to Acknowledge that we received and processed the message,
-		// otherwise, it will be resent over and over again.
-		msg.Ack()
 	}
+}
+
+func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (string, error) {
+	defer msg.Ack()
+
+	consumedPayload := payloads.BuildRepoWorkerPayload{}
+	err := json.Unmarshal(msg.Payload, &consumedPayload)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println("consumed build job ", consumedPayload)
+
+	dockerImageTag, buildRepoErr := worker.BuildRepo(consumedPayload)
+	if buildRepoErr != nil {
+		return consumedPayload.DeploymentId, buildRepoErr
+	}
+	fmt.Println("Docker image built successfully")
+	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+		"docker_image_tag": dockerImageTag,
+	}, context.Background()); updateErr != nil {
+		return consumedPayload.DeploymentId, updateErr
+	}
+
+	if publishRunRepoError := worker.PublishRunRepoWork(consumedPayload); publishRunRepoError != nil {
+		return consumedPayload.DeploymentId, publishRunRepoError
+	}
+
+	return consumedPayload.DeploymentId, nil
+
 }
 
 func (worker *BuildRepoWorker) PublishBuildRepoJob(workerPayload payloads.BuildRepoWorkerPayload) error {

@@ -48,74 +48,59 @@ func (worker *PullRepoWorker) InitPullRepoSubscriber() {
 		fmt.Println("error in pull repo subscriber ", err.Error())
 		return
 	}
-	go worker.ProcessPullRepoMessage(messages)
+	go worker.ProcessPullRepoMessages(messages)
 
 }
-func (worker *PullRepoWorker) ProcessPullRepoMessage(messages <-chan *message.Message) {
-	consumedPayload := payloads.PullRepoWorkerPayload{}
+func (worker *PullRepoWorker) ProcessPullRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-
-		err := json.Unmarshal(msg.Payload, &consumedPayload)
+		deploymentId, err := worker.ProcessPullRepoMessage(msg)
 		if err != nil {
-			fmt.Println("error in parsing rabbitmq message in pull repo worker", err)
-			msg.Ack()
-			continue
-		}
-		_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-			"latest_status": enums.PULLING,
-		}, context.Background())
-		if updateErr != nil {
-			fmt.Println("error while updating status... ", updateErr.Error())
-			msg.Ack()
-			continue
-		}
-		localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId, consumedPayload.BranchName)
-		if removeErr := os.RemoveAll(localRepoDir); removeErr != nil {
-			_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-				"latest_status": enums.FAILED,
-			}, context.Background())
-			if updateErr != nil {
-				fmt.Println("error while updating status... ", updateErr.Error())
-			}
-			msg.Ack()
-			continue
-		}
-		cloneError := worker.CloneRepo(consumedPayload.GitUrl, consumedPayload.BranchName, localRepoDir)
-		if cloneError != nil {
-			fmt.Println("Cloning error ", cloneError.Error())
-			_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-				"latest_status": enums.FAILED,
-			}, context.Background())
-			if updateErr != nil {
-				fmt.Println("error while updating status... ", updateErr.Error())
-			}
-			msg.Ack()
-			continue
-		}
-		fmt.Println("repository cloned successfully...")
+			fmt.Println("error in processing pull repo message ", err.Error())
 
-		buildRepoWorkPublishErr := worker.PublishBuildRepoWork(consumedPayload)
-		if buildRepoWorkPublishErr != nil {
-			_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-				"latest_status": enums.FAILED,
-			}, context.Background())
-			fmt.Println("error while updating status... ", updateErr.Error())
-			msg.Ack()
-			continue
+			if deploymentId != "" {
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(deploymentId, enums.FAILED, context.Background())
+				if updateErr != nil {
+					fmt.Println("error in updating deployment status ", updateErr.Error())
+				}
+			}
 		}
-		_, updateErr = worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-			"latest_status": enums.BUILDING,
-		}, context.Background())
-		if updateErr != nil {
-			fmt.Println("error while updating status... ", updateErr.Error())
-			msg.Ack()
-			continue
-		}
-
-		msg.Ack()
 	}
 }
 
+func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (string, error) {
+	defer msg.Ack()
+
+	consumedPayload := payloads.PullRepoWorkerPayload{}
+	if err := json.Unmarshal(msg.Payload, &consumedPayload); err != nil {
+		return "", err
+	}
+
+	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+		"latest_status": enums.PULLING,
+	}, context.Background()); updateErr != nil {
+		return consumedPayload.DeploymentId, updateErr
+	}
+
+	localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId, consumedPayload.BranchName)
+	if removeErr := os.RemoveAll(localRepoDir); removeErr != nil {
+		return consumedPayload.DeploymentId, removeErr
+	}
+
+	if cloneError := worker.CloneRepo(consumedPayload.GitUrl, consumedPayload.BranchName, localRepoDir); cloneError != nil {
+		return consumedPayload.DeploymentId, cloneError
+	}
+	fmt.Println("repository cloned successfully...")
+
+	if buildRepoWorkPublishErr := worker.PublishBuildRepoWork(consumedPayload); buildRepoWorkPublishErr != nil {
+		return consumedPayload.DeploymentId, buildRepoWorkPublishErr
+	}
+
+	if _, updateErr := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.BUILDING, context.Background()); updateErr != nil {
+		return consumedPayload.DeploymentId, updateErr
+	}
+
+	return consumedPayload.DeploymentId, nil
+}
 func (worker *PullRepoWorker) PublishPullRepoJob(workerPayload payloads.PullRepoWorkerPayload) error {
 	publisher, err := amqp.NewPublisher(worker.config, watermill.NewStdLogger(false, false))
 	if err != nil {
