@@ -5,6 +5,7 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/repositories/mapper"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
+	"github.com/toufiq-austcse/deployit/pkg/utils"
 	"net/http"
 )
 
@@ -33,6 +34,7 @@ func (controller RepoController) GetRepoDetails(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
+	repoUrl = utils.ParseRepositoryUrl(repoUrl)
 	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&repoUrl)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(code, http.StatusText(code), err.Error(), nil)

@@ -111,7 +111,7 @@ const NewDeploymentPage: NextPage = () => {
                   validateRepositoryForm.control
                 } name="repository_url" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Repository Git Url</FormLabel>
+                    <FormLabel>Repository Url</FormLabel>
                     <FormControl>
                       <Input placeholder="Put your repository git URL here" {...field} />
                     </FormControl>

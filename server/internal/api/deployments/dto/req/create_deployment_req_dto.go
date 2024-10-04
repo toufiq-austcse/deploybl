@@ -1,6 +1,8 @@
 package req
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type CreateDeploymentReqDto struct {
 	Title          string             `json:"title" binding:"required"`
