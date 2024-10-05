@@ -28,11 +28,13 @@ const LoginPage: NextPage = () => {
   const { login } = useAuthContext();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
   });
 
   const onFormSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
     try {
       await login(values.email, values.password);
       router.push('/');
@@ -44,6 +46,8 @@ const LoginPage: NextPage = () => {
       }
       console.log(e.code);
 
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,7 +61,7 @@ const LoginPage: NextPage = () => {
             href={'signup'}
             className="mx-1 underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
           >
-            Signup
+            SignUp
           </Link>
         </p>
         {error && <ErrorAlert error={error} />}
@@ -96,7 +100,7 @@ const LoginPage: NextPage = () => {
             />
             <div className="flex flex-row-reverse">
               <Button
-                //   disabled={loading}
+                disabled={loading}
                 type="submit"
                 size="sm"
                 form="signup-form"

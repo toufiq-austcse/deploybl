@@ -28,6 +28,7 @@ const formSchema = z.object({
 
 const SignUpPage: NextPage = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const { signup } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -35,6 +36,7 @@ const SignUpPage: NextPage = () => {
   });
 
   const onFormSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
     try {
       await signup(values.email, values.password, values.name);
       router.push('/');
@@ -46,7 +48,8 @@ const SignUpPage: NextPage = () => {
       } else {
         setError(err.code);
       }
-
+    } finally {
+      setLoading(false);
     }
 
   };
@@ -113,7 +116,7 @@ const SignUpPage: NextPage = () => {
             />
             <div className="flex flex-row-reverse">
               <Button
-                //   disabled={loading}
+                disabled={loading}
                 type="submit"
                 size="sm"
                 form="signup-form"
