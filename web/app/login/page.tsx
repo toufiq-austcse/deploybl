@@ -8,6 +8,11 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuthContext } from '@/contexts/useAuthContext';
+import { useState } from 'react';
+import ErrorAlert from '@/components/ui/error-alert';
+import PublicRoute from '@/components/public-route';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -20,40 +25,42 @@ const formSchema = z.object({
 
 
 const LoginPage: NextPage = () => {
+  const { login } = useAuthContext();
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
   });
 
   const onFormSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      await login(values.email, values.password);
+      router.push('/');
+    } catch (e) {
+      if (e.code === 'auth/invalid-login-credentials') {
+        setError('Invalid login credentials');
+      } else {
+        setError(e.code);
+      }
+      console.log(e.code);
 
-    // let { data, error } = await userSignup(
-    //   values.name,
-    //   values.email,
-    //   values.password
-    // );
-    // setLoading(false);
-    // if (data) {
-    //   localStorage.setItem('token', data.token.access_token);
-    //   location.reload();
-    // } else {
-    //   setError(error);
-    // }
+    }
   };
 
   return (
     <div className="flex m-5">
       <div className="m-auto h-1/4 w-1/4">
-        <h1 className="text-4xl flex justify-center">Sign Up</h1>
+        <h1 className="text-4xl flex justify-center">Login</h1>
         <p className="flex justify-center">
           {`Don't have an account yet?`}
           <Link
             href={'signup'}
             className="mx-1 underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
           >
-            SignUp
+            Signup
           </Link>
         </p>
+        {error && <ErrorAlert error={error} />}
         <Form {...form}>
           <form id="signup-form" onSubmit={form.handleSubmit(onFormSubmit)}>
             <FormField
@@ -105,4 +112,4 @@ const LoginPage: NextPage = () => {
   );
 
 };
-export default LoginPage;
+export default PublicRoute(LoginPage);

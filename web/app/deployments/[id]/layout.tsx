@@ -5,6 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import DeploymentDetailsNavbar from '@/components/ui/deployment-details-navbar';
 import DeploymentDetails from '@/components/ui/deployment-details';
 import { DeploymentContextProvider } from '@/contexts/useDeploymentContext';
+import PrivateRoute from '@/components/private-route';
 
 
 const DeploymentDetailsLayout = ({ children, params }: {
@@ -29,4 +30,4 @@ const DeploymentDetailsLayout = ({ children, params }: {
 
   );
 };
-export default DeploymentDetailsLayout;
+export default PrivateRoute(DeploymentDetailsLayout);

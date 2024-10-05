@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { convertEnvToObj } from '@/lib/utils';
+import PrivateRoute from '@/components/private-route';
 
 const validateRepositorySchema = z.object({
   repository_url: z
@@ -247,4 +248,4 @@ const NewDeploymentPage: NextPage = () => {
     </div>
   );
 };
-export default NewDeploymentPage;
+export default PrivateRoute(NewDeploymentPage);

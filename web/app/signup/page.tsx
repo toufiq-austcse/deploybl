@@ -1,13 +1,17 @@
-'use client'
+'use client';
 import { NextPage } from 'next';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-
 import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuthContext } from '@/contexts/useAuthContext';
+import { useState } from 'react';
+import ErrorAlert from '@/components/ui/error-alert';
+import PublicRoute from '@/components/public-route';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   name: z.string({
@@ -23,25 +27,28 @@ const formSchema = z.object({
 
 
 const SignUpPage: NextPage = () => {
+  const router = useRouter();
+  const { signup } = useAuthContext();
+  const [error, setError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
   });
 
   const onFormSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      await signup(values.email, values.password, values.name);
+      router.push('/');
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') {
+        setError('Email already in use');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Weak password');
+      } else {
+        setError(err.code);
+      }
 
-    // let { data, error } = await userSignup(
-    //   values.name,
-    //   values.email,
-    //   values.password
-    // );
-    // setLoading(false);
-    // if (data) {
-    //   localStorage.setItem('token', data.token.access_token);
-    //   location.reload();
-    // } else {
-    //   setError(error);
-    // }
+    }
+
   };
 
   return (
@@ -57,6 +64,7 @@ const SignUpPage: NextPage = () => {
             Login
           </Link>
         </p>
+        {error && <ErrorAlert error={error} />}
         <Form {...form}>
           <form id="signup-form" onSubmit={form.handleSubmit(onFormSubmit)}>
             <FormField
@@ -121,4 +129,4 @@ const SignUpPage: NextPage = () => {
   );
 
 };
-export default SignUpPage;
+export default PublicRoute(SignUpPage);

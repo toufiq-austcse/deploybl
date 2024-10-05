@@ -1,13 +1,10 @@
-import { useAuthContext } from "@/contexts/useAuthContext";
-import React, { useEffect } from "react";
-import { useRouter } from "next/router";
+import { useAuthContext } from '@/contexts/useAuthContext';
+import React, { ComponentType, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-type PrivateRouteProps = {
-  Component: React.ComponentType<any>;
-};
 
-const PrivateRoute = ({ Component }: PrivateRouteProps) => {
-  const Auth = (props: any) => {
+const PrivateRoute =<P extends object>(Component: ComponentType<P>) => {
+  return (props: any) => {
     const { currentUser } = useAuthContext();
     const router = useRouter();
     // If user is not logged in, return login component
@@ -21,8 +18,6 @@ const PrivateRoute = ({ Component }: PrivateRouteProps) => {
 
     return <Component {...props} />;
   };
-
-  return Auth;
 };
 
 export default PrivateRoute;
