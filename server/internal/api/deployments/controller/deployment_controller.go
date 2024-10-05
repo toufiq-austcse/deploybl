@@ -10,6 +10,7 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
+	"github.com/toufiq-austcse/deployit/pkg/utils"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"strconv"
@@ -45,13 +46,15 @@ func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deployme
 // @Success  200
 // @Router   /deployments [get]
 func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
+	user := utils.GetUserFromContext(context)
+	fmt.Println("user ", user)
 	page, _ := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
 	limit, _ := strconv.ParseInt(context.DefaultQuery("limit", "10"), 10, 64)
 	if page < 1 {
 		page = 1
 	}
 
-	deployments, pagination, err := controller.deploymentService.ListDeployment(page, limit, context)
+	deployments, pagination, err := controller.deploymentService.ListDeployment(page, limit, user.Id, context)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
@@ -73,6 +76,7 @@ func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 // @Success  200
 // @Router   /deployments [post]
 func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
+	user := utils.GetUserFromContext(context)
 	body := &req.CreateDeploymentReqDto{}
 	if err := body.Validate(context); err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, "Bad Request", err.Error(), nil)
@@ -97,7 +101,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 	}
 	existingDeployment := controller.deploymentService.FindBySubDomainName(&githubRes.Name, context)
 
-	newDeployment := mapper.MapCreateDeploymentReqToSave(body, "github", githubRes, existingDeployment)
+	newDeployment := mapper.MapCreateDeploymentReqToSave(body, "github", githubRes, existingDeployment, user)
 	createErr := controller.deploymentService.Create(newDeployment, context)
 	if createErr != nil {
 		if mongo.IsDuplicateKeyError(createErr) {
@@ -126,6 +130,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 // @Router   /deployments/{id} [patch]
 func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	deploymentId := context.Param("id")
+	user := utils.GetUserFromContext(context)
 	body := &req.UpdateDeploymentReqDto{}
 
 	if err := body.Validate(context); err != nil {
@@ -134,7 +139,7 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		return
 	}
 
-	deployment := controller.deploymentService.FindById(deploymentId, context)
+	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
@@ -208,7 +213,8 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		return
 	}
 	deploymentId := context.Param("id")
-	deployment := controller.deploymentService.FindById(deploymentId, context)
+	user := utils.GetUserFromContext(context)
+	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
@@ -241,7 +247,7 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		return
 	}
 	go func() {
-		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeploymenet(*deployment)
+		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(*deployment)
 		publishJobErr := controller.runRepoWorker.PublishRunRepoJob(runRepoJobPayload)
 		if publishJobErr != nil {
 			fmt.Println("error while publishing job ", publishJobErr.Error())
@@ -264,7 +270,8 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 // @Router   /deployments/{id} [get]
 func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 	deploymentId := context.Param("id")
-	deployment := controller.deploymentService.FindById(deploymentId, context)
+	user := utils.GetUserFromContext(context)
+	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
@@ -277,6 +284,7 @@ func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 
 func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Context) {
 	idsQuery, ok := context.GetQuery("ids")
+	user := utils.GetUserFromContext(context)
 	if !ok {
 		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "ids is required in query param", nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
@@ -284,7 +292,7 @@ func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Cont
 	}
 	idsArray := strings.Split(idsQuery, ",")
 
-	deployments, err := controller.deploymentService.GetLatestStatusByIds(idsArray, context)
+	deployments, err := controller.deploymentService.GetLatestStatusByIds(idsArray, user.Id, context)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)

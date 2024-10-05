@@ -20,7 +20,7 @@ type DeploymentService struct {
 
 func NewDeploymentService(database *mongo.Database, dockerService *DockerService) *DeploymentService {
 	collection := database.Collection("deployments")
-	model.CreateDeploymentIndex(collection)
+	go model.CreateDeploymentIndex(collection)
 	return &DeploymentService{deploymentCollection: collection, dockerService: dockerService}
 }
 
@@ -45,6 +45,7 @@ func (service *DeploymentService) FindById(id string, ctx context.Context) *mode
 	if err != nil {
 		return nil
 	}
+
 	filter := bson.M{"_id": oId}
 	err = service.deploymentCollection.FindOne(ctx, filter).Decode(&deployment)
 	if err != nil {
@@ -53,10 +54,27 @@ func (service *DeploymentService) FindById(id string, ctx context.Context) *mode
 	return deployment
 }
 
-func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.Context) ([]*model.Deployment, *api_response.Pagination, error) {
+func (service *DeploymentService) FindUserDeploymentById(id string, userId primitive.ObjectID, ctx context.Context) *model.Deployment {
+	var deployment *model.Deployment
+	oId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil
+	}
+
+	filter := bson.M{"_id": oId, "user_id": userId}
+	err = service.deploymentCollection.FindOne(ctx, filter).Decode(&deployment)
+	if err != nil {
+		return nil
+	}
+	return deployment
+}
+
+func (service *DeploymentService) ListDeployment(page, limit int64, userId primitive.ObjectID, ctx context.Context) ([]*model.Deployment, *api_response.Pagination, error) {
 	deployments := []*model.Deployment{}
 
-	totalDocs, err := service.deploymentCollection.CountDocuments(ctx, bson.D{})
+	filter := bson.M{"user_id": userId}
+
+	totalDocs, err := service.deploymentCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return deployments, nil, err
 	}
@@ -66,7 +84,7 @@ func (service *DeploymentService) ListDeployment(page, limit int64, ctx context.
 	skip := page*limit - limit
 	findOptions.SetSort(bson.M{"created_at": -1}).SetLimit(limit).SetSkip(skip)
 
-	cursor, err := service.deploymentCollection.Find(ctx, bson.D{}, findOptions)
+	cursor, err := service.deploymentCollection.Find(ctx, filter, findOptions)
 	if err != nil {
 		return deployments, nil, err
 	}
@@ -110,7 +128,7 @@ func (service *DeploymentService) UpdateDeployment(deploymentId string, updates 
 	return service.FindById(deploymentId, ctx), err
 }
 
-func (service *DeploymentService) GetLatestStatusByIds(ids []string, ctx context.Context) ([]*model.Deployment, error) {
+func (service *DeploymentService) GetLatestStatusByIds(ids []string, userId primitive.ObjectID, ctx context.Context) ([]*model.Deployment, error) {
 	objectIds := []primitive.ObjectID{}
 	deployments := []*model.Deployment{}
 
@@ -121,7 +139,7 @@ func (service *DeploymentService) GetLatestStatusByIds(ids []string, ctx context
 		}
 		objectIds = append(objectIds, oId)
 	}
-	filter := bson.M{"_id": bson.M{"$in": objectIds}}
+	filter := bson.M{"_id": bson.M{"$in": objectIds}, "user_id": userId}
 	projection := bson.M{
 		"latest_status":    1,
 		"last_deployed_at": 1,

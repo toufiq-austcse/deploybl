@@ -12,6 +12,7 @@ import (
 
 type Deployment struct {
 	Id                 primitive.ObjectID `bson:"_id"`
+	UserId             primitive.ObjectID `bson:"user_id"`
 	Title              string             `bson:"title"`
 	SubDomainName      string             `bson:"sub_domain_name"`
 	LatestStatus       string             `bson:"latest_status"`

@@ -7,13 +7,14 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/res"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
+	userModel "github.com/toufiq-austcse/deployit/internal/api/users/model"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github/api_res"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strconv"
 	"time"
 )
 
-func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider string, githubRes *api_res.GithubRepoRes, existingDeployment *model.Deployment) *model.Deployment {
+func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider string, githubRes *api_res.GithubRepoRes, existingDeployment *model.Deployment, user *userModel.User) *model.Deployment {
 	subDomainName := githubRes.Name
 	if existingDeployment != nil {
 		subDomainName += "-" + strconv.FormatInt(time.Now().UnixMilli(), 10)
@@ -21,6 +22,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider stri
 
 	return &model.Deployment{
 		Id:                 primitive.NewObjectID(),
+		UserId:             user.Id,
 		Title:              dto.Title,
 		SubDomainName:      subDomainName,
 		LatestStatus:       enums.QUEUED,
@@ -140,7 +142,7 @@ func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload) payloads.Ru
 		DeploymentId: payload.DeploymentId,
 	}
 }
-func ToRunRepoWorkerPayloadFromDeploymenet(deployment model.Deployment) payloads.RunRepoWorkerPayload {
+func ToRunRepoWorkerPayloadFromDeployment(deployment model.Deployment) payloads.RunRepoWorkerPayload {
 	return payloads.RunRepoWorkerPayload{
 		DeploymentId: deployment.Id.Hex(),
 	}

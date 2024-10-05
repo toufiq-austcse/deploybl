@@ -156,7 +156,7 @@ const HomePage: NextPage = () => {
     }
 
 
-  }, [deploymentList]);
+  }, [deploymentList.length]);
 
   const updateLatestStatus = (deployments: DeploymentType[]) => {
     let deploymentIds = deployments.map((deployment) => deployment._id);
