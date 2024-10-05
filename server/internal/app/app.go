@@ -14,7 +14,10 @@ import (
 	indexRouter "github.com/toufiq-austcse/deployit/internal/api/index/router"
 	repoController "github.com/toufiq-austcse/deployit/internal/api/repositories/controller"
 	repoRouter "github.com/toufiq-austcse/deployit/internal/api/repositories/router"
+	"github.com/toufiq-austcse/deployit/internal/api/users/service"
+	"github.com/toufiq-austcse/deployit/internal/middleware"
 	"github.com/toufiq-austcse/deployit/internal/server"
+	"github.com/toufiq-austcse/deployit/pkg/firebase"
 	"go.uber.org/dig"
 	"time"
 )
@@ -46,14 +49,23 @@ func Run(configPath string) error {
 }
 func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 	err := container.Invoke(func(deploymentController *controller.DeploymentController,
-		repoController *repoController.RepoController, subscriber *worker.PullRepoWorker) {
+		repoController *repoController.RepoController,
+		subscriber *worker.PullRepoWorker,
+		firebaseClient *firebase.Client,
+		userService *service.UserService,
+	) {
 		indexRouterGroup := apiServer.GinEngine.Group("")
 		indexRouter.Setup(indexRouterGroup)
 
 		deploymentsRouterGroup := apiServer.GinEngine.Group("deployments")
+		deploymentsRouterGroup.Use(middleware.AuthMiddleware(firebaseClient, userService))
 		deploymentRouter.Setup(deploymentsRouterGroup, deploymentController)
 
+		deploymentCronRouterGroup := apiServer.GinEngine.Group("deployments")
+		deploymentRouter.SetupDeploymentCronRouter(deploymentCronRouterGroup, deploymentController)
+
 		repositoriesRouterGroup := apiServer.GinEngine.Group("repositories")
+		repositoriesRouterGroup.Use(middleware.AuthMiddleware(firebaseClient, userService))
 		repoRouter.Setup(repositoriesRouterGroup, repoController)
 
 	})

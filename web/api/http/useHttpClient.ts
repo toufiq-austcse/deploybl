@@ -7,16 +7,22 @@ import {
   DeploymentType, PaginationType,
   RepoDetailsType, UpdateDeploymentReqBody
 } from '@/api/http/types/deployment_type';
+import { useAuthContext } from '@/contexts/useAuthContext';
 
 export function useHttpClient() {
   const [loading, setLoading] = React.useState(false);
+  const { currentUser } = useAuthContext();
 
   const getDeploymentDetails = async (deploymentId: string): Promise<DeploymentDetailsType> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}`;
 
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
       return response.data.data;
     } catch (err) {
       let message = (err as any).message;
@@ -35,7 +41,11 @@ export function useHttpClient() {
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments?page=${page}&limit=${limit}`;
 
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
       return {
         data: response.data.data,
         pagination: response.data.pagination,
@@ -71,7 +81,11 @@ export function useHttpClient() {
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/repositories?repo_url=${repoUrl}`;
 
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
       return {
         data: response.data.data,
         error: null
@@ -97,7 +111,11 @@ export function useHttpClient() {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments`;
-      const response = await axios.post(url, body);
+      const response = await axios.post(url, body, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
       return {
         data: response.data.data,
         error: null
@@ -116,7 +134,11 @@ export function useHttpClient() {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/latest-status?ids=${deploymentIds}`;
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
       return {
         data: response.data.data,
         error: null
@@ -135,7 +157,11 @@ export function useHttpClient() {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}`;
-      const response = await axios.patch(url, body);
+      const response = await axios.patch(url, body, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
       return {
         data: response.data.data,
         error: null
@@ -154,7 +180,11 @@ export function useHttpClient() {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/env`;
-      const response = await axios.patch(url, env);
+      const response = await axios.patch(url, env, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
       return {
         data: response.data.data,
         error: null

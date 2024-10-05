@@ -6,7 +6,10 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker"
 	repoController "github.com/toufiq-austcse/deployit/internal/api/repositories/controller"
+	userService "github.com/toufiq-austcse/deployit/internal/api/users/service"
 	"github.com/toufiq-austcse/deployit/pkg/db/providers/mongodb"
+	firebaseClient "github.com/toufiq-austcse/deployit/pkg/firebase"
+
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
 	"go.uber.org/dig"
 	"os/exec"
@@ -18,7 +21,9 @@ func NewDiContainer() (*dig.Container, error) {
 	}{
 		mongodb.New,
 		github.NewGithubHttpClient,
+		firebaseClient.NewFirebaseClient,
 		service.NewDeploymentService,
+		userService.NewUserService,
 		service.NewDockerService,
 		controller.NewDeploymentController,
 		repoController.NewRepoController,

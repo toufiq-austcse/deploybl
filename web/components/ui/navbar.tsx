@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 const Navbar = () => {
   const router = useRouter();
   const { currentUser, logout } = useAuthContext();
+  console.log(  'currentUser', currentUser);
 
   const onLogOutClick = async () => {
     await logout();

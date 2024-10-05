@@ -28,6 +28,7 @@ RUN cp /build/app .
 FROM golang:${GO_VERSION}-alpine
 COPY --from=builder /bin /
 COPY --from=builder /build/docs ./docs
+COPY deploybl-7a03d-firebase-adminsdk-snvhm-7e1ee4d952.json /deploybl-7a03d-firebase-adminsdk-snvhm-7e1ee4d952.json
 RUN apk add git
 RUN apk add docker
 
