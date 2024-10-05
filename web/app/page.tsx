@@ -25,6 +25,7 @@ import { IoMdAdd } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
 import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { onCopyUrlClicked } from '@/lib/utils';
+import PrivateRoute from '@/components/private-route';
 
 
 const columns: ColumnDef<DeploymentType>[] = [
@@ -253,4 +254,4 @@ const HomePage: NextPage = () => {
     </div>
   );
 };
-export default HomePage;
+export default PrivateRoute(HomePage);

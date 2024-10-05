@@ -1,27 +1,23 @@
-import { useAuthContext } from "@/contexts/useAuthContext";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useAuthContext } from '@/contexts/useAuthContext';
+import { ComponentType, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-type PublicRoutePros = {
-  Component: React.ComponentType<any>;
-};
-const PublicRoute = ({ Component }: PublicRoutePros) => {
-  const Auth = (props: { props: any }) => {
+// Function that takes a component and returns a new component
+const PublicRoute = <P extends object>(Component: ComponentType<P>) => {
+  // Return a new functional component
+  return (props: P) => {
     const { currentUser } = useAuthContext();
-    console.log("currentUser -", currentUser);
     const router = useRouter();
 
     useEffect(() => {
       if (currentUser) {
-        router.push("/");
-        return;
+        router.push('/');
       }
-    }, []);
+    }, [currentUser, router]);
 
+    // If user is not authenticated, render the component
     return <Component {...props} />;
   };
-
-  return Auth;
 };
 
 export default PublicRoute;

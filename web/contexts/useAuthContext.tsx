@@ -1,140 +1,79 @@
-import React, { useContext, useEffect } from "react";
-import { AuthRes, UserRes } from "@/contexts/types/auth-res";
-import axios, { AxiosError } from "axios";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile, UserCredential
+} from 'firebase/auth';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import '../firebase';
 
 type AuthContextType = {
-  currentUser: UserRes | null;
-  authToken: string | null;
-  getCurrentUser: () => void;
-  userLogin: (
-    email: string,
-    password: string,
-  ) => Promise<{
-    data: AuthRes | null;
-    error: string | null;
-  }>;
-  userSignup: (
-    name: string,
-    email: string,
-    password: string,
-  ) => Promise<{
-    data: AuthRes | null;
-    error: string | null;
-  }>;
-};
+  currentUser: any;
+  signup: (email: string, password: string, username: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<UserCredential>;
+  logout: () => Promise<void>;
 
-const AuthContext = React.createContext({} as AuthContextType);
+}
 
-type AuthProviderProps = {
-  children: React.ReactNode;
-};
+const AuthContext = createContext({} as AuthContextType);
 export const useAuthContext = () => {
   return useContext(AuthContext);
 };
-export const AuthContextProvider = ({ children }: AuthProviderProps) => {
-  const [initialLoading, setInitialLoading] = React.useState<boolean>(true);
-  const [currentUser, setCurrentUser] = React.useState<UserRes | null>(null);
-  const [authToken, setAuthToken] = React.useState<string | null>(null);
+
+export const AuthProvider = ({ children }) => {
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState();
 
   useEffect(() => {
-    getCurrentUser();
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user as any);
+      setLoading(false);
+    });
+
+    return unsubscribe;
   }, []);
 
-  const getCurrentUser = async () => {
-    let token = localStorage.getItem("token");
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      let url = `${process.env.NEXT_PUBLIC_VIDEO_TOUCH_API_URL}/v1/auth/me`;
-      try {
-        let response = await axios.get(url);
-        setCurrentUser(response.data.data);
-        setAuthToken(token);
-      } catch (err) {
-        console.log("err getCurrentUser ", err);
-        localStorage.clear();
-        location.reload();
-      } finally {
-        setInitialLoading(false);
-      }
-    } else {
-      setInitialLoading(false);
-    }
+  // signup function
+  const signup = async (email: string, password: string, username: string) => {
+    const auth = getAuth();
+    await createUserWithEmailAndPassword(auth, email, password);
+
+    // update profile
+    await updateProfile(auth.currentUser, {
+      displayName: username
+    });
+
+    const user = auth.currentUser;
+    setCurrentUser({
+      ...user
+    } as any);
   };
 
-  const handleError = (err: any) => {
-    if (axios.isAxiosError(err)) {
-      let error = "";
-      let errorResponse: any = (err as AxiosError).response?.data;
-      if (errorResponse) {
-        error = errorResponse.errors.join(",");
-      } else {
-        error = (err as AxiosError).message;
-      }
-      return { data: null, error };
-    }
-    let message = (err as any).message;
-    return { data: null, error: message };
+  // login function
+  const login = async (email: string, password: string) => {
+    const auth = getAuth();
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const userLogin = async (
-    email: string,
-    password: string,
-  ): Promise<{
-    data: AuthRes | null;
-    error: string | null;
-  }> => {
-    console.log("userLogin ", process.env.NEXT_PUBLIC_VIDEO_TOUCH_API_URL);
-    try {
-      let url = `${process.env.NEXT_PUBLIC_VIDEO_TOUCH_API_URL}/v1/auth/login`;
-      const response = await axios.post(url, {
-        email: email,
-        password: password,
-      });
-
-      return {
-        data: response.data.data,
-        error: null,
-      };
-    } catch (err) {
-      return handleError(err);
-    }
-  };
-
-  const userSignup = async (
-    name: string,
-    email: string,
-    password: string,
-  ): Promise<{
-    data: AuthRes | null;
-    error: string | null;
-  }> => {
-    try {
-      let url = `${process.env.NEXT_PUBLIC_VIDEO_TOUCH_API_URL}/v1/auth/signup`;
-      const response = await axios.post(url, {
-        name: name,
-        email: email,
-        password: password,
-      });
-
-      return {
-        data: response.data.data,
-        error: null,
-      };
-    } catch (err) {
-      return handleError(err);
-    }
+  // logout function
+  const logout = async () => {
+    const auth = getAuth();
+    return signOut(auth);
   };
 
   const value: AuthContextType = {
     currentUser,
-    authToken,
-    getCurrentUser,
-    userLogin,
-    userSignup,
+    signup,
+    login,
+    logout
   };
+
   return (
     <AuthContext.Provider value={value}>
-      {!initialLoading && children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

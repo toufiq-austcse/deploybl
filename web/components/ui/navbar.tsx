@@ -9,13 +9,16 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const Navbar = () => {
-  const { currentUser } = useAuthContext();
+  const router = useRouter();
+  const { currentUser, logout } = useAuthContext();
 
-  const onLogOutClick = () => {
-    localStorage.clear();
-    location.reload();
+  const onLogOutClick = async () => {
+    await logout();
+    router.push('/login');
+
   };
   return (
     <nav className="bg-gray-800">
@@ -80,15 +83,15 @@ const Navbar = () => {
                     <DropdownMenuTrigger asChild>
                       <h1
                         className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white underline hover:cursor-pointer">
-                        {currentUser.name}
+                        {currentUser.displayName}
                       </h1>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={onLogOutClick}>
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span onClick={onLogOutClick}>Log out</span>
+                        <span>Log out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
