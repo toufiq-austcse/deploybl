@@ -26,105 +26,8 @@ import { useRouter } from 'next/navigation';
 import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { onCopyUrlClicked } from '@/lib/utils';
 import PrivateRoute from '@/components/private-route';
+import { toast } from 'sonner';
 
-
-const columns: ColumnDef<DeploymentType>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          (table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && 'indeterminate')) as boolean
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false
-  },
-
-  {
-    accessorKey: 'title',
-    header: 'Title',
-    cell: ({ row }) => {
-      return (
-        <Link className="flex space-x-4" href={`/deployments/${row.original._id}/settings`}>
-          <div className="lowercase font-medium">{row.getValue('title')}</div>
-        </Link>
-      );
-    }
-  },
-  {
-    accessorKey: 'latest_status',
-    header: 'Status',
-    cell: ({ row }) => {
-      let status: string = row.getValue('latest_status');
-      return <DeploymentStatusBadge status={status} />;
-    }
-  },
-  {
-    accessorKey: 'repository_provider',
-    header: 'Provider',
-    cell: ({ row }) => {
-      return <div>{row.getValue('repository_provider')}</div>;
-    }
-  },
-  {
-    accessorKey: 'last_deployed_at',
-    header: 'Last Deployed At',
-    cell: ({ row }) => {
-      let lastDeployedAt = row.getValue('last_deployed_at');
-      if (!lastDeployedAt) {
-        return <div>Not Deployed Yet</div>;
-      }
-      const date = new Date(row.getValue('last_deployed_at')).toDateString();
-
-      return <div>{date}</div>;
-    }
-  },
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const deployment = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE ? <>
-              <DropdownMenuItem
-                onClick={() => onCopyUrlClicked(deployment.domain_url)}
-              >
-                Copy URL
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => window.open(deployment.domain_url, '_blank')}
-              >
-                Visit
-              </DropdownMenuItem></> : null}
-            <DropdownMenuSeparator />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    }
-  }
-];
 
 const HomePage: NextPage = () => {
   const router = useRouter();
@@ -132,8 +35,122 @@ const HomePage: NextPage = () => {
   let [pageIndex, setPageIndex] = useState(1);
   let [pagination, setPagination] = useState<PaginationType>();
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
-  let { listDeployments, getDeploymentLatestStatus } = useHttpClient();
+  let { listDeployments, getDeploymentLatestStatus, restartDeployment, rebuildAndDeploy } = useHttpClient();
   let [loading, setLoading] = useState(true);
+
+  const columns: ColumnDef<DeploymentType>[] = [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            (table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && 'indeterminate')) as boolean
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false
+    },
+
+    {
+      accessorKey: 'title',
+      header: 'Title',
+      cell: ({ row }) => {
+        return (
+          <Link className="flex space-x-4" href={`/deployments/${row.original._id}/settings`}>
+            <div className="lowercase font-medium">{row.getValue('title')}</div>
+          </Link>
+        );
+      }
+    },
+    {
+      accessorKey: 'latest_status',
+      header: 'Status',
+      cell: ({ row }) => {
+        let status: string = row.getValue('latest_status');
+        return <DeploymentStatusBadge status={status} />;
+      }
+    },
+    {
+      accessorKey: 'repository_provider',
+      header: 'Provider',
+      cell: ({ row }) => {
+        return <div>{row.getValue('repository_provider')}</div>;
+      }
+    },
+    {
+      accessorKey: 'last_deployed_at',
+      header: 'Last Deployed At',
+      cell: ({ row }) => {
+        let lastDeployedAt = row.getValue('last_deployed_at');
+        if (!lastDeployedAt) {
+          return <div>Not Deployed Yet</div>;
+        }
+        const date = new Date(row.getValue('last_deployed_at')).toDateString();
+
+        return <div>{date}</div>;
+      }
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const deployment = row.original;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE && <DropdownMenuItem
+                onClick={() => onCopyUrlClicked(deployment.domain_url)}
+              >
+                Copy URL
+              </DropdownMenuItem>}
+              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE && <DropdownMenuItem
+                onClick={() => window.open(deployment.domain_url, '_blank')}
+              >
+                Visit
+              </DropdownMenuItem>}
+              <DropdownMenuItem
+                onClick={() => onRebuildAndDeployClick(deployment._id)}
+              >
+                Rebuild & Deploy
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onRestartClick(deployment._id)}
+              >
+                Restart
+              </DropdownMenuItem>
+              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE ? <>
+              </> : null}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link href={`/deployments/${deployment._id}/settings`}>
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      }
+    }
+  ];
 
   useEffect(() => {
     if (deploymentList.length === 0) {
@@ -214,13 +231,29 @@ const HomePage: NextPage = () => {
     }
     listDeployments(pageIndex - 1, pageSize).then(response => {
       if (response.error) {
-        console.log(response.error);
-      } else {
-        setPageIndex((prev) => prev - 1);
-        setDeploymentList(response.data as DeploymentType[]);
-        setPagination(response.pagination as PaginationType);
+        toast.error(response.error);
+        return;
       }
+      setPageIndex((prev) => prev - 1);
+      setDeploymentList(response.data as DeploymentType[]);
+      setPagination(response.pagination as PaginationType);
     });
+  };
+  const onRestartClick = async (deploymentId: string) => {
+    let response = await restartDeployment(deploymentId);
+    if (response.error) {
+      toast.error(response.error);
+      return;
+    }
+    toast('Deployment restarting...');
+  };
+  const onRebuildAndDeployClick = async (deploymentId: string) => {
+    let response = await rebuildAndDeploy(deploymentId);
+    if (response.error) {
+      toast.error(response.error);
+      return;
+    }
+    toast('Deployment rebuilding and deploying...');
   };
 
   return (

@@ -325,7 +325,7 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 
 }
 
-// DeploymentRebuildAndDeploy
+// DeploymentRebuildAndReDeploy
 // @Summary  Rebuild and Deploy Deployment
 // @Tags     Deployments
 // @Param    id  path  string  true  "Deployment ID"
@@ -333,7 +333,7 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 // @Produce  json
 // @Success  200
 // @Router   /deployments/{id}/rebuild-and-redeploy [post]
-func (controller *DeploymentController) DeploymentRebuildAndDeploy(context *gin.Context) {
+func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
 	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
