@@ -6,6 +6,14 @@ import moment from 'moment';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 import { onCopyUrlClicked } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 const DeploymentDetails = () => {
   const { deploymentDetails, updateLatestDeploymentStatus } = useDeploymentContext();
@@ -47,6 +55,17 @@ const DeploymentDetails = () => {
               <FaRegCopy className="cursor-pointer" onClick={() => onCopyUrlClicked(deploymentDetails.domain_url)} />
             </div>
           </div>}
+        </div>
+        <div>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white underline hover:cursor-pointer">Actions</DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>Restart</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Rebuild & Rdeploy</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
         </div>
 
         <div className="flex flex-row-reverse min-w-50">
