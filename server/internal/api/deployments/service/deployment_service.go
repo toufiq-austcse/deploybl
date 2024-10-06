@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"go.mongodb.org/mongo-driver/bson"
@@ -207,4 +208,16 @@ func (service *DeploymentService) UpdateLatestStatus(deploymentId string, status
 	return service.UpdateDeployment(deploymentId, map[string]interface{}{
 		"latest_status": status,
 	}, context)
+}
+func (service *DeploymentService) IsRestartable(deployment *model.Deployment) bool {
+	if deployment.LatestStatus == enums.LIVE || deployment.LatestStatus == enums.STOPPED || deployment.LatestStatus == enums.FAILED {
+		return true
+	}
+	return false
+}
+func (service *DeploymentService) IsRebuildAble(deployment *model.Deployment) bool {
+	if deployment.LatestStatus == enums.LIVE || deployment.LatestStatus == enums.STOPPED || deployment.LatestStatus == enums.FAILED {
+		return true
+	}
+	return false
 }

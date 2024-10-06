@@ -282,6 +282,88 @@ func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 
+// DeploymentRestart
+// @Summary  Restart Deployment
+// @Tags     Deployments
+// @Param    id  path  string  true  "Deployment ID"
+// @Accept   json
+// @Produce  json
+// @Success  200
+// @Router   /deployments/{id}/restart [post]
+func (controller *DeploymentController) DeploymentRestart(context *gin.Context) {
+	deploymentId := context.Param("id")
+	user := utils.GetUserFromContext(context)
+	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	if deployment == nil {
+		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	if !controller.deploymentService.IsRestartable(deployment) {
+		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "deployment is not restartable", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	go func() {
+		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(*deployment)
+		publishJobErr := controller.runRepoWorker.PublishRunRepoJob(runRepoJobPayload)
+		if publishJobErr != nil {
+			fmt.Println("error while publishing job ", publishJobErr.Error())
+		}
+	}()
+
+	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
+
+	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
+
+}
+
+// DeploymentRebuildAndDeploy
+// @Summary  Rebuild and Deploy Deployment
+// @Tags     Deployments
+// @Param    id  path  string  true  "Deployment ID"
+// @Accept   json
+// @Produce  json
+// @Success  200
+// @Router   /deployments/{id}/rebuild-and-redeploy [post]
+func (controller *DeploymentController) DeploymentRebuildAndDeploy(context *gin.Context) {
+	deploymentId := context.Param("id")
+	user := utils.GetUserFromContext(context)
+	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	if deployment == nil {
+		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	if !controller.deploymentService.IsRebuildAble(deployment) {
+		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "deployment is not rebuildable", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	go func() {
+		controller.pullRepoWorker.PublishPullRepoWork(updatedDeployment)
+	}()
+
+	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
+
+	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
+
+}
+
 func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Context) {
 	idsQuery, ok := context.GetQuery("ids")
 	user := utils.GetUserFromContext(context)
