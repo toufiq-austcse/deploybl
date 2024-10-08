@@ -239,6 +239,28 @@ export function useHttpClient() {
       setLoading(false);
     }
   };
+  const stopDeployment = async (deploymentId: string): Promise<{
+    data: DeploymentDetailsType | null;
+    error: string | null;
+  }> => {
+    setLoading(true);
+    try {
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/stop`;
+      const response = await axios.post(url, {}, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
+      return {
+        data: response.data.data,
+        error: null
+      };
+    } catch (err) {
+      return handleError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return {
@@ -251,6 +273,7 @@ export function useHttpClient() {
     updateDeploymentEnv,
     rebuildAndDeploy,
     restartDeployment,
+    stopDeployment,
     loading
   };
 };

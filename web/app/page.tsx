@@ -128,12 +128,12 @@ const HomePage: NextPage = () => {
                 Visit
               </DropdownMenuItem>}
               <DropdownMenuItem
-                onClick={() => onRebuildAndDeployClick(deployment._id)}
+                onClick={() => onRebuildAndDeployClicked(deployment._id)}
               >
                 Rebuild & Deploy
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => onRestartClick(deployment._id)}
+                onClick={() => onRestartClicked(deployment._id)}
               >
                 Restart
               </DropdownMenuItem>
@@ -239,7 +239,7 @@ const HomePage: NextPage = () => {
       setPagination(response.pagination as PaginationType);
     });
   };
-  const onRestartClick = async (deploymentId: string) => {
+  const onRestartClicked = async (deploymentId: string) => {
     let response = await restartDeployment(deploymentId);
     if (response.error) {
       toast.error(response.error);
@@ -247,7 +247,7 @@ const HomePage: NextPage = () => {
     }
     toast('Deployment restarting...');
   };
-  const onRebuildAndDeployClick = async (deploymentId: string) => {
+  const onRebuildAndDeployClicked = async (deploymentId: string) => {
     let response = await rebuildAndDeploy(deploymentId);
     if (response.error) {
       toast.error(response.error);

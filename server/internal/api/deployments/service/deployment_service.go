@@ -221,3 +221,10 @@ func (service *DeploymentService) IsRebuildAble(deployment *model.Deployment) bo
 	}
 	return false
 }
+
+func (service *DeploymentService) IsStopAble(deployment *model.Deployment) bool {
+	if deployment.LatestStatus == enums.LIVE {
+		return true
+	}
+	return false
+}

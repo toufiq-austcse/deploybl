@@ -85,3 +85,18 @@ func (dockerService *DockerService) ListRunningContainerIds() ([]string, error) 
 
 	return containerIds, nil
 }
+func (dockerService *DockerService) StopContainer(containerId string) error {
+	cmd := exec.Command("docker", "stop", containerId[:5])
+	var out bytes.Buffer
+	var err bytes.Buffer
+
+	cmd.Stdout = &out
+	cmd.Stderr = &err
+
+	fmt.Println("executing " + cmd.String())
+	runErr := cmd.Run()
+	if runErr != nil {
+		return errors.New(err.String())
+	}
+	return nil
+}

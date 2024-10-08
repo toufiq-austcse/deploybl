@@ -13,6 +13,7 @@ func Setup(group *gin.RouterGroup, controller *controller.DeploymentController) 
 	group.GET(":id", controller.DeploymentShow)
 	group.POST(":id/restart", controller.DeploymentRestart)
 	group.POST(":id/rebuild-and-redeploy", controller.DeploymentRebuildAndReDeploy)
+	group.POST(":id/stop", controller.DeploymentStop)
 	group.GET("latest-status", controller.DeploymentLatestStatus)
 }
 

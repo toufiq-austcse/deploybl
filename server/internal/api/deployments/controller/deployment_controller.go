@@ -343,7 +343,7 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 		return
 	}
 	if !controller.deploymentService.IsRebuildAble(deployment) {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "deployment is not rebuildable", nil)
+		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "deployment is not buildable", nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -356,6 +356,47 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 	go func() {
 		controller.pullRepoWorker.PublishPullRepoWork(updatedDeployment)
 	}()
+
+	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
+
+	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
+
+}
+
+// DeploymentStop
+// @Summary  Stop Deployment
+// @Tags     Deployments
+// @Param    id  path  string  true  "Deployment ID"
+// @Accept   json
+// @Produce  json
+// @Success  200
+// @Router   /deployments/{id}/rebuild-and-redeploy [post]
+func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
+	deploymentId := context.Param("id")
+	user := utils.GetUserFromContext(context)
+	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	if deployment == nil {
+		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), "", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	if !controller.deploymentService.IsStopAble(deployment) {
+		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "deployment is not stoppable", nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	if err := controller.dockerService.StopContainer(*deployment.ContainerId); err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.STOPPED, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
 
