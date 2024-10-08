@@ -16,6 +16,7 @@ func AuthMiddleware(firebaseClient *firebase.Client, userService *service.UserSe
 		if authToken == "" {
 			apiRes := api_response.BuildErrorResponse(http.StatusUnauthorized, "Authorization token required", "", nil)
 			context.AbortWithStatusJSON(apiRes.Code, apiRes)
+			return
 		}
 		authToken = strings.TrimPrefix(authToken, "Bearer ")
 

@@ -1,14 +1,54 @@
 import Link from 'next/link';
-import { FaGithub, FaRegCopy } from 'react-icons/fa';
+import { FaChevronDown, FaGithub, FaRegCopy } from 'react-icons/fa';
 import * as React from 'react';
 import { useEffect } from 'react';
 import moment from 'moment';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 import { onCopyUrlClicked } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const DeploymentDetails = () => {
-  const { deploymentDetails, updateLatestDeploymentStatus } = useDeploymentContext();
+  const {
+    deploymentDetails,
+    updateLatestDeploymentStatus,
+    restartDeploymentContext,
+    rebuildAndDeployContext,
+    stopDeploymentContext
+  } = useDeploymentContext();
+
+  const onRestartClicked = async (deploymentId: string) => {
+    let response = await restartDeploymentContext(deploymentId);
+    if (response.error) {
+      toast.error(response.error);
+      return;
+    }
+    toast('Deployment restarting...');
+  };
+  const onRebuildAndDeployClicked = async (deploymentId: string) => {
+    let response = await rebuildAndDeployContext(deploymentId);
+    if (response.error) {
+      toast.error(response.error);
+      return;
+    }
+    toast('Deployment rebuilding and deploying...');
+  };
+
+  const onStopClicked = async (deploymentId) => {
+    let response = await stopDeploymentContext(deploymentId);
+    if (response.error) {
+      toast.error(response.error);
+      return;
+    }
+    toast('Deployment stopped...');
+  };
 
   let interval: NodeJS.Timeout;
 
@@ -24,9 +64,28 @@ const DeploymentDetails = () => {
   return (
     deploymentDetails &&
     <div>
-      <div className="flex gap-2">
-        <p className="text-3xl">{deploymentDetails?.title}</p>
-        <DeploymentStatusBadge status={deploymentDetails.latest_status} />
+      <div className="flex justify-between">
+        <div className="flex gap-2">
+          <p className="text-3xl">{deploymentDetails?.title}</p>
+          <DeploymentStatusBadge status={deploymentDetails.latest_status} />
+        </div>
+        <div>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button variant="secondary" className=" flex flex-row justify-around gap-2">
+                Actions
+                <FaChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => onRestartClicked(deploymentDetails._id)}>Restart</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onRebuildAndDeployClicked(deploymentDetails._id)}>Rebuild &
+                Redeploy</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onStopClicked(deploymentDetails._id)}>Stop</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+        </div>
       </div>
       <Link href={''} className="flex gap-2">
         <div className="flex flex-col justify-center">

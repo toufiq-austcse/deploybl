@@ -7,6 +7,9 @@ type DeploymentContextType = {
   updateDeploymentDetails: (deploymentId: string, body: UpdateDeploymentReqBody) => Promise<{ error: string | null }>;
   updateLatestDeploymentStatus: (deploymentId: string) => Promise<{ error: string | null }>;
   updateEnv: (deploymentId: string, env: object) => Promise<{ error: string | null }>;
+  restartDeploymentContext: (deploymentId: string) => Promise<{ error: string | null }>;
+  rebuildAndDeployContext: (deploymentId: string) => Promise<{ error: string | null }>;
+  stopDeploymentContext: (deploymentId: string) => Promise<{ error: string | null }>;
   loading: boolean;
 }
 const DeploymentContext = React.createContext({} as DeploymentContextType);
@@ -21,7 +24,15 @@ export const useDeploymentContext = () => {
 
 export const DeploymentContextProvider = ({ children, params }: DeploymentContextProviderProps) => {
   const [deploymentDetails, setDeploymentDetails] = React.useState<DeploymentDetailsType | null>(null);
-  const { getDeploymentDetails, updateDeployment, getDeploymentLatestStatus, updateDeploymentEnv } = useHttpClient();
+  const {
+    getDeploymentDetails,
+    updateDeployment,
+    getDeploymentLatestStatus,
+    updateDeploymentEnv,
+    restartDeployment,
+    rebuildAndDeploy,
+    stopDeployment
+  } = useHttpClient();
   const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
@@ -32,8 +43,6 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
     }).finally(() => {
       setLoading(false);
     });
-
-
   }, []);
 
   const updateDeploymentDetails = async (deploymentId: string, body: UpdateDeploymentReqBody): Promise<{
@@ -97,13 +106,67 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
       error: null
     };
   };
+  const restartDeploymentContext = async (deploymentId: string) => {
+    let response = await restartDeployment(deploymentId);
+    if (response.error) {
+      return {
+        error: response.error
+      };
+    }
+    setDeploymentDetails((prevState: any) => {
+      return {
+        ...prevState,
+        ...response.data
+      };
+    });
+    return {
+      error: null
+    };
+  };
+  const rebuildAndDeployContext = async (deploymentId: string) => {
+    let response = await rebuildAndDeploy(deploymentId);
+    if (response.error) {
+      return {
+        error: response.error
+      };
+    }
+    setDeploymentDetails((prevState: any) => {
+      return {
+        ...prevState,
+        ...response.data
+      };
+    });
+    return {
+      error: null
+    };
+  };
+  const stopDeploymentContext = async (deploymentId: string) => {
+    let response = await stopDeployment(deploymentId);
+    if (response.error) {
+      return {
+        error: response.error
+      };
+    }
+    setDeploymentDetails((prevState: any) => {
+      return {
+        ...prevState,
+        ...response.data
+      };
+    });
+    return {
+      error: null
+    };
+  };
 
   const value: DeploymentContextType = {
     deploymentDetails,
     updateDeploymentDetails,
     updateLatestDeploymentStatus,
     updateEnv,
-    loading
+    loading,
+    restartDeploymentContext,
+    rebuildAndDeployContext,
+    stopDeploymentContext
   };
   return (
     <DeploymentContext.Provider value={value}>

@@ -144,6 +144,42 @@ paths:
       summary: Update Deployment
       tags:
       - Deployments
+  /deployments/{id}/rebuild-and-redeploy:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Rebuild and Deploy Deployment
+      tags:
+      - Deployments
+  /deployments/{id}/restart:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Restart Deployment
+      tags:
+      - Deployments
   /repositories:
     get:
       consumes:
