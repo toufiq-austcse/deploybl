@@ -24,15 +24,17 @@ type DeploymentController struct {
 	dockerService     *service.DockerService
 	pullRepoWorker    *worker.PullRepoWorker
 	runRepoWorker     *worker.RunRepoWorker
+	stopRepoWorker    *worker.StopRepoWorker
 }
 
 func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deploymentService *service.DeploymentService,
-	pullRepoWorker *worker.PullRepoWorker, runRepoWorker *worker.RunRepoWorker) *DeploymentController {
+	pullRepoWorker *worker.PullRepoWorker, runRepoWorker *worker.RunRepoWorker, stopRepoWorker *worker.StopRepoWorker) *DeploymentController {
 	return &DeploymentController{
 		githubHttpClient:  githubHttpClient,
 		deploymentService: deploymentService,
 		pullRepoWorker:    pullRepoWorker,
 		runRepoWorker:     runRepoWorker,
+		stopRepoWorker:    stopRepoWorker,
 	}
 }
 
@@ -386,12 +388,16 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	if err := controller.dockerService.StopContainer(*deployment.ContainerId); err != nil {
+
+	stopRepoWorkerPayload := mapper.ToStopRepoWorkerPayload(*deployment)
+
+	if err := controller.stopRepoWorker.PublishStopRepoJob(stopRepoWorkerPayload); err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.STOPPED, context)
+
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
