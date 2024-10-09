@@ -47,7 +47,7 @@ const DeploymentDetails = () => {
       toast.error(response.error);
       return;
     }
-    toast('Deployment stopped...');
+    toast('Deployment stopping...');
   };
 
   let interval: NodeJS.Timeout;

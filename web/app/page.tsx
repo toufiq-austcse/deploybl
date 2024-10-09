@@ -35,7 +35,13 @@ const HomePage: NextPage = () => {
   let [pageIndex, setPageIndex] = useState(1);
   let [pagination, setPagination] = useState<PaginationType>();
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
-  let { listDeployments, getDeploymentLatestStatus, restartDeployment, rebuildAndDeploy } = useHttpClient();
+  let {
+    listDeployments,
+    getDeploymentLatestStatus,
+    restartDeployment,
+    rebuildAndDeploy,
+    stopDeployment
+  } = useHttpClient();
   let [loading, setLoading] = useState(true);
 
   const columns: ColumnDef<DeploymentType>[] = [
@@ -136,6 +142,9 @@ const HomePage: NextPage = () => {
                 onClick={() => onRestartClicked(deployment._id)}
               >
                 Restart
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onStopClicked(deployment._id)}>
+                Stop
               </DropdownMenuItem>
               {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE ? <>
               </> : null}
@@ -254,6 +263,15 @@ const HomePage: NextPage = () => {
       return;
     }
     toast('Deployment rebuilding and deploying...');
+  };
+
+  const onStopClicked = async (deploymentId) => {
+    let response = await stopDeployment(deploymentId);
+    if (response.error) {
+      toast.error(response.error);
+      return;
+    }
+    toast('Deployment stopping...');
   };
 
   return (

@@ -147,6 +147,10 @@ func ToRunRepoWorkerPayloadFromDeployment(deployment model.Deployment) payloads.
 		DeploymentId: deployment.Id.Hex(),
 	}
 }
+
+func ToStopRepoWorkerPayload(deployment model.Deployment) payloads.StopRepoWorkerPayload {
+	return payloads.StopRepoWorkerPayload{DeploymentId: deployment.Id.Hex()}
+}
 func GetDomainUrl(subDomainName string) string {
 	return "https://" + subDomainName + "." + config.AppConfig.BASE_DOMAIN
 }
