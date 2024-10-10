@@ -61,17 +61,16 @@ const NewDeploymentPage: NextPage = () => {
 
   const onRepoValidationFormSubmit = async (values: z.infer<typeof validateRepositorySchema>) => {
     setError(null);
-    let { data, error } = await getRepoDetails(values.repository_url);
-    if (data) {
-      setRepoDetails(data);
-      createDeploymentForm.setValue('title', data.name);
-      createDeploymentForm.setValue('repository_url', data.svn_url);
-      createDeploymentForm.setValue('branch_name', data.default_branch);
-      createDeploymentForm.setValue('docker_file_path', 'Dockerfile');
-
-    } else {
+    let { data, error, isSuccessful } = await getRepoDetails(values.repository_url);
+    if (!isSuccessful) {
       setError(error);
+      return;
     }
+    setRepoDetails(data);
+    createDeploymentForm.setValue('title', data.name);
+    createDeploymentForm.setValue('repository_url', data.svn_url);
+    createDeploymentForm.setValue('branch_name', data.default_branch);
+    createDeploymentForm.setValue('docker_file_path', 'Dockerfile');
   };
 
 

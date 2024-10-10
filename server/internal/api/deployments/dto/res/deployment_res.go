@@ -10,7 +10,7 @@ type DeploymentRes struct {
 	Title              string             `json:"title"`
 	LatestStatus       string             `json:"latest_status"`
 	LastDeployedAt     *time.Time         `json:"last_deployed_at"`
-	DomainUrl          *string            `json:"domain_url"`
+	DomainUrl          string             `json:"domain_url"`
 	RepositoryProvider string             `json:"repository_provider"`
 	BranchName         string             `json:"branch_name"`
 	CreatedAt          time.Time          `json:"created_at"`
@@ -21,7 +21,7 @@ type DeploymentDetailsRes struct {
 	Id                 primitive.ObjectID `json:"_id"`
 	Title              string             `json:"title"`
 	RepositoryName     string             `json:"repository_name"`
-	DomainUrl          *string            `json:"domain_url"`
+	DomainUrl          string             `json:"domain_url"`
 	LatestStatus       string             `json:"latest_status"`
 	LastDeployedAt     *time.Time         `json:"last_deployed_at"`
 	RepositoryProvider string             `json:"repository_provider"`
@@ -40,5 +40,5 @@ type DeploymentLatestStatusRes struct {
 	Id             primitive.ObjectID `json:"_id"`
 	LatestStatus   string             `json:"latest_status"`
 	LastDeployedAt *time.Time         `json:"last_deployed_at"`
-	DomainUrl      *string            `json:"domain_url"`
+	DomainUrl      string             `json:"domain_url"`
 }

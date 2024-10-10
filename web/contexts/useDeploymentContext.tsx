@@ -1,6 +1,7 @@
 import { DeploymentDetailsType, UpdateDeploymentReqBody } from '@/api/http/types/deployment_type';
 import React, { useContext, useEffect } from 'react';
 import { useHttpClient } from '@/api/http/useHttpClient';
+import { toast } from 'sonner';
 
 type DeploymentContextType = {
   deploymentDetails: DeploymentDetailsType | null;
@@ -36,10 +37,12 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
   const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
-    getDeploymentDetails(params.id).then(data => {
-      setDeploymentDetails(() => data);
-    }).catch(err => {
-      console.log(err);
+    getDeploymentDetails(params.id).then(response => {
+      if (!response.isSuccessful && response.code !== 401) {
+        toast.error(response.error);
+        return;
+      }
+      setDeploymentDetails(response.data);
     }).finally(() => {
       setLoading(false);
     });
@@ -49,7 +52,7 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
     error: string | null
   }> => {
     let response = await updateDeployment(deploymentId, body);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       return {
         error: response.error
       };
@@ -70,7 +73,7 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
     error: string | null
   }> => {
     let response = await getDeploymentLatestStatus([deploymentId]);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       return {
         error: response.error
       };
@@ -91,7 +94,7 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
     error: string | null
   }> => {
     let response = await updateDeploymentEnv(deploymentId, env);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       return {
         error: response.error
       };
@@ -108,7 +111,7 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
   };
   const restartDeploymentContext = async (deploymentId: string) => {
     let response = await restartDeployment(deploymentId);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       return {
         error: response.error
       };
@@ -125,7 +128,7 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
   };
   const rebuildAndDeployContext = async (deploymentId: string) => {
     let response = await rebuildAndDeploy(deploymentId);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       return {
         error: response.error
       };
@@ -142,7 +145,7 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
   };
   const stopDeploymentContext = async (deploymentId: string) => {
     let response = await stopDeployment(deploymentId);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       return {
         error: response.error
       };

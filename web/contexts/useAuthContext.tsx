@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import '../firebase';
+import { useRouter } from 'next/navigation';
 
 type AuthContextType = {
   currentUser: any;
@@ -25,6 +26,7 @@ export const useAuthContext = () => {
 export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState();
+  const router = useRouter();
 
   useEffect(() => {
     const auth = getAuth();
@@ -61,7 +63,8 @@ export const AuthProvider = ({ children }) => {
   // logout function
   const logout = async () => {
     const auth = getAuth();
-    return signOut(auth);
+    await signOut(auth);
+    router.push('/login');
   };
 
   const value: AuthContextType = {

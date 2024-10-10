@@ -41,7 +41,7 @@ const DeploymentDetails = () => {
     toast('Deployment rebuilding and deploying...');
   };
 
-  const onStopClicked = async (deploymentId) => {
+  const onStopClicked = async (deploymentId: string) => {
     let response = await stopDeploymentContext(deploymentId);
     if (response.error) {
       toast.error(response.error);

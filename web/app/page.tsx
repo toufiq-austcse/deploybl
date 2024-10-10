@@ -27,6 +27,7 @@ import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { onCopyUrlClicked } from '@/lib/utils';
 import PrivateRoute from '@/components/private-route';
 import { toast } from 'sonner';
+import { useAuthContext } from '@/contexts/useAuthContext';
 
 
 const HomePage: NextPage = () => {
@@ -35,7 +36,6 @@ const HomePage: NextPage = () => {
   let [pageIndex, setPageIndex] = useState(1);
   let [pagination, setPagination] = useState<PaginationType>();
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
-  let [latestStatus, setLatestStatus] = useState({});
   const [loading, setLoading] = useState(true);
   const isActionOpen = useRef(false);
   let {
@@ -45,8 +45,6 @@ const HomePage: NextPage = () => {
     rebuildAndDeploy,
     stopDeployment
   } = useHttpClient();
-
-
   const columns: ColumnDef<DeploymentType>[] = [
     {
       id: 'select',
@@ -168,22 +166,15 @@ const HomePage: NextPage = () => {
   ];
 
   useEffect(() => {
-    console.log('useEffect ', deploymentList.length);
     if (deploymentList.length === 0) {
-      listDeployments(pageIndex, pageSize).then(response => {
-        if (response.error) {
-          console.log(response.error);
-        } else {
-          setDeploymentList(response.data as DeploymentType[]);
-          let latestStatus = {};
-          for (let deployment of response.data as DeploymentType[]) {
-            latestStatus[deployment._id] = deployment.latest_status;
-          }
-          setLatestStatus(latestStatus);
-          setPagination(response.pagination as PaginationType);
+      listDeployments(pageIndex, pageSize).then(async (response) => {
+        if (!response.isSuccessful && response.code !== 401) {
+          toast.error(response.error);
+          return;
         }
-        setLoading(false);
-      });
+        setDeploymentList(response.data as DeploymentType[]);
+        setPagination(response.pagination as PaginationType);
+      }).finally(() => setLoading(false));
     }
 
     if (deploymentList.length > 0) {
@@ -204,8 +195,8 @@ const HomePage: NextPage = () => {
     console.log('updateLatestStatus');
     let response = await getDeploymentLatestStatus(deploymentIds);
     // console.log(response);
-    if (response.error) {
-      console.log(response.error);
+    if (!response.isSuccessful && response.code !== 401) {
+      toast.error(response.error);
       return;
     }
 
@@ -232,13 +223,13 @@ const HomePage: NextPage = () => {
     }
 
     listDeployments(pageIndex + 1, pageSize).then(response => {
-      if (response.error) {
-        console.log(response.error);
-      } else {
-        setPageIndex((prev) => prev + 1);
-        setDeploymentList(response.data as DeploymentType[]);
-        setPagination(response.pagination as PaginationType);
+      if (!response.isSuccessful && response.code !== 401) {
+        toast.error(response.error);
+        return;
       }
+      setPageIndex((prev) => prev + 1);
+      setDeploymentList(response.data as DeploymentType[]);
+      setPagination(response.pagination as PaginationType);
     });
 
   };
@@ -248,7 +239,7 @@ const HomePage: NextPage = () => {
       return;
     }
     listDeployments(pageIndex - 1, pageSize).then(response => {
-      if (response.error) {
+      if (!response.isSuccessful && response.code !== 401) {
         toast.error(response.error);
         return;
       }
@@ -259,7 +250,7 @@ const HomePage: NextPage = () => {
   };
   const onRestartClicked = async (deploymentId: string) => {
     let response = await restartDeployment(deploymentId);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       toast.error(response.error);
       return;
     }
@@ -267,7 +258,7 @@ const HomePage: NextPage = () => {
   };
   const onRebuildAndDeployClicked = async (deploymentId: string) => {
     let response = await rebuildAndDeploy(deploymentId);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       toast.error(response.error);
       return;
     }
@@ -276,7 +267,7 @@ const HomePage: NextPage = () => {
 
   const onStopClicked = async (deploymentId) => {
     let response = await stopDeployment(deploymentId);
-    if (response.error) {
+    if (!response.isSuccessful && response.code !== 401) {
       toast.error(response.error);
       return;
     }

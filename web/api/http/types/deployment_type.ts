@@ -65,3 +65,18 @@ export interface UpdateDeploymentReqBody {
   docker_file_path?: string;
   root_dir?: string | null;
 }
+
+export interface TResponse<T> {
+  isSuccessful: boolean;
+  data: T,
+  error: string | null,
+  code: number
+}
+
+export interface TPaginationResponse<T> {
+  isSuccessful: boolean;
+  data: T,
+  error: string | null,
+  code: number,
+  pagination: PaginationType
+}

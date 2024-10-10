@@ -70,14 +70,11 @@ func ToDeploymentRes(model *model.Deployment) res.DeploymentRes {
 		Title:              model.Title,
 		LatestStatus:       model.LatestStatus,
 		LastDeployedAt:     model.LastDeployedAt,
+		DomainUrl:          GetDomainUrl(model.SubDomainName),
 		RepositoryProvider: model.RepositoryProvider,
 		BranchName:         model.BranchName,
 		CreatedAt:          model.CreatedAt,
 		UpdatedAt:          model.UpdatedAt,
-	}
-	if model.LatestStatus == enums.LIVE {
-		domainUrl := GetDomainUrl(model.SubDomainName)
-		deploymentRes.DomainUrl = &domainUrl
 	}
 	return deploymentRes
 }
@@ -86,7 +83,7 @@ func ToDeploymentDetailsRes(model *model.Deployment) res.DeploymentDetailsRes {
 		Id:                 model.Id,
 		Title:              model.Title,
 		RepositoryName:     model.RepositoryName,
-		DomainUrl:          nil,
+		DomainUrl:          GetDomainUrl(model.SubDomainName),
 		LatestStatus:       model.LatestStatus,
 		LastDeployedAt:     model.LastDeployedAt,
 		RepositoryProvider: model.RepositoryProvider,
@@ -99,10 +96,6 @@ func ToDeploymentDetailsRes(model *model.Deployment) res.DeploymentDetailsRes {
 		Env:                model.Env,
 		CreatedAt:          model.CreatedAt,
 		UpdatedAt:          model.UpdatedAt,
-	}
-	if model.LatestStatus == enums.LIVE {
-		domainUrl := GetDomainUrl(model.SubDomainName)
-		deploymentDetail.DomainUrl = &domainUrl
 	}
 	return deploymentDetail
 }
@@ -158,16 +151,11 @@ func ToDeploymentLatestStatus(deployments []*model.Deployment) []res.DeploymentL
 	deploymentsLatestStatusRes := []res.DeploymentLatestStatusRes{}
 
 	for _, deployment := range deployments {
-		var deploymentDomainUrl *string = nil
-		if deployment.LatestStatus == enums.LIVE {
-			domainUrl := GetDomainUrl(deployment.SubDomainName)
-			deploymentDomainUrl = &domainUrl
-		}
 		deploymentsLatestStatusRes = append(deploymentsLatestStatusRes, res.DeploymentLatestStatusRes{
 			Id:             deployment.Id,
 			LatestStatus:   deployment.LatestStatus,
 			LastDeployedAt: deployment.LastDeployedAt,
-			DomainUrl:      deploymentDomainUrl,
+			DomainUrl:      GetDomainUrl(deployment.SubDomainName),
 		})
 	}
 	return deploymentsLatestStatusRes

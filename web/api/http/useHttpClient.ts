@@ -5,15 +5,15 @@ import {
   DeploymentDetailsType,
   DeploymentLatestStatusType,
   DeploymentType, PaginationType,
-  RepoDetailsType, UpdateDeploymentReqBody
+  RepoDetailsType, TPaginationResponse, TResponse, UpdateDeploymentReqBody
 } from '@/api/http/types/deployment_type';
 import { useAuthContext } from '@/contexts/useAuthContext';
 
 export function useHttpClient() {
   const [loading, setLoading] = React.useState(false);
-  const { currentUser } = useAuthContext();
+  const { currentUser, logout } = useAuthContext();
 
-  const getDeploymentDetails = async (deploymentId: string): Promise<DeploymentDetailsType> => {
+  const getDeploymentDetails = async (deploymentId: string): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}`;
@@ -23,60 +23,76 @@ export function useHttpClient() {
           Authorization: `Bearer ${currentUser?.accessToken}`
         }
       });
-      return response.data.data;
+      return {
+        isSuccessful: true,
+        code: response.status,
+        data: response.data.data,
+        error: null
+
+      };
     } catch (err) {
-      let message = (err as any).message;
-      throw new Error(message);
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     } finally {
       setLoading(false);
     }
   };
 
-  const listDeployments = async (page: number, limit: number): Promise<{
-    data: DeploymentType[] | null;
-    pagination: PaginationType | null,
-    error: string | null;
-  }> => {
-   // setLoading(true);
+  const listDeployments = async (page: number, limit: number): Promise<TPaginationResponse<DeploymentType[]>> => {
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments?page=${page}&limit=${limit}`;
-
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
         }
       });
       return {
+        isSuccessful: true,
         data: response.data.data,
         pagination: response.data.pagination,
-        error: null
+        error: null,
+        code: response.status
       };
     } catch (err) {
-      return handleError(err);
-    } finally {
-      //setLoading(false);
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: [],
+        error,
+        code,
+        pagination: null
+      };
     }
   };
 
-  const handleError = (err: any) => {
+  const handleError = async (err: any): Promise<{ error: string, code: number }> => {
+    let code = 500;
+    let error: string;
     if (axios.isAxiosError(err)) {
-      let error = '';
       let errorResponse: any = (err as AxiosError).response?.data;
       if (errorResponse) {
         error = errorResponse.errors.join(',');
+        code = errorResponse.code;
       } else {
         error = (err as AxiosError).message;
       }
-      return { data: null, pagination: null, error };
+
+    } else {
+      error = (err as any).message;
     }
-    let message = (err as any).message;
-    return { data: null, pagination: null, error: message };
+    if (code === 401) {
+      await logout();
+    }
+
+    return { error, code };
   };
 
-  const getRepoDetails = async (repoUrl: string): Promise<{
-    data: RepoDetailsType | null;
-    error: string | null;
-  }> => {
+  const getRepoDetails = async (repoUrl: string): Promise<TResponse<RepoDetailsType>> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/repositories?repo_url=${repoUrl}`;
@@ -87,11 +103,19 @@ export function useHttpClient() {
         }
       });
       return {
+        isSuccessful: true,
+        code: response.status,
         data: response.data.data,
         error: null
       };
     } catch (err) {
-      return handleError(err);
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     } finally {
       setLoading(false);
     }
@@ -104,10 +128,7 @@ export function useHttpClient() {
     env: object,
     repository_url: string,
     root_dir: string | null
-  }): Promise<{
-    data: DeploymentType | null;
-    error: string | null;
-  }> => {
+  }): Promise<TResponse<DeploymentType>> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments`;
@@ -117,20 +138,25 @@ export function useHttpClient() {
         }
       });
       return {
+        isSuccessful: true,
+        code: response.status,
         data: response.data.data,
         error: null
       };
     } catch (err) {
-      return handleError(err);
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     } finally {
       setLoading(false);
     }
   };
 
-  const getDeploymentLatestStatus = async (deploymentIds: string[]): Promise<{
-    data: DeploymentLatestStatusType[] | null;
-    error: string | null;
-  }> => {
+  const getDeploymentLatestStatus = async (deploymentIds: string[]): Promise<TResponse<DeploymentLatestStatusType[]>> => {
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/latest-status?ids=${deploymentIds}`;
       const response = await axios.get(url, {
@@ -139,18 +165,23 @@ export function useHttpClient() {
         }
       });
       return {
+        isSuccessful: true,
+        code: response.status,
         data: response.data.data,
         error: null
       };
     } catch (err) {
-      return handleError(err);
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     }
   };
 
-  const updateDeployment = async (deploymentId: string, body: UpdateDeploymentReqBody): Promise<{
-    data: DeploymentDetailsType | null;
-    error: string | null;
-  }> => {
+  const updateDeployment = async (deploymentId: string, body: UpdateDeploymentReqBody): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}`;
@@ -160,20 +191,25 @@ export function useHttpClient() {
         }
       });
       return {
+        isSuccessful: true,
+        code: response.status,
         data: response.data.data,
         error: null
       };
     } catch (err) {
-      return handleError(err);
+      let { error, code } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     } finally {
       setLoading(false);
     }
 
   };
-  const updateDeploymentEnv = async (deploymentId: string, env: object): Promise<{
-    data: DeploymentDetailsType | null;
-    error: string | null;
-  }> => {
+  const updateDeploymentEnv = async (deploymentId: string, env: object): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/env`;
@@ -183,19 +219,24 @@ export function useHttpClient() {
         }
       });
       return {
+        isSuccessful: true,
+        code: response.status,
         data: response.data.data,
         error: null
       };
     } catch (err) {
-      return handleError(err);
+      let { error, code } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     } finally {
       setLoading(false);
     }
   };
-  const restartDeployment = async (deploymentId: string): Promise<{
-    data: DeploymentDetailsType | null;
-    error: string | null;
-  }> => {
+  const restartDeployment = async (deploymentId: string): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/restart`;
@@ -205,19 +246,24 @@ export function useHttpClient() {
         }
       });
       return {
+        isSuccessful: true,
+        code: response.status,
         data: response.data.data,
         error: null
       };
     } catch (err) {
-      return handleError(err);
+      let { error, code } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     } finally {
       setLoading(false);
     }
   };
-  const rebuildAndDeploy = async (deploymentId: string): Promise<{
-    data: DeploymentDetailsType | null;
-    error: string | null;
-  }> => {
+  const rebuildAndDeploy = async (deploymentId: string): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/rebuild-and-redeploy`;
@@ -227,19 +273,24 @@ export function useHttpClient() {
         }
       });
       return {
+        isSuccessful: true,
+        code: response.status,
         data: response.data.data,
         error: null
       };
     } catch (err) {
-      return handleError(err);
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     } finally {
       setLoading(false);
     }
   };
-  const stopDeployment = async (deploymentId: string): Promise<{
-    data: DeploymentDetailsType | null;
-    error: string | null;
-  }> => {
+  const stopDeployment = async (deploymentId: string): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/stop`;
@@ -249,11 +300,19 @@ export function useHttpClient() {
         }
       });
       return {
+        isSuccessful: true,
+        code: response.status,
         data: response.data.data,
         error: null
       };
     } catch (err) {
-      return handleError(err);
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: null,
+        error,
+        code
+      };
     } finally {
       setLoading(false);
     }
