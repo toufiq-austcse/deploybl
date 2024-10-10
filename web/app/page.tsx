@@ -27,7 +27,6 @@ import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { onCopyUrlClicked } from '@/lib/utils';
 import PrivateRoute from '@/components/private-route';
 import { toast } from 'sonner';
-import { useAuthContext } from '@/contexts/useAuthContext';
 
 
 const HomePage: NextPage = () => {
@@ -192,7 +191,7 @@ const HomePage: NextPage = () => {
     if (deploymentIds.length === 0) {
       return;
     }
-    console.log('updateLatestStatus');
+    console.log('updateLatestStatus ', isActionOpen.current);
     let response = await getDeploymentLatestStatus(deploymentIds);
     // console.log(response);
     if (!response.isSuccessful && response.code !== 401) {
@@ -201,6 +200,7 @@ const HomePage: NextPage = () => {
     }
 
     if (!isActionOpen.current) {
+      console.log('setting deployment list');
       setDeploymentList((deployments) => {
         return deployments.map((deployment) => {
           let latestStatus = response.data.find((status) => status._id === deployment._id);
@@ -249,6 +249,7 @@ const HomePage: NextPage = () => {
     });
   };
   const onRestartClicked = async (deploymentId: string) => {
+    isActionOpen.current = false;
     let response = await restartDeployment(deploymentId);
     if (!response.isSuccessful && response.code !== 401) {
       toast.error(response.error);
@@ -257,6 +258,7 @@ const HomePage: NextPage = () => {
     toast('Deployment restarting...');
   };
   const onRebuildAndDeployClicked = async (deploymentId: string) => {
+    isActionOpen.current = false;
     let response = await rebuildAndDeploy(deploymentId);
     if (!response.isSuccessful && response.code !== 401) {
       toast.error(response.error);
@@ -265,7 +267,8 @@ const HomePage: NextPage = () => {
     toast('Deployment rebuilding and deploying...');
   };
 
-  const onStopClicked = async (deploymentId) => {
+  const onStopClicked = async (deploymentId:string) => {
+    isActionOpen.current = false;
     let response = await stopDeployment(deploymentId);
     if (!response.isSuccessful && response.code !== 401) {
       toast.error(response.error);
