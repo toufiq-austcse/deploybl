@@ -35,6 +35,8 @@ const HomePage: NextPage = () => {
   let [pageIndex, setPageIndex] = useState(1);
   let [pagination, setPagination] = useState<PaginationType>();
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
+  let [latestStatus, setLatestStatus] = useState({});
+  const [loading, setLoading] = useState(true);
   let {
     listDeployments,
     getDeploymentLatestStatus,
@@ -42,7 +44,7 @@ const HomePage: NextPage = () => {
     rebuildAndDeploy,
     stopDeployment
   } = useHttpClient();
-  let [loading, setLoading] = useState(true);
+
 
   const columns: ColumnDef<DeploymentType>[] = [
     {
@@ -83,7 +85,7 @@ const HomePage: NextPage = () => {
       accessorKey: 'latest_status',
       header: 'Status',
       cell: ({ row }) => {
-        let status: string = row.getValue('latest_status');
+        let status: string = latestStatus[row.original._id];
         return <DeploymentStatusBadge status={status} />;
       }
     },
@@ -162,12 +164,18 @@ const HomePage: NextPage = () => {
   ];
 
   useEffect(() => {
+    console.log('useEffect ', deploymentList.length);
     if (deploymentList.length === 0) {
       listDeployments(pageIndex, pageSize).then(response => {
         if (response.error) {
           console.log(response.error);
         } else {
           setDeploymentList(response.data as DeploymentType[]);
+          let latestStatus = {};
+          for (let deployment of response.data as DeploymentType[]) {
+            latestStatus[deployment._id] = deployment.latest_status;
+          }
+          setLatestStatus(latestStatus);
           setPagination(response.pagination as PaginationType);
         }
         setLoading(false);
@@ -176,7 +184,7 @@ const HomePage: NextPage = () => {
 
     if (deploymentList.length > 0) {
       const newIntervalId = setInterval(() => {
-        updateLatestStatus(deploymentList);
+        updateLatestStatus();
       }, +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string));
       return () => clearInterval(newIntervalId);
     }
@@ -184,37 +192,23 @@ const HomePage: NextPage = () => {
 
   }, [deploymentList.length]);
 
-  const updateLatestStatus = (deployments: DeploymentType[]) => {
-    let deploymentIds = deployments.map((deployment) => deployment._id);
-    if (deploymentIds.length === 0) {
-      return;
-    }
-    getDeploymentLatestStatus(deploymentIds).then(response => {
-      if (response.error) {
-        console.log(response.error);
-      } else {
-        console.log(response);
-        // @ts-ignore
-        if (response.data?.length > 0) {
-          setDeploymentList((deployments) => {
-            return deployments.map((deployment) => {
-              // @ts-ignore
-              let latestStatus = response.data.find((status) => status._id === deployment._id);
-              if (latestStatus) {
-                return {
-                  ...deployment,
-                  latest_status: latestStatus.latest_status,
-                  last_deployed_at: latestStatus.last_deployed_at
-                };
-              }
-              return deployment;
-            });
-          });
-        }
-      }
-    });
-
-
+  const updateLatestStatus = async () => {
+    // let deploymentIds = deployments.map((deployment) => deployment._id);
+    // if (deploymentIds.length === 0) {
+    //   return;
+    // }
+    console.log('updateLatestStatus');
+     listDeployments(1, 10)
+    // console.log(response);
+    // if (response.error) {
+    //   console.log(response.error);
+    //   return;
+    // }
+    // let latestStatus = {};
+    // for (let status of response.data) {
+    //   latestStatus[status._id] = status.latest_status;
+    // }
+   // setLatestStatus(latestStatus);
   };
 
   const nextFunction = () => {
@@ -275,7 +269,6 @@ const HomePage: NextPage = () => {
   };
 
   return (
-
     <div className="space-y-2">
       <div className="flex flex-row-reverse gap-2">
         <div className="flex flex-row">
