@@ -13,6 +13,7 @@ import { useState } from 'react';
 import ErrorAlert from '@/components/ui/error-alert';
 import PublicRoute from '@/components/public-route';
 import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -52,66 +53,67 @@ const LoginPage: NextPage = () => {
   };
 
   return (
-    <div className="flex m-5">
-      <div className="m-auto h-1/4 w-1/4">
-        <h1 className="text-4xl flex justify-center">Login</h1>
-        <p className="flex justify-center">
-          {`Don't have an account yet?`}
-          <Link
+    <div className="flex m-5 justify-center">
+      <Card className="w-3/6 m-2">
+        <CardHeader>
+          <CardTitle className="flex justify-center">Login</CardTitle>
+          <CardDescription className="flex justify-center">Don't have an account yet? <Link
             href={'signup'}
             className="mx-1 underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
           >
             SignUp
-          </Link>
-        </p>
-        {error && <ErrorAlert error={error} />}
-        <Form {...form}>
-          <form id="signup-form" onSubmit={form.handleSubmit(onFormSubmit)}>
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          </Link></CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && <ErrorAlert error={error} />}
+          <Form {...form}>
+            <form id="signup-form" onSubmit={form.handleSubmit(onFormSubmit)}>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your password"
-                      type="password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex flex-row-reverse">
-              <Button
-                disabled={loading}
-                type="submit"
-                size="sm"
-                form="signup-form"
-                className="my-2"
-              >
-                Login
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your password"
+                        type="password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex flex-row-reverse">
+                <Button
+                  disabled={loading}
+                  type="submit"
+                  size="sm"
+                  form="signup-form"
+                  className="my-2"
+                >
+                  Login
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 
