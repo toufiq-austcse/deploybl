@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 
@@ -37,6 +37,7 @@ const HomePage: NextPage = () => {
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
   let [latestStatus, setLatestStatus] = useState({});
   const [loading, setLoading] = useState(true);
+  const isActionOpen = useRef(false);
   let {
     listDeployments,
     getDeploymentLatestStatus,
@@ -85,7 +86,7 @@ const HomePage: NextPage = () => {
       accessorKey: 'latest_status',
       header: 'Status',
       cell: ({ row }) => {
-        let status: string = latestStatus[row.original._id];
+        let status: string = row.getValue('latest_status');
         return <DeploymentStatusBadge status={status} />;
       }
     },
@@ -116,7 +117,10 @@ const HomePage: NextPage = () => {
         const deployment = row.original;
 
         return (
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={(e) => {
+            console.log('setting isActionOpen', e);
+            isActionOpen.current = e;
+          }}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
@@ -193,22 +197,33 @@ const HomePage: NextPage = () => {
   }, [deploymentList.length]);
 
   const updateLatestStatus = async () => {
-    // let deploymentIds = deployments.map((deployment) => deployment._id);
-    // if (deploymentIds.length === 0) {
-    //   return;
-    // }
+    let deploymentIds = deploymentList.map((deployment) => deployment._id);
+    if (deploymentIds.length === 0) {
+      return;
+    }
     console.log('updateLatestStatus');
-     listDeployments(1, 10)
+    let response = await getDeploymentLatestStatus(deploymentIds);
     // console.log(response);
-    // if (response.error) {
-    //   console.log(response.error);
-    //   return;
-    // }
-    // let latestStatus = {};
-    // for (let status of response.data) {
-    //   latestStatus[status._id] = status.latest_status;
-    // }
-   // setLatestStatus(latestStatus);
+    if (response.error) {
+      console.log(response.error);
+      return;
+    }
+
+    if (!isActionOpen.current) {
+      setDeploymentList((deployments) => {
+        return deployments.map((deployment) => {
+          let latestStatus = response.data.find((status) => status._id === deployment._id);
+          if (latestStatus) {
+            return {
+              ...deployment,
+              latest_status: latestStatus.latest_status,
+              last_deployed_at: latestStatus.last_deployed_at
+            };
+          }
+          return deployment;
+        });
+      });
+    }
   };
 
   const nextFunction = () => {

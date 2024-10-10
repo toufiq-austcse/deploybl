@@ -131,7 +131,6 @@ export function useHttpClient() {
     data: DeploymentLatestStatusType[] | null;
     error: string | null;
   }> => {
-    setLoading(true);
     try {
       let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/latest-status?ids=${deploymentIds}`;
       const response = await axios.get(url, {
@@ -145,8 +144,6 @@ export function useHttpClient() {
       };
     } catch (err) {
       return handleError(err);
-    } finally {
-      setLoading(false);
     }
   };
 
