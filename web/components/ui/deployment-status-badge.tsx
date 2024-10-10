@@ -5,15 +5,11 @@ import Loading from '@/components/ui/loading';
 
 const DeploymentStatusBadge = ({ status }: { status: string }) => {
   if (status === DEPLOYMENT_STATUS.FAILED) {
-
     return (
       <div
-        className={`${badgeVariants({ variant: 'destructive' })} capitalize gap-2`}
+        className={`${badgeVariants({ variant: 'destructive' })} capitalize`}
       >
-        <div>
-          {status}
-        </div>
-
+        {status}
       </div>
     );
 

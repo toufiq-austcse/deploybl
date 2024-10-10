@@ -91,7 +91,7 @@ const HomePage: NextPage = () => {
       accessorKey: 'repository_provider',
       header: 'Provider',
       cell: ({ row }) => {
-        return <div>{row.getValue('repository_provider')}</div>;
+        return <div className="capitalize">{row.getValue('repository_provider')}</div>;
       }
     },
     {
@@ -267,7 +267,7 @@ const HomePage: NextPage = () => {
     toast('Deployment rebuilding and deploying...');
   };
 
-  const onStopClicked = async (deploymentId:string) => {
+  const onStopClicked = async (deploymentId: string) => {
     isActionOpen.current = false;
     let response = await stopDeployment(deploymentId);
     if (!response.isSuccessful && response.code !== 401) {

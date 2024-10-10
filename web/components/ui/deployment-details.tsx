@@ -67,7 +67,9 @@ const DeploymentDetails = () => {
       <div className="flex justify-between">
         <div className="flex gap-2">
           <p className="text-3xl">{deploymentDetails?.title}</p>
-          <DeploymentStatusBadge status={deploymentDetails.latest_status} />
+          <div className="flex flex-col justify-center">
+            <DeploymentStatusBadge status={deploymentDetails.latest_status} />
+          </div>
         </div>
         <div>
           <DropdownMenu>
