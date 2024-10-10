@@ -10,11 +10,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { FaChevronDown } from 'react-icons/fa';
+import * as React from 'react';
 
 const Navbar = () => {
   const router = useRouter();
   const { currentUser, logout } = useAuthContext();
-  console.log(  'currentUser', currentUser);
+  console.log('currentUser', currentUser);
 
   const onLogOutClick = async () => {
     await logout();
@@ -81,11 +83,13 @@ const Navbar = () => {
               <div>
                 {currentUser ? (
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger className="flex flex-row">
                       <h1
-                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white underline hover:cursor-pointer">
+                        className="flex gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white hover:cursor-pointer">
                         {currentUser.displayName}
+                        <FaChevronDown className="fill-white my-1" />
                       </h1>
+
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
