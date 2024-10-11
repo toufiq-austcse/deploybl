@@ -1,11 +1,14 @@
 package app_errors
 
-const (
-	RepositoryNotFoundError       = "repository not found"
-	DomainNameAlreadyTakenError   = "domain name already taken"
-	DeploymentNotFoundError       = "deployment not found"
-	DeploymentNotRestartableError = "deployment not restartable"
-	DeploymentNotDeployableError  = "deployment not deployable"
-	DeploymentNotStoppableError   = "deployment not stoppable"
-	IdsRequiredInQueryParamError  = "ids required in query param"
+import "errors"
+
+var (
+	RepositoryNotFoundError       = errors.New("repository not found")
+	DomainNameAlreadyTakenError   = errors.New("domain name already taken")
+	DeploymentNotFoundError       = errors.New("deployment not found")
+	DeploymentNotRestartableError = errors.New("deployment not restartable")
+	DeploymentNotDeployableError  = errors.New("deployment not deployable")
+	DeploymentNotStoppableError   = errors.New("deployment not stoppable")
+	IdsRequiredInQueryParamError  = errors.New("ids required in query param")
+	CannotUpdateError             = errors.New("cannot update")
 )

@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
+	"github.com/toufiq-austcse/deployit/pkg/app_errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -120,11 +120,10 @@ func (service *DeploymentService) UpdateDeployment(deploymentId string, updates 
 		"$set": updates,
 	})
 	if err != nil {
-		fmt.Println("err in updating deployment", err)
 		return nil, err
 	}
 	if updatedResult.MatchedCount != 1 {
-		return nil, errors.New("update error")
+		return nil, app_errors.CannotUpdateError
 	}
 	return service.FindById(deploymentId, ctx), err
 }
@@ -177,8 +176,7 @@ func (service *DeploymentService) FindDeploymentByStatus(status string) []model.
 	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		var deployment model.Deployment
-		if err := cursor.Decode(&deployment); err != nil {
-			fmt.Println("error in decoding deployment ", err.Error())
+		if decodeErr := cursor.Decode(&deployment); decodeErr != nil {
 			continue
 		}
 		deployments = append(deployments, deployment)
