@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,5 +35,4 @@ func CreateUserIndex(userCollection *mongo.Collection) {
 		return
 	}
 	fmt.Println("index created successfully in users")
-
 }

@@ -22,11 +22,10 @@ type Pagination struct {
 	LastPage    int64 `json:"last_page"`
 	PerPage     int64 `json:"per_page"`
 }
-type EmptyObj struct {
-}
+type EmptyObj struct{}
 
 func BuildResponse(code int, message string, data interface{}) Response {
-	var errors = make([]string, 0)
+	errors := make([]string, 0)
 	return Response{
 		Code:    code,
 		Message: message,
@@ -34,8 +33,9 @@ func BuildResponse(code int, message string, data interface{}) Response {
 		Data:    data,
 	}
 }
+
 func BuildPaginationResponse(code int, message string, data interface{}, pagination *Pagination) PaginationResponse {
-	var errors = make([]string, 0)
+	errors := make([]string, 0)
 	return PaginationResponse{
 		Code:       code,
 		Message:    message,

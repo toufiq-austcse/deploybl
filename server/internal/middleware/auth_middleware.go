@@ -1,13 +1,14 @@
 package middleware
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/internal/api/users/mapper"
 	"github.com/toufiq-austcse/deployit/internal/api/users/service"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"github.com/toufiq-austcse/deployit/pkg/firebase"
-	"net/http"
-	"strings"
 )
 
 func AuthMiddleware(firebaseClient *firebase.Client, userService *service.UserService) gin.HandlerFunc {
@@ -38,7 +39,12 @@ func AuthMiddleware(firebaseClient *firebase.Client, userService *service.UserSe
 			newUser := mapper.MapFirebaseUserInfoToCreate(*record.UserInfo)
 			createErr := userService.Create(newUser, context)
 			if createErr != nil {
-				apiRes := api_response.BuildErrorResponse(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized), createErr.Error(), nil)
+				apiRes := api_response.BuildErrorResponse(
+					http.StatusUnauthorized,
+					http.StatusText(http.StatusUnauthorized),
+					createErr.Error(),
+					nil,
+				)
 				context.AbortWithStatusJSON(apiRes.Code, apiRes)
 				return
 			}

@@ -11,5 +11,4 @@ func ToRepoDetailsRes(providerRes *api_res.GithubRepoRes) res.RepoDetailsRes {
 		DefaultBranch: providerRes.DefaultBranch,
 		Name:          providerRes.Name,
 	}
-
 }

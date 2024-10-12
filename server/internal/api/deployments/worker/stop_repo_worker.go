@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -22,11 +23,13 @@ type StopRepoWorker struct {
 }
 
 func NewStopRepoWorker(deploymentService *service.DeploymentService) *StopRepoWorker {
-	return &StopRepoWorker{config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
-		"topic",
-		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_STOP_QUEUE,
-		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_STOP_ROUTING_KEY),
-		deploymentService: deploymentService}
+	return &StopRepoWorker{
+		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
+			"topic",
+			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_STOP_QUEUE,
+			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_STOP_ROUTING_KEY),
+		deploymentService: deploymentService,
+	}
 }
 
 func (worker *StopRepoWorker) InitStopRepoSubscriber() {
@@ -36,14 +39,17 @@ func (worker *StopRepoWorker) InitStopRepoSubscriber() {
 		return
 	}
 	fmt.Println("RunRepoSubscriber Initialized")
-	messages, err := subscriber.Subscribe(context.Background(), deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE)
+	messages, err := subscriber.Subscribe(
+		context.Background(),
+		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE,
+	)
 	if err != nil {
 		fmt.Println("error in run repo subscriber ", err.Error())
 		return
 	}
 	go worker.ProcessStopRepoMessages(messages)
-
 }
+
 func (worker *StopRepoWorker) ProcessStopRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
 		deploymentId, err := worker.ProcessStopRepoMessage(msg)
@@ -51,7 +57,11 @@ func (worker *StopRepoWorker) ProcessStopRepoMessages(messages <-chan *message.M
 			fmt.Println("error in processing run repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, updateErr := worker.deploymentService.UpdateLatestStatus(deploymentId, enums.FAILED, context.Background())
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(
+					deploymentId,
+					enums.FAILED,
+					context.Background(),
+				)
 				if updateErr != nil {
 					fmt.Println("error in updating deployment status ", updateErr.Error())
 				}
@@ -60,6 +70,7 @@ func (worker *StopRepoWorker) ProcessStopRepoMessages(messages <-chan *message.M
 		}
 	}
 }
+
 func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (string, error) {
 	defer msg.Ack()
 
@@ -83,12 +94,15 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 		return consumedPayload.DeploymentId, err
 	}
 
-	_, err := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.STOPPED, context.Background())
+	_, err := worker.deploymentService.UpdateLatestStatus(
+		consumedPayload.DeploymentId,
+		enums.STOPPED,
+		context.Background(),
+	)
 	if err != nil {
 		return consumedPayload.DeploymentId, err
 	}
 	return consumedPayload.DeploymentId, nil
-
 }
 
 func (worker *StopRepoWorker) PublishStopRepoJob(stopRepoPayload payloads.StopRepoWorkerPayload) error {

@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	deployItConfig "github.com/toufiq-austcse/deployit/config"
 	"os/exec"
 	"strings"
+
+	deployItConfig "github.com/toufiq-austcse/deployit/config"
 )
 
-type DockerService struct {
-}
+type DockerService struct{}
 
 func NewDockerService() *DockerService {
 	return &DockerService{}
@@ -52,7 +52,6 @@ func (dockerService *DockerService) RunContainer(imageTag string, env *map[strin
 	fmt.Println("executing ", cmd.String())
 
 	output, err := cmd.CombinedOutput()
-
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 		fmt.Printf("Output: %s\n", string(output))
@@ -85,6 +84,7 @@ func (dockerService *DockerService) ListRunningContainerIds() ([]string, error) 
 
 	return containerIds, nil
 }
+
 func (dockerService *DockerService) StopContainer(containerId string) error {
 	cmd := exec.Command("docker", "stop", containerId[:5])
 	var out bytes.Buffer

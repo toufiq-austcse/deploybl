@@ -2,8 +2,9 @@ package postgresql
 
 import (
 	"database/sql"
-	"github.com/toufiq-austcse/deployit/config"
 	"time"
+
+	"github.com/toufiq-austcse/deployit/config"
 )
 
 func getDataSourceName() string {

@@ -1,6 +1,8 @@
 package di
 
 import (
+	"os/exec"
+
 	_ "github.com/lib/pq" // <------------ here
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
@@ -12,13 +14,11 @@ import (
 
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
 	"go.uber.org/dig"
-	"os/exec"
 )
 
 func NewDiContainer() (*dig.Container, error) {
 	c := dig.New()
-	providers := []interface {
-	}{
+	providers := []interface{}{
 		mongodb.New,
 		github.NewGithubHttpClient,
 		firebaseClient.NewFirebaseClient,

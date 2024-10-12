@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -13,7 +15,6 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/app_errors"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
-	"time"
 )
 
 type RunRepoWorker struct {
@@ -23,11 +24,13 @@ type RunRepoWorker struct {
 }
 
 func NewRunRepoWorker(deploymentService *service.DeploymentService) *RunRepoWorker {
-	return &RunRepoWorker{config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
-		"topic",
-		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_RUN_QUEUE,
-		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_RUN_ROUTING_KEY),
-		deploymentService: deploymentService}
+	return &RunRepoWorker{
+		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
+			"topic",
+			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_RUN_QUEUE,
+			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_RUN_ROUTING_KEY),
+		deploymentService: deploymentService,
+	}
 }
 
 func (worker *RunRepoWorker) InitRunRepoSubscriber() {
@@ -37,14 +40,17 @@ func (worker *RunRepoWorker) InitRunRepoSubscriber() {
 		return
 	}
 	fmt.Println("RunRepoSubscriber Initialized")
-	messages, err := subscriber.Subscribe(context.Background(), deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE)
+	messages, err := subscriber.Subscribe(
+		context.Background(),
+		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE,
+	)
 	if err != nil {
 		fmt.Println("error in run repo subscriber ", err.Error())
 		return
 	}
 	go worker.ProcessRunRepoMessages(messages)
-
 }
+
 func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
 		deploymentId, err := worker.ProcessRunRepoMessage(msg)
@@ -52,7 +58,11 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 			fmt.Println("error in processing run repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, updateErr := worker.deploymentService.UpdateLatestStatus(deploymentId, enums.FAILED, context.Background())
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(
+					deploymentId,
+					enums.FAILED,
+					context.Background(),
+				)
 				if updateErr != nil {
 					fmt.Println("error in updating deployment status ", updateErr.Error())
 				}
@@ -61,6 +71,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 		}
 	}
 }
+
 func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string, error) {
 	defer msg.Ack()
 

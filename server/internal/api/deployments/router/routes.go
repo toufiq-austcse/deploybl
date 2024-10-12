@@ -19,5 +19,4 @@ func Setup(group *gin.RouterGroup, controller *controller.DeploymentController) 
 
 func SetupDeploymentCronRouter(group *gin.RouterGroup, controller *controller.DeploymentController) {
 	group.POST("check-stopped-cron", controller.LiveCheckCron)
-
 }
