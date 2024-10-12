@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/exec"
+
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -16,8 +19,6 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
 	"github.com/toufiq-austcse/deployit/pkg/utils"
-	"os"
-	"os/exec"
 )
 
 type PullRepoWorker struct {
@@ -27,30 +28,34 @@ type PullRepoWorker struct {
 }
 
 func NewPullRepoWorker(deploymentService *service.DeploymentService, buildRepoWorker *BuildRepoWorker) *PullRepoWorker {
-	return &PullRepoWorker{config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
-		"topic",
-		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE,
-		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_ROUTING_KEY),
+	return &PullRepoWorker{
+		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
+			"topic",
+			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE,
+			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_ROUTING_KEY),
 		deploymentService: deploymentService,
-		buildRepoWorker:   buildRepoWorker}
+		buildRepoWorker:   buildRepoWorker,
+	}
 }
 
 func (worker *PullRepoWorker) InitPullRepoSubscriber() {
-
 	subscriber, err := amqp.NewSubscriber(worker.config, watermill.NewStdLogger(false, false))
 	if err != nil {
 		fmt.Println("error in pull repo subscriber ", err.Error())
 		return
 	}
 	fmt.Println("PullRepoWorker Initialized")
-	messages, err := subscriber.Subscribe(context.Background(), deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE)
+	messages, err := subscriber.Subscribe(
+		context.Background(),
+		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE,
+	)
 	if err != nil {
 		fmt.Println("error in pull repo subscriber ", err.Error())
 		return
 	}
 	go worker.ProcessPullRepoMessages(messages)
-
 }
+
 func (worker *PullRepoWorker) ProcessPullRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
 		deploymentId, err := worker.ProcessPullRepoMessage(msg)
@@ -58,7 +63,11 @@ func (worker *PullRepoWorker) ProcessPullRepoMessages(messages <-chan *message.M
 			fmt.Println("error in processing pull repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, updateErr := worker.deploymentService.UpdateLatestStatus(deploymentId, enums.FAILED, context.Background())
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(
+					deploymentId,
+					enums.FAILED,
+					context.Background(),
+				)
 				if updateErr != nil {
 					fmt.Println("error in updating deployment status ", updateErr.Error())
 				}
@@ -101,6 +110,7 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (stri
 
 	return consumedPayload.DeploymentId, nil
 }
+
 func (worker *PullRepoWorker) PublishPullRepoJob(workerPayload payloads.PullRepoWorkerPayload) error {
 	publisher, err := amqp.NewPublisher(worker.config, watermill.NewStdLogger(false, false))
 	if err != nil {

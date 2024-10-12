@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
@@ -11,7 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type DeploymentService struct {
@@ -55,7 +56,11 @@ func (service *DeploymentService) FindById(id string, ctx context.Context) *mode
 	return deployment
 }
 
-func (service *DeploymentService) FindUserDeploymentById(id string, userId primitive.ObjectID, ctx context.Context) *model.Deployment {
+func (service *DeploymentService) FindUserDeploymentById(
+	id string,
+	userId primitive.ObjectID,
+	ctx context.Context,
+) *model.Deployment {
 	var deployment *model.Deployment
 	oId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -70,7 +75,11 @@ func (service *DeploymentService) FindUserDeploymentById(id string, userId primi
 	return deployment
 }
 
-func (service *DeploymentService) ListDeployment(page, limit int64, userId primitive.ObjectID, ctx context.Context) ([]*model.Deployment, *api_response.Pagination, error) {
+func (service *DeploymentService) ListDeployment(
+	page, limit int64,
+	userId primitive.ObjectID,
+	ctx context.Context,
+) ([]*model.Deployment, *api_response.Pagination, error) {
 	deployments := []*model.Deployment{}
 
 	filter := bson.M{"user_id": userId}
@@ -96,7 +105,6 @@ func (service *DeploymentService) ListDeployment(page, limit int64, userId primi
 		decodeErr := cursor.Decode(&deployment)
 		if decodeErr != nil {
 			return deployments, nil, decodeErr
-
 		}
 		deployments = append(deployments, deployment)
 	}
@@ -109,7 +117,11 @@ func (service *DeploymentService) ListDeployment(page, limit int64, userId primi
 	}, nil
 }
 
-func (service *DeploymentService) UpdateDeployment(deploymentId string, updates map[string]interface{}, ctx context.Context) (*model.Deployment, error) {
+func (service *DeploymentService) UpdateDeployment(
+	deploymentId string,
+	updates map[string]interface{},
+	ctx context.Context,
+) (*model.Deployment, error) {
 	updates["updated_at"] = time.Now()
 	fmt.Println("updating ", deploymentId, updates)
 	oId, err := primitive.ObjectIDFromHex(deploymentId)
@@ -128,7 +140,11 @@ func (service *DeploymentService) UpdateDeployment(deploymentId string, updates 
 	return service.FindById(deploymentId, ctx), err
 }
 
-func (service *DeploymentService) GetLatestStatusByIds(ids []string, userId primitive.ObjectID, ctx context.Context) ([]*model.Deployment, error) {
+func (service *DeploymentService) GetLatestStatusByIds(
+	ids []string,
+	userId primitive.ObjectID,
+	ctx context.Context,
+) ([]*model.Deployment, error) {
 	objectIds := []primitive.ObjectID{}
 	deployments := []*model.Deployment{}
 
@@ -159,13 +175,13 @@ func (service *DeploymentService) GetLatestStatusByIds(ids []string, userId prim
 		decodeErr := cursor.Decode(&deployment)
 		if decodeErr != nil {
 			return deployments, decodeErr
-
 		}
 		deployments = append(deployments, deployment)
 	}
 
 	return deployments, nil
 }
+
 func (service *DeploymentService) FindDeploymentByStatus(status string) []model.Deployment {
 	var deployments []model.Deployment
 	filter := bson.M{"latest_status": status}
@@ -183,6 +199,7 @@ func (service *DeploymentService) FindDeploymentByStatus(status string) []model.
 	}
 	return deployments
 }
+
 func (service *DeploymentService) GetContainerIdsFromDeployments(deployments []model.Deployment) []string {
 	var containerIds []string
 	for _, deployment := range deployments {
@@ -193,7 +210,12 @@ func (service *DeploymentService) GetContainerIdsFromDeployments(deployments []m
 	return containerIds
 }
 
-func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(skipContainerIds []string, currentStatus string, updatedStatus string, ctx context.Context) (int64, error) {
+func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(
+	skipContainerIds []string,
+	currentStatus string,
+	updatedStatus string,
+	ctx context.Context,
+) (int64, error) {
 	filter := bson.M{"container_id": bson.M{"$nin": skipContainerIds}, "latest_status": currentStatus}
 	update := bson.M{"$set": bson.M{"latest_status": updatedStatus, "updated_at": time.Now()}}
 	result, err := service.deploymentCollection.UpdateMany(ctx, filter, update)
@@ -202,19 +224,28 @@ func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(skipConta
 	}
 	return result.ModifiedCount, nil
 }
-func (service *DeploymentService) UpdateLatestStatus(deploymentId string, status string, context context.Context) (*model.Deployment, error) {
+
+func (service *DeploymentService) UpdateLatestStatus(
+	deploymentId string,
+	status string,
+	context context.Context,
+) (*model.Deployment, error) {
 	return service.UpdateDeployment(deploymentId, map[string]interface{}{
 		"latest_status": status,
 	}, context)
 }
+
 func (service *DeploymentService) IsRestartable(deployment *model.Deployment) bool {
-	if deployment.LatestStatus == enums.LIVE || deployment.LatestStatus == enums.STOPPED || deployment.LatestStatus == enums.FAILED {
+	if deployment.LatestStatus == enums.LIVE || deployment.LatestStatus == enums.STOPPED ||
+		deployment.LatestStatus == enums.FAILED {
 		return true
 	}
 	return false
 }
+
 func (service *DeploymentService) IsRebuildAble(deployment *model.Deployment) bool {
-	if deployment.LatestStatus == enums.LIVE || deployment.LatestStatus == enums.STOPPED || deployment.LatestStatus == enums.FAILED {
+	if deployment.LatestStatus == enums.LIVE || deployment.LatestStatus == enums.STOPPED ||
+		deployment.LatestStatus == enums.FAILED {
 		return true
 	}
 	return false

@@ -2,6 +2,11 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
@@ -13,10 +18,6 @@ import (
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github"
 	"github.com/toufiq-austcse/deployit/pkg/utils"
 	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type DeploymentController struct {
@@ -28,8 +29,13 @@ type DeploymentController struct {
 	stopRepoWorker    *worker.StopRepoWorker
 }
 
-func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deploymentService *service.DeploymentService,
-	pullRepoWorker *worker.PullRepoWorker, runRepoWorker *worker.RunRepoWorker, stopRepoWorker *worker.StopRepoWorker) *DeploymentController {
+func NewDeploymentController(
+	githubHttpClient *github.GithubHttpClient,
+	deploymentService *service.DeploymentService,
+	pullRepoWorker *worker.PullRepoWorker,
+	runRepoWorker *worker.RunRepoWorker,
+	stopRepoWorker *worker.StopRepoWorker,
+) *DeploymentController {
 	return &DeploymentController{
 		githubHttpClient:  githubHttpClient,
 		deploymentService: deploymentService,
@@ -50,6 +56,7 @@ func NewDeploymentController(githubHttpClient *github.GithubHttpClient, deployme
 // @Router   /deployments [get]
 func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
+
 	fmt.Println("user ", user)
 	page, _ := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
 	limit, _ := strconv.ParseInt(context.DefaultQuery("limit", "10"), 10, 64)
@@ -59,13 +66,23 @@ func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 
 	deployments, pagination, err := controller.deploymentService.ListDeployment(page, limit, user.Id, context)
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 
 	deploymentListRes := mapper.ToDeploymentListRes(deployments)
-	apiRes := api_response.BuildPaginationResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentListRes, pagination)
+	apiRes := api_response.BuildPaginationResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		deploymentListRes,
+		pagination,
+	)
 
 	context.JSON(apiRes.Code, apiRes)
 }
@@ -82,14 +99,24 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
 	body := &req.CreateDeploymentReqDto{}
 	if err := body.Validate(context); err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(http.StatusBadRequest, errRes)
 		return
 	}
 	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&body.RepositoryUrl)
 	if err != nil {
 		if code == http.StatusNotFound {
-			errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.RepositoryNotFoundError.Error(), nil)
+			errRes := api_response.BuildErrorResponse(
+				http.StatusBadRequest,
+				http.StatusText(http.StatusBadRequest),
+				app_errors.RepositoryNotFoundError.Error(),
+				nil,
+			)
 			context.AbortWithStatusJSON(errRes.Code, errRes)
 			return
 		}
@@ -98,7 +125,12 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 		return
 	}
 	if githubRes == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.RepositoryNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			app_errors.RepositoryNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -108,17 +140,31 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 	createErr := controller.deploymentService.Create(newDeployment, context)
 	if createErr != nil {
 		if mongo.IsDuplicateKeyError(createErr) {
-			errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.DomainNameAlreadyTakenError.Error(), nil)
+			errRes := api_response.BuildErrorResponse(
+				http.StatusBadRequest,
+				http.StatusText(http.StatusBadRequest),
+				app_errors.DomainNameAlreadyTakenError.Error(),
+				nil,
+			)
 			context.AbortWithStatusJSON(errRes.Code, errRes)
 			return
 		}
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), createErr.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			createErr.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	controller.pullRepoWorker.PublishPullRepoWork(newDeployment)
 
-	createDeploymentRes := api_response.BuildResponse(http.StatusCreated, http.StatusText(http.StatusCreated), mapper.ToDeploymentRes(newDeployment))
+	createDeploymentRes := api_response.BuildResponse(
+		http.StatusCreated,
+		http.StatusText(http.StatusCreated),
+		mapper.ToDeploymentRes(newDeployment),
+	)
 	context.JSON(createDeploymentRes.Code, createDeploymentRes)
 }
 
@@ -137,21 +183,36 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	body := &req.UpdateDeploymentReqDto{}
 
 	if err := body.Validate(context); err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(http.StatusBadRequest, errRes)
 		return
 	}
 
 	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), app_errors.DeploymentNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusNotFound,
+			http.StatusText(http.StatusNotFound),
+			app_errors.DeploymentNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&deployment.RepositoryUrl)
 	if err != nil {
 		if code == http.StatusNotFound {
-			errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.RepositoryNotFoundError.Error(), nil)
+			errRes := api_response.BuildErrorResponse(
+				http.StatusBadRequest,
+				http.StatusText(http.StatusBadRequest),
+				app_errors.RepositoryNotFoundError.Error(),
+				nil,
+			)
 			context.AbortWithStatusJSON(errRes.Code, errRes)
 			return
 		}
@@ -160,7 +221,12 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		return
 	}
 	if githubRes == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.RepositoryNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			app_errors.RepositoryNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -168,7 +234,12 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	updateFields := mapper.MapUpdateDeploymentReqToUpdate(body, githubRes.FullName)
 	updatedDeployment, err := controller.deploymentService.UpdateDeployment(deploymentId, updateFields, context)
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -197,7 +268,6 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
 	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
-
 }
 
 // EnvUpdate
@@ -211,7 +281,12 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 	var envBody map[string]string
 	if err := context.BindJSON(&envBody); err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -219,14 +294,24 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
 	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), app_errors.DeploymentNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusNotFound,
+			http.StatusText(http.StatusNotFound),
+			app_errors.DeploymentNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&deployment.RepositoryUrl)
 	if err != nil {
 		if code == http.StatusNotFound {
-			errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.RepositoryNotFoundError.Error(), nil)
+			errRes := api_response.BuildErrorResponse(
+				http.StatusBadRequest,
+				http.StatusText(http.StatusBadRequest),
+				app_errors.RepositoryNotFoundError.Error(),
+				nil,
+			)
 			context.AbortWithStatusJSON(errRes.Code, errRes)
 			return
 		}
@@ -235,7 +320,12 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		return
 	}
 	if githubRes == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.RepositoryNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			app_errors.RepositoryNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -245,7 +335,12 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		"latest_status": enums.QUEUED,
 	}, context)
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -276,12 +371,21 @@ func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
 	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), app_errors.DeploymentNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusNotFound,
+			http.StatusText(http.StatusNotFound),
+			app_errors.DeploymentNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 
-	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), mapper.ToDeploymentDetailsRes(deployment))
+	deploymentDetailsRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		mapper.ToDeploymentDetailsRes(deployment),
+	)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 
@@ -298,18 +402,33 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 	user := utils.GetUserFromContext(context)
 	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), app_errors.DeploymentNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusNotFound,
+			http.StatusText(http.StatusNotFound),
+			app_errors.DeploymentNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	if !controller.deploymentService.IsRestartable(deployment) {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.DeploymentNotRestartableError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			app_errors.DeploymentNotRestartableError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -325,7 +444,6 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 
 	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
-
 }
 
 // DeploymentRebuildAndReDeploy
@@ -341,18 +459,33 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 	user := utils.GetUserFromContext(context)
 	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), app_errors.RepositoryNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusNotFound,
+			http.StatusText(http.StatusNotFound),
+			app_errors.RepositoryNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	if !controller.deploymentService.IsRebuildAble(deployment) {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.DeploymentNotDeployableError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			app_errors.DeploymentNotDeployableError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -364,7 +497,6 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 
 	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
-
 }
 
 // DeploymentStop
@@ -380,12 +512,22 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
 	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
 	if deployment == nil {
-		errRes := api_response.BuildErrorResponse(http.StatusNotFound, http.StatusText(http.StatusNotFound), app_errors.DeploymentNotFoundError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusNotFound,
+			http.StatusText(http.StatusNotFound),
+			app_errors.DeploymentNotFoundError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	if !controller.deploymentService.IsStopAble(deployment) {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.DeploymentNotStoppableError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			app_errors.DeploymentNotStoppableError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -393,14 +535,24 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 	stopRepoWorkerPayload := mapper.ToStopRepoWorkerPayload(*deployment)
 
 	if err := controller.stopRepoWorker.PublishStopRepoJob(stopRepoWorkerPayload); err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 
 	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -409,50 +561,90 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 
 	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
-
 }
 
 func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Context) {
 	idsQuery, ok := context.GetQuery("ids")
 	user := utils.GetUserFromContext(context)
 	if !ok {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.IdsRequiredInQueryParamError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			app_errors.IdsRequiredInQueryParamError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 	idsArray := strings.Split(idsQuery, ",")
 	if len(idsArray) == 1 && idsArray[0] == "" {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), app_errors.IdsRequiredInQueryParamError.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+			app_errors.IdsRequiredInQueryParamError.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 
 	deployments, err := controller.deploymentService.GetLatestStatusByIds(idsArray, user.Id, context)
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
 
-	deploymentsLatestStatusRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), mapper.ToDeploymentLatestStatus(deployments))
+	deploymentsLatestStatusRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		mapper.ToDeploymentLatestStatus(deployments),
+	)
 
 	context.JSON(deploymentsLatestStatusRes.Code, deploymentsLatestStatusRes)
 }
+
 func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 	runningContainerIds, err := controller.dockerService.ListRunningContainerIds()
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	updatedCount, err := controller.deploymentService.UpdateDeploymentStatusByContainerIds(runningContainerIds, enums.LIVE, enums.STOPPED, context)
+	updatedCount, err := controller.deploymentService.UpdateDeploymentStatusByContainerIds(
+		runningContainerIds,
+		enums.LIVE,
+		enums.STOPPED,
+		context,
+	)
 	if err != nil {
-		errRes := api_response.BuildErrorResponse(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err.Error(), nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	fmt.Println("Time : ", time.Now().Format(time.DateTime), " running containers ", len(runningContainerIds), " stopped ", updatedCount)
+	fmt.Println(
+		"Time : ",
+		time.Now().Format(time.DateTime),
+		" running containers ",
+		len(runningContainerIds),
+		" stopped ",
+		updatedCount,
+	)
 	updatedCountRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), updatedCount)
 	context.JSON(updatedCountRes.Code, updatedCountRes)
-
 }

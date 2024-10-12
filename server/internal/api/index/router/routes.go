@@ -7,5 +7,4 @@ import (
 
 func Setup(group *gin.RouterGroup) {
 	group.GET("", controller.Index())
-
 }

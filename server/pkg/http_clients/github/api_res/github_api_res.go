@@ -90,8 +90,7 @@ type GithubRepoRes struct {
 	SubscribersCount         int64            `json:"subscribers_count"`
 }
 
-type CustomProperties struct {
-}
+type CustomProperties struct{}
 
 type Organization struct {
 	Login             string `json:"login"`

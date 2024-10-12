@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/toufiq-austcse/deployit/internal/app"
 	"runtime/debug"
+
+	"github.com/toufiq-austcse/deployit/internal/app"
 )
 
 const configPath = ".env"
@@ -15,5 +16,4 @@ func main() {
 		debug.PrintStack()
 		return
 	}
-
 }

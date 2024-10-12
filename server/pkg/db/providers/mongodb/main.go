@@ -3,10 +3,11 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/toufiq-austcse/deployit/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 func New() (*mongo.Client, *mongo.Database, error) {
@@ -24,5 +25,4 @@ func New() (*mongo.Client, *mongo.Database, error) {
 	fmt.Println("Connected to mongodb...")
 
 	return client, client.Database(config.AppConfig.MONGO_DB_CONFIG.DB_NAME), nil
-
 }

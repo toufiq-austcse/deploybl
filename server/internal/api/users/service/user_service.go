@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/toufiq-austcse/deployit/internal/api/users/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

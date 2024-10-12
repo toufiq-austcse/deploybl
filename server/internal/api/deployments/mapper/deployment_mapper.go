@@ -1,6 +1,9 @@
 package mapper
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
@@ -10,11 +13,15 @@ import (
 	userModel "github.com/toufiq-austcse/deployit/internal/api/users/model"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github/api_res"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"strconv"
-	"time"
 )
 
-func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider string, githubRes *api_res.GithubRepoRes, existingDeployment *model.Deployment, user *userModel.User) *model.Deployment {
+func MapCreateDeploymentReqToSave(
+	dto *req.CreateDeploymentReqDto,
+	provider string,
+	githubRes *api_res.GithubRepoRes,
+	existingDeployment *model.Deployment,
+	user *userModel.User,
+) *model.Deployment {
 	subDomainName := githubRes.Name
 	if existingDeployment != nil {
 		subDomainName += "-" + strconv.FormatInt(time.Now().UnixMilli(), 10)
@@ -41,6 +48,7 @@ func MapCreateDeploymentReqToSave(dto *req.CreateDeploymentReqDto, provider stri
 		UpdatedAt:          time.Now(),
 	}
 }
+
 func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto, repoName string) map[string]interface{} {
 	updateFields := map[string]interface{}{}
 
@@ -78,6 +86,7 @@ func ToDeploymentRes(model *model.Deployment) res.DeploymentRes {
 	}
 	return deploymentRes
 }
+
 func ToDeploymentDetailsRes(model *model.Deployment) res.DeploymentDetailsRes {
 	deploymentDetail := res.DeploymentDetailsRes{
 		Id:                 model.Id,
@@ -109,6 +118,7 @@ func ToDeploymentListRes(deploymentModels []*model.Deployment) []res.DeploymentR
 
 	return deployments
 }
+
 func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWorkerPayload {
 	return payloads.PullRepoWorkerPayload{
 		DeploymentId:   deployment.Id.Hex(),
@@ -130,11 +140,13 @@ func ToBuildRepoWorkerPayload(payload payloads.PullRepoWorkerPayload) payloads.B
 		Env:            payload.Env,
 	}
 }
+
 func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload) payloads.RunRepoWorkerPayload {
 	return payloads.RunRepoWorkerPayload{
 		DeploymentId: payload.DeploymentId,
 	}
 }
+
 func ToRunRepoWorkerPayloadFromDeployment(deployment model.Deployment) payloads.RunRepoWorkerPayload {
 	return payloads.RunRepoWorkerPayload{
 		DeploymentId: deployment.Id.Hex(),
@@ -144,9 +156,11 @@ func ToRunRepoWorkerPayloadFromDeployment(deployment model.Deployment) payloads.
 func ToStopRepoWorkerPayload(deployment model.Deployment) payloads.StopRepoWorkerPayload {
 	return payloads.StopRepoWorkerPayload{DeploymentId: deployment.Id.Hex()}
 }
+
 func GetDomainUrl(subDomainName string) string {
 	return "https://" + subDomainName + "." + config.AppConfig.BASE_DOMAIN
 }
+
 func ToDeploymentLatestStatus(deployments []*model.Deployment) []res.DeploymentLatestStatusRes {
 	deploymentsLatestStatusRes := []res.DeploymentLatestStatusRes{}
 

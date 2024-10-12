@@ -5,9 +5,9 @@ import (
 )
 
 type CreateDeploymentReqDto struct {
-	Title          string             `json:"title" binding:"required"`
-	RepositoryUrl  string             `json:"repository_url" binding:"required"`
-	BranchName     string             `json:"branch_name" binding:"required"`
+	Title          string             `json:"title"            binding:"required"`
+	RepositoryUrl  string             `json:"repository_url"   binding:"required"`
+	BranchName     string             `json:"branch_name"      binding:"required"`
 	RootDir        *string            `json:"root_dir"`
 	DockerFilePath *string            `json:"docker_file_path"`
 	Env            *map[string]string `json:"env"`

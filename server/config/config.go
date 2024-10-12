@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/spf13/viper"
 )
 
@@ -60,7 +61,6 @@ func Init(envFilePath string) {
 	setFromEnv(&AppConfig)
 
 	fmt.Println("Configuration loaded")
-
 }
 
 func setFromEnv(config *Config) {
@@ -108,6 +108,7 @@ func parseConfigFile(envFilePath, configName string) {
 		fmt.Println("err in merge config", err)
 	}
 }
+
 func populateDefault() {
 	viper.SetDefault("PORT", defaultPort)
 	viper.SetDefault("APP_NAME", defaultAppName)

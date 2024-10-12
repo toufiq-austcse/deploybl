@@ -1,7 +1,9 @@
 package db_drivers_enum
 
-type DbDriver string
-type CREATED int64
+type (
+	DbDriver string
+	CREATED  int64
+)
 
 const (
 	POSTGRESQL DbDriver = "postgres"

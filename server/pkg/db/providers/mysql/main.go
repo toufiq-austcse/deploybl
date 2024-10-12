@@ -2,12 +2,13 @@ package mysql
 
 import (
 	"database/sql"
-	"github.com/toufiq-austcse/deployit/config"
 	"time"
+
+	"github.com/toufiq-austcse/deployit/config"
 )
 
 func getDataSourceName() string {
-	//return "root:pass@tcp(localhost:3306)/entimport?parseTime=True"
+	// return "root:pass@tcp(localhost:3306)/entimport?parseTime=True"
 	return config.AppConfig.DB_CONFIG.USER + ":" +
 		config.AppConfig.DB_CONFIG.PASSWORD +
 		"@tcp(" + config.AppConfig.DB_CONFIG.HOST +
