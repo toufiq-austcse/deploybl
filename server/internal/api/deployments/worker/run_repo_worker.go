@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -12,6 +11,7 @@ import (
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
+	"github.com/toufiq-austcse/deployit/pkg/app_errors"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
 	"time"
 )
@@ -72,10 +72,10 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string
 
 	deployment := worker.deploymentService.FindById(consumedPayload.DeploymentId, context.Background())
 	if deployment == nil {
-		return consumedPayload.DeploymentId, errors.New("deployment not found")
+		return consumedPayload.DeploymentId, app_errors.DeploymentNotFoundError
 	}
 	if deployment.DockerImageTag == nil {
-		return consumedPayload.DeploymentId, errors.New("docker image tag not found")
+		return consumedPayload.DeploymentId, app_errors.DockerImageTagNotFoundError
 	}
 	if deployment.ContainerId != nil {
 		if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {

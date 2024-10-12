@@ -46,7 +46,11 @@ func BuildPaginationResponse(code int, message string, data interface{}, paginat
 }
 
 func BuildErrorResponse(code int, message string, err string, data interface{}) Response {
-	splitError := strings.Split(err, "\n")
+	splitError := []string{}
+	if err != "" {
+		splitError = strings.Split(err, "\n")
+	}
+
 	return Response{
 		Code:    code,
 		Message: message,
