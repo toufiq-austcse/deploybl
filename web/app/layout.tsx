@@ -8,17 +8,15 @@ import { AuthProvider } from '@/contexts/useAuthContext';
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html>
-    <body>
-    <div className={'min-h-screen flex flex-col'}>
-      <AuthProvider>
-        <Navbar />
-        <div className="m-4 max-w-full px-5 sm:px-6 lg:px-20">
-          {children}
+      <body>
+        <div className={'min-h-screen flex flex-col'}>
+          <AuthProvider>
+            <Navbar />
+            <div className="m-4 max-w-full px-5 sm:px-6 lg:px-20">{children}</div>
+            <Toaster />
+          </AuthProvider>
         </div>
-        <Toaster />
-      </AuthProvider>
-    </div>
-    </body>
+      </body>
     </html>
   );
 };

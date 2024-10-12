@@ -1,16 +1,12 @@
-import { VideoDetails } from "@/api/graphql/types/video-details";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Check, X } from "lucide-react";
-import { useState } from "react";
-import { useMutation } from "@apollo/client";
-import { UPDATE_ASSET_MUTATION } from "@/api/graphql/queries/query";
+import { VideoDetails } from '@/api/graphql/types/video-details';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Check, X } from 'lucide-react';
+import { useState } from 'react';
+import { useMutation } from '@apollo/client';
+import { UPDATE_ASSET_MUTATION } from '@/api/graphql/queries/query';
 
-const VideoTitleComponent = ({
-  videoDetails,
-}: {
-  videoDetails: VideoDetails;
-}) => {
+const VideoTitleComponent = ({ videoDetails }: { videoDetails: VideoDetails }) => {
   const [enableEditTitle, setEnableEditTitle] = useState(false);
   const [title, setTitle] = useState(videoDetails.title);
   const [tempTitle, setTempTitle] = useState(videoDetails.title);
@@ -37,7 +33,7 @@ const VideoTitleComponent = ({
   };
 
   const onKeyDownInTitle = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       onUpdateClick();
     }
   };
@@ -49,20 +45,10 @@ const VideoTitleComponent = ({
         onChange={(e) => setTempTitle(e.target.value)}
         onKeyDown={(e) => onKeyDownInTitle(e)}
       ></Input>
-      <Button
-        variant="outline"
-        size="icon"
-        className="bg-blue-500 text-white"
-        onClick={onUpdateClick}
-      >
+      <Button variant="outline" size="icon" className="bg-blue-500 text-white" onClick={onUpdateClick}>
         <Check className="h-4 w-4" />
       </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        className="bg-red-500 text-white"
-        onClick={onCancelClick}
-      >
+      <Button variant="outline" size="icon" className="bg-red-500 text-white" onClick={onCancelClick}>
         <X className="h-4 w-4" />
       </Button>
     </div>

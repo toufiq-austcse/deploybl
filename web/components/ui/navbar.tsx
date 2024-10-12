@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -21,7 +21,6 @@ const Navbar = () => {
   const onLogOutClick = async () => {
     await logout();
     router.push('/login');
-
   };
   return (
     <nav className="bg-gray-800">
@@ -66,8 +65,7 @@ const Navbar = () => {
             {/*  </div>*/}
             {/*</div>*/}
           </div>
-          <div
-            className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
             {/*<button type="button"*/}
             {/*        className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">*/}
             {/*  <span className="absolute -inset-1.5"></span>*/}
@@ -84,12 +82,10 @@ const Navbar = () => {
                 {currentUser ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger className="flex flex-row">
-                      <h1
-                        className="flex gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white hover:cursor-pointer">
+                      <h1 className="flex gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white hover:cursor-pointer">
                         {currentUser.displayName}
                         <FaChevronDown className="fill-white my-1" />
                       </h1>
-
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>

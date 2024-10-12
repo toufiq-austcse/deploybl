@@ -14,11 +14,9 @@ import { useHttpClient } from '@/api/http/useHttpClient';
 import ErrorAlert from '@/components/ui/error-alert';
 
 const formSchema = z.object({
-  repository_url: z
-    .string()
-    .url({
-      message: 'Please enter valid url'
-    })
+  repository_url: z.string().url({
+    message: 'Please enter valid url',
+  }),
 });
 
 const CreateNewModal = () => {
@@ -27,7 +25,7 @@ const CreateNewModal = () => {
   const { getRepoDetails, loading } = useHttpClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema)
+    resolver: zodResolver(formSchema),
   });
 
   const onFormSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -50,10 +48,12 @@ const CreateNewModal = () => {
     // }
   };
   return (
-
     <Dialog>
       <DialogTrigger className="btn" asChild>
-        <Button variant="outline"> <IoMdAdd /> Create New</Button>
+        <Button variant="outline">
+          {' '}
+          <IoMdAdd /> Create New
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -63,36 +63,29 @@ const CreateNewModal = () => {
         <Form {...form}>
           <form id="repo-url-form" onSubmit={form.handleSubmit(onFormSubmit)}>
             <div className="gap-4">
-              <FormField control={
-                form.control
-              } name="repository_url" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Repository Git Url</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Put your repository git URL here" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
+              <FormField
+                control={form.control}
+                name="repository_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Repository Git Url</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Put your repository git URL here" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <div className="flex flex-row-reverse">
-              <Button
-                disabled={loading}
-                type="submit"
-                size="sm"
-                className="my-2"
-              >
+              <Button disabled={loading} type="submit" size="sm" className="my-2">
                 Login
               </Button>
             </div>
           </form>
-
         </Form>
       </DialogContent>
     </Dialog>
-
-
   );
 };
 

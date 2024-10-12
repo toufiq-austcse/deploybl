@@ -17,32 +17,36 @@ import { convertEnvToObj } from '@/lib/utils';
 import PrivateRoute from '@/components/private-route';
 
 const validateRepositorySchema = z.object({
-  repository_url: z
-    .string()
-    .url({
-      message: 'Please enter valid url'
-    })
+  repository_url: z.string().url({
+    message: 'Please enter valid url',
+  }),
 });
 const createDeploymentSchema = z.object({
-  title: z.string({
-    required_error: 'Title is required'
-  }).min(1, {
-    message: 'title is required'
-  }),
-  repository_url: z.string({
-    required_error: 'Repository URL is required'
-  }).url({
-    message: 'Please enter valid url'
-  }),
+  title: z
+    .string({
+      required_error: 'Title is required',
+    })
+    .min(1, {
+      message: 'title is required',
+    }),
+  repository_url: z
+    .string({
+      required_error: 'Repository URL is required',
+    })
+    .url({
+      message: 'Please enter valid url',
+    }),
   branch_name: z.string({
-    required_error: 'Branch name is required'
+    required_error: 'Branch name is required',
   }),
   root_directory: z.string().optional().default(''),
-  docker_file_path: z.string({
-    required_error: 'Docker file path is required'
-  }).min(1, {
-    message: 'Docker file path is required'
-  })
+  docker_file_path: z
+    .string({
+      required_error: 'Docker file path is required',
+    })
+    .min(1, {
+      message: 'Docker file path is required',
+    }),
 });
 
 const NewDeploymentPage: NextPage = () => {
@@ -53,10 +57,10 @@ const NewDeploymentPage: NextPage = () => {
   const [envs, setEnvs] = useState<EnvironmentVariableType[]>([]);
 
   const validateRepositoryForm = useForm<z.infer<typeof validateRepositorySchema>>({
-    resolver: zodResolver(validateRepositorySchema)
+    resolver: zodResolver(validateRepositorySchema),
   });
   const createDeploymentForm = useForm<z.infer<typeof createDeploymentSchema>>({
-    resolver: zodResolver(createDeploymentSchema)
+    resolver: zodResolver(createDeploymentSchema),
   });
 
   const onRepoValidationFormSubmit = async (values: z.infer<typeof validateRepositorySchema>) => {
@@ -73,7 +77,6 @@ const NewDeploymentPage: NextPage = () => {
     createDeploymentForm.setValue('docker_file_path', 'Dockerfile');
   };
 
-
   const onCreateDeploymentFormSubmit = async (values: z.infer<typeof createDeploymentSchema>) => {
     setError(null);
     let envObj = convertEnvToObj(envs);
@@ -84,7 +87,7 @@ const NewDeploymentPage: NextPage = () => {
       docker_file_path: values.docker_file_path,
       env: envObj,
       repository_url: values.repository_url,
-      root_dir: values.root_directory === '' ? null : values.root_directory
+      root_dir: values.root_directory === '' ? null : values.root_directory,
     });
     if (data) {
       router.push(`/deployments/${data._id}/environments`);
@@ -94,7 +97,6 @@ const NewDeploymentPage: NextPage = () => {
     }
   };
 
-
   return (
     <div className="flex flex-col space-y-2">
       <div>
@@ -102,148 +104,146 @@ const NewDeploymentPage: NextPage = () => {
       </div>
 
       <div>
-        {!repoDetails && <div>
-          {error && <ErrorAlert error={error} />}
-          <Form {...validateRepositoryForm}>
-            <form id="repo-url-form" onSubmit={validateRepositoryForm.handleSubmit(onRepoValidationFormSubmit)}>
-              <div className="gap-4">
-                <FormField control={
-                  validateRepositoryForm.control
-                } name="repository_url" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Repository Url</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Put your repository git URL here" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-              </div>
-              <div className="flex flex-row-reverse">
-                <Button
-                  disabled={loading}
-                  type="submit"
-                  size="sm"
-                  className="my-2"
-                >
-                  Next
-                </Button>
-              </div>
-            </form>
-          </Form>
-
-        </div>}
-        {repoDetails && <>
-          {error && <ErrorAlert error={error} />}
-          <div className="flex flex-col space-y-2 ">
-            <Form {...createDeploymentForm}>
-              <form id="create-deployment-form"
-                    onSubmit={createDeploymentForm.handleSubmit(onCreateDeploymentFormSubmit)}>
-                <div className="flex flex-row gap-2 justify-between min-w-full">
-                  <FormField control={
-                    createDeploymentForm.control
-                  } name="title" render={({ field }) => (
-                    <FormItem className="flex flex-row gap-2 w-full">
-                      <FormLabel className="w-1/3 flex flex-col justify-center">Title</FormLabel>
-                      <div className="flex flex-col w-full">
+        {!repoDetails && (
+          <div>
+            {error && <ErrorAlert error={error} />}
+            <Form {...validateRepositoryForm}>
+              <form id="repo-url-form" onSubmit={validateRepositoryForm.handleSubmit(onRepoValidationFormSubmit)}>
+                <div className="gap-4">
+                  <FormField
+                    control={validateRepositoryForm.control}
+                    name="repository_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Repository Url</FormLabel>
                         <FormControl>
-                          <Input  {...field} />
+                          <Input placeholder="Put your repository git URL here" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </div>
-                    </FormItem>
-                  )} />
-
-                </div>
-                <div className="flex flex-row gap-2 justify-between min-w-full">
-                  <FormField control={
-                    createDeploymentForm.control
-                  } name="repository_url" render={({ field }) => (
-                    <FormItem className="flex flex-row gap-2 w-full">
-                      <FormLabel className="w-1/3 flex flex-col justify-center">Repository URL</FormLabel>
-                      <div className="flex flex-col w-full">
-                        <FormControl>
-                          <Input  {...field} readOnly={true} />
-                        </FormControl>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )} />
-
-                </div>
-                <div className="flex flex-row gap-2 justify-between min-w-full">
-                  <FormField control={
-                    createDeploymentForm.control
-                  } name="branch_name" render={({ field }) => (
-                    <FormItem className="flex flex-row gap-2 w-full">
-                      <FormLabel className="w-1/3 flex flex-col justify-center">Branch Name</FormLabel>
-                      <div className="flex flex-col w-full">
-                        <FormControl>
-                          <Input  {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )} />
-
-                </div>
-                <div className="flex flex-row gap-2 justify-between min-w-full">
-                  <FormField control={
-                    createDeploymentForm.control
-                  } name="root_directory" render={({ field }) => (
-                    <FormItem className="flex flex-row gap-2 w-full">
-                      <FormLabel className="w-1/3 flex flex-col justify-center">Root Directory</FormLabel>
-                      <div className="flex flex-col w-full">
-                        <FormControl>
-                          <Input  {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )} />
-
-                </div>
-                <div className="flex flex-row gap-2 justify-between min-w-full">
-                  <FormField control={
-                    createDeploymentForm.control
-                  } name="docker_file_path" render={({ field }) => (
-                    <FormItem className="flex flex-row gap-2 w-full">
-                      <FormLabel className="w-1/3 flex flex-col justify-center">Docker File Path</FormLabel>
-                      <div className="flexf flex-col w-full">
-                        <FormControl>
-                          <Input  {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )} />
-
-                </div>
-                <div className="space-y-2">
-                  <label>Environment Variables</label>
-                  <div className="border 2px">
-                    <EnvironmentComponent envs={envs} setEnvs={setEnvs} />
-                  </div>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div className="flex flex-row-reverse">
-                  <Button
-                    disabled={loading}
-                    type="submit"
-                    size="sm"
-                    className="my-2"
-                  >
-                    Deploy
+                  <Button disabled={loading} type="submit" size="sm" className="my-2">
+                    Next
                   </Button>
                 </div>
-
               </form>
             </Form>
-
           </div>
-        </>}
+        )}
+        {repoDetails && (
+          <>
+            {error && <ErrorAlert error={error} />}
+            <div className="flex flex-col space-y-2 ">
+              <Form {...createDeploymentForm}>
+                <form
+                  id="create-deployment-form"
+                  onSubmit={createDeploymentForm.handleSubmit(onCreateDeploymentFormSubmit)}
+                >
+                  <div className="flex flex-row gap-2 justify-between min-w-full">
+                    <FormField
+                      control={createDeploymentForm.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row gap-2 w-full">
+                          <FormLabel className="w-1/3 flex flex-col justify-center">Title</FormLabel>
+                          <div className="flex flex-col w-full">
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex flex-row gap-2 justify-between min-w-full">
+                    <FormField
+                      control={createDeploymentForm.control}
+                      name="repository_url"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row gap-2 w-full">
+                          <FormLabel className="w-1/3 flex flex-col justify-center">Repository URL</FormLabel>
+                          <div className="flex flex-col w-full">
+                            <FormControl>
+                              <Input {...field} readOnly={true} />
+                            </FormControl>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex flex-row gap-2 justify-between min-w-full">
+                    <FormField
+                      control={createDeploymentForm.control}
+                      name="branch_name"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row gap-2 w-full">
+                          <FormLabel className="w-1/3 flex flex-col justify-center">Branch Name</FormLabel>
+                          <div className="flex flex-col w-full">
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex flex-row gap-2 justify-between min-w-full">
+                    <FormField
+                      control={createDeploymentForm.control}
+                      name="root_directory"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row gap-2 w-full">
+                          <FormLabel className="w-1/3 flex flex-col justify-center">Root Directory</FormLabel>
+                          <div className="flex flex-col w-full">
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex flex-row gap-2 justify-between min-w-full">
+                    <FormField
+                      control={createDeploymentForm.control}
+                      name="docker_file_path"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row gap-2 w-full">
+                          <FormLabel className="w-1/3 flex flex-col justify-center">Docker File Path</FormLabel>
+                          <div className="flexf flex-col w-full">
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label>Environment Variables</label>
+                    <div className="border 2px">
+                      <EnvironmentComponent envs={envs} setEnvs={setEnvs} />
+                    </div>
+                  </div>
+                  <div className="flex flex-row-reverse">
+                    <Button disabled={loading} type="submit" size="sm" className="my-2">
+                      Deploy
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
+          </>
+        )}
       </div>
-
     </div>
   );
 };
