@@ -198,6 +198,36 @@ paths:
       summary: Stop Deployment
       tags:
       - Deployments
+  /api/v1/deployments/check-stopped-cron:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Check Stopped Deployments
+      tags:
+      - Deployments
+  /api/v1/deployments/latest-status:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Deployment ID
+        in: query
+        name: ids
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Deployments Latest Status
+      tags:
+      - Deployments
   /api/v1/repositories:
     get:
       consumes:

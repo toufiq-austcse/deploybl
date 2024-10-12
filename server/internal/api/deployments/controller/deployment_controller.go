@@ -48,8 +48,8 @@ func NewDeploymentController(
 // DeploymentIndex
 // @Summary  Deployment Index
 // @Tags     Deployments
-// @Param        page    query  string  false  "Page"
-// @Param        limit   query  string  false  "Limit"
+// @Param    page   query  string  false  "Page"
+// @Param    limit  query  string  false  "Limit"
 // @Accept   json
 // @Produce  json
 // @Success  200
@@ -187,7 +187,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 // DeploymentUpdate
 // @Summary  Update Deployment
 // @Param    request  body  req.UpdateDeploymentReqDto  true  "Update Deployment Body"
-// @Param    id  path  string  true  "Deployment ID"
+// @Param    id       path  string                      true  "Deployment ID"
 // @Tags     Deployments
 // @Accept   json
 // @Produce  json
@@ -661,6 +661,14 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 
+// DeploymentLatestStatus
+// @Summary  Deployments Latest Status
+// @Tags     Deployments
+// @Param    ids  query  string  true  "Deployment ID"
+// @Accept   json
+// @Produce  json
+// @Success  200
+// @Router   /api/v1/deployments/latest-status [get]
 func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Context) {
 	idsQuery, ok := context.GetQuery("ids")
 	user := utils.GetUserFromContext(context)
@@ -711,6 +719,13 @@ func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Cont
 	context.JSON(deploymentsLatestStatusRes.Code, deploymentsLatestStatusRes)
 }
 
+// LiveCheckCron
+// @Summary  Check Stopped Deployments
+// @Tags     Deployments
+// @Accept   json
+// @Produce  json
+// @Success  200
+// @Router   /api/v1/deployments/check-stopped-cron [get]
 func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 	runningContainerIds, err := controller.dockerService.ListRunningContainerIds()
 	if err != nil {
