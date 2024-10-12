@@ -10,7 +10,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -21,7 +21,7 @@ const DeploymentDetails = () => {
     updateLatestDeploymentStatus,
     restartDeploymentContext,
     rebuildAndDeployContext,
-    stopDeploymentContext
+    stopDeploymentContext,
   } = useDeploymentContext();
 
   const onRestartClicked = async (deploymentId: string) => {
@@ -53,71 +53,81 @@ const DeploymentDetails = () => {
   let interval: NodeJS.Timeout;
 
   useEffect(() => {
-    interval = setInterval(() => {
-      updateLatestDeploymentStatus(deploymentDetails._id);
-    }, +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string));
+    interval = setInterval(
+      () => {
+        updateLatestDeploymentStatus(deploymentDetails._id);
+      },
+      +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string),
+    );
 
     return () => clearInterval(interval);
-
   }, [deploymentDetails]);
 
   return (
-    deploymentDetails &&
-    <div>
-      <div className="flex justify-between">
-        <div className="flex gap-2">
-          <p className="text-3xl">{deploymentDetails?.title}</p>
-          <div className="flex flex-col justify-center">
-            <DeploymentStatusBadge status={deploymentDetails.latest_status} />
+    deploymentDetails && (
+      <div>
+        <div className="flex justify-between">
+          <div className="flex gap-2">
+            <p className="text-3xl">{deploymentDetails?.title}</p>
+            <div className="flex flex-col justify-center">
+              <DeploymentStatusBadge status={deploymentDetails.latest_status} />
+            </div>
+          </div>
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button variant="secondary" className=" flex flex-row justify-around gap-2">
+                  Actions
+                  <FaChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => onRestartClicked(deploymentDetails._id)}>Restart</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRebuildAndDeployClicked(deploymentDetails._id)}>
+                  Rebuild & Redeploy
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onStopClicked(deploymentDetails._id)}>Stop</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-        <div>
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button variant="secondary" className=" flex flex-row justify-around gap-2">
-                Actions
-                <FaChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => onRestartClicked(deploymentDetails._id)}>Restart</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRebuildAndDeployClicked(deploymentDetails._id)}>Rebuild &
-                Redeploy</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onStopClicked(deploymentDetails._id)}>Stop</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-        </div>
-      </div>
-      <Link href={''} className="flex gap-2">
-        <div className="flex flex-col justify-center">
-          <FaGithub />
-        </div>
-        <Link className="flex flex-row gap-2" href={deploymentDetails.repository_url} target="_blank">
-          <p className="underline">{deploymentDetails?.repository_name}</p>
-          <p className="underline">{deploymentDetails?.branch_name}</p>
+        <Link href={''} className="flex gap-2">
+          <div className="flex flex-col justify-center">
+            <FaGithub />
+          </div>
+          <Link className="flex flex-row gap-2" href={deploymentDetails.repository_url} target="_blank">
+            <p className="underline">{deploymentDetails?.repository_name}</p>
+            <p className="underline">{deploymentDetails?.branch_name}</p>
+          </Link>
         </Link>
-      </Link>
 
-      <div className="flex gap-2 justify-between">
-        <div className="min-w-50">
-          {deploymentDetails.domain_url && <div className="flex flex-row gap-2 text-blue-500">
-            <Link href={deploymentDetails.domain_url as string}
-                  target="_blank">{deploymentDetails.domain_url}</Link>
-            <div className="flex flex-col justify-center">
-              <FaRegCopy className="cursor-pointer" onClick={() => onCopyUrlClicked(deploymentDetails.domain_url)} />
-            </div>
-          </div>}
-        </div>
+        <div className="flex gap-2 justify-between">
+          <div className="min-w-50">
+            {deploymentDetails.domain_url && (
+              <div className="flex flex-row gap-2 text-blue-500">
+                <Link href={deploymentDetails.domain_url as string} target="_blank">
+                  {deploymentDetails.domain_url}
+                </Link>
+                <div className="flex flex-col justify-center">
+                  <FaRegCopy
+                    className="cursor-pointer"
+                    onClick={() => onCopyUrlClicked(deploymentDetails.domain_url)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
-        <div className="flex flex-row-reverse min-w-50">
-          {deploymentDetails.last_deployed_at ?
-            <p>Last Deployed At : {moment(deploymentDetails.last_deployed_at).fromNow()}</p> :
-            <p>Not Deployed yet</p>}
+          <div className="flex flex-row-reverse min-w-50">
+            {deploymentDetails.last_deployed_at ? (
+              <p>Last Deployed At : {moment(deploymentDetails.last_deployed_at).fromNow()}</p>
+            ) : (
+              <p>Not Deployed yet</p>
+            )}
+          </div>
         </div>
       </div>
-
-    </div>
+    )
   );
 };
 export default DeploymentDetails;

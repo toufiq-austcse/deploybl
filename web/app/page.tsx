@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import AppTable from '@/components/ui/app-table';
@@ -28,7 +28,6 @@ import { onCopyUrlClicked } from '@/lib/utils';
 import PrivateRoute from '@/components/private-route';
 import { toast } from 'sonner';
 
-
 const HomePage: NextPage = () => {
   const router = useRouter();
   let pageSize = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_LIST_PAGE_SIZE) || 10;
@@ -37,21 +36,15 @@ const HomePage: NextPage = () => {
   let [deploymentList, setDeploymentList] = useState<DeploymentType[]>([]);
   const [loading, setLoading] = useState(true);
   const isActionOpen = useRef(false);
-  let {
-    listDeployments,
-    getDeploymentLatestStatus,
-    restartDeployment,
-    rebuildAndDeploy,
-    stopDeployment
-  } = useHttpClient();
+  let { listDeployments, getDeploymentLatestStatus, restartDeployment, rebuildAndDeploy, stopDeployment } =
+    useHttpClient();
   const columns: ColumnDef<DeploymentType>[] = [
     {
       id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={
-            (table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && 'indeterminate')) as boolean
+            (table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')) as boolean
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
@@ -65,7 +58,7 @@ const HomePage: NextPage = () => {
         />
       ),
       enableSorting: false,
-      enableHiding: false
+      enableHiding: false,
     },
 
     {
@@ -77,7 +70,7 @@ const HomePage: NextPage = () => {
             <div className="lowercase font-medium">{row.getValue('title')}</div>
           </Link>
         );
-      }
+      },
     },
     {
       accessorKey: 'latest_status',
@@ -85,14 +78,14 @@ const HomePage: NextPage = () => {
       cell: ({ row }) => {
         let status: string = row.getValue('latest_status');
         return <DeploymentStatusBadge status={status} />;
-      }
+      },
     },
     {
       accessorKey: 'repository_provider',
       header: 'Provider',
       cell: ({ row }) => {
         return <div className="capitalize">{row.getValue('repository_provider')}</div>;
-      }
+      },
     },
     {
       accessorKey: 'last_deployed_at',
@@ -105,7 +98,7 @@ const HomePage: NextPage = () => {
         const date = new Date(row.getValue('last_deployed_at')).toDateString();
 
         return <div>{date}</div>;
-      }
+      },
     },
     {
       id: 'actions',
@@ -114,10 +107,12 @@ const HomePage: NextPage = () => {
         const deployment = row.original;
 
         return (
-          <DropdownMenu onOpenChange={(e) => {
-            console.log('setting isActionOpen', e);
-            isActionOpen.current = e;
-          }}>
+          <DropdownMenu
+            onOpenChange={(e) => {
+              console.log('setting isActionOpen', e);
+              isActionOpen.current = e;
+            }}
+          >
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
@@ -126,64 +121,52 @@ const HomePage: NextPage = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE && <DropdownMenuItem
-                onClick={() => onCopyUrlClicked(deployment.domain_url)}
-              >
-                Copy URL
-              </DropdownMenuItem>}
-              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE && <DropdownMenuItem
-                onClick={() => window.open(deployment.domain_url, '_blank')}
-              >
-                Visit
-              </DropdownMenuItem>}
-              <DropdownMenuItem
-                onClick={() => onRebuildAndDeployClicked(deployment._id)}
-              >
+              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE && (
+                <DropdownMenuItem onClick={() => onCopyUrlClicked(deployment.domain_url)}>Copy URL</DropdownMenuItem>
+              )}
+              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE && (
+                <DropdownMenuItem onClick={() => window.open(deployment.domain_url, '_blank')}>Visit</DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onRebuildAndDeployClicked(deployment._id)}>
                 Rebuild & Deploy
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onRestartClicked(deployment._id)}
-              >
-                Restart
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onStopClicked(deployment._id)}>
-                Stop
-              </DropdownMenuItem>
-              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE ? <>
-              </> : null}
+              <DropdownMenuItem onClick={() => onRestartClicked(deployment._id)}>Restart</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onStopClicked(deployment._id)}>Stop</DropdownMenuItem>
+              {row.getValue('latest_status') === DEPLOYMENT_STATUS.LIVE ? <></> : null}
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link href={`/deployments/${deployment._id}/settings`}>
-                  Settings
-                </Link>
+                <Link href={`/deployments/${deployment._id}/settings`}>Settings</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
-      }
-    }
+      },
+    },
   ];
 
   useEffect(() => {
     if (deploymentList.length === 0) {
-      listDeployments(pageIndex, pageSize).then(async (response) => {
-        if (!response.isSuccessful && response.code !== 401) {
-          toast.error(response.error);
-          return;
-        }
-        setDeploymentList(response.data as DeploymentType[]);
-        setPagination(response.pagination as PaginationType);
-      }).finally(() => setLoading(false));
+      listDeployments(pageIndex, pageSize)
+        .then(async (response) => {
+          if (!response.isSuccessful && response.code !== 401) {
+            toast.error(response.error);
+            return;
+          }
+          setDeploymentList(response.data as DeploymentType[]);
+          setPagination(response.pagination as PaginationType);
+        })
+        .finally(() => setLoading(false));
     }
 
     if (deploymentList.length > 0) {
-      const newIntervalId = setInterval(() => {
-        updateLatestStatus();
-      }, +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string));
+      const newIntervalId = setInterval(
+        () => {
+          updateLatestStatus();
+        },
+        +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string),
+      );
       return () => clearInterval(newIntervalId);
     }
-
-
   }, [deploymentList.length]);
 
   const updateLatestStatus = async () => {
@@ -208,7 +191,7 @@ const HomePage: NextPage = () => {
             return {
               ...deployment,
               latest_status: latestStatus.latest_status,
-              last_deployed_at: latestStatus.last_deployed_at
+              last_deployed_at: latestStatus.last_deployed_at,
             };
           }
           return deployment;
@@ -222,7 +205,7 @@ const HomePage: NextPage = () => {
       return;
     }
 
-    listDeployments(pageIndex + 1, pageSize).then(response => {
+    listDeployments(pageIndex + 1, pageSize).then((response) => {
       if (!response.isSuccessful && response.code !== 401) {
         toast.error(response.error);
         return;
@@ -231,14 +214,13 @@ const HomePage: NextPage = () => {
       setDeploymentList(response.data as DeploymentType[]);
       setPagination(response.pagination as PaginationType);
     });
-
   };
 
   const prevFunction = () => {
     if (pageIndex === 1) {
       return;
     }
-    listDeployments(pageIndex - 1, pageSize).then(response => {
+    listDeployments(pageIndex - 1, pageSize).then((response) => {
       if (!response.isSuccessful && response.code !== 401) {
         toast.error(response.error);
         return;
@@ -281,9 +263,12 @@ const HomePage: NextPage = () => {
     <div className="space-y-2">
       <div className="flex flex-row-reverse gap-2">
         <div className="flex flex-row">
-          <Button variant="outline" onClick={() => {
-            router.push('/deployments/new');
-          }}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              router.push('/deployments/new');
+            }}
+          >
             <div className="flex flex-row justify-between gap-2">
               <div className="flex flex-col justify-center">
                 <IoMdAdd />
@@ -293,17 +278,19 @@ const HomePage: NextPage = () => {
           </Button>
         </div>
       </div>
-      {loading ? <div className="justify-end">Loading...</div> : <AppTable<DeploymentType>
-
-        totalPageCount={pagination?.last_page as number}
-        data={deploymentList}
-        columns={columns}
-        pageIndex={pageIndex}
-        pageSize={pageSize}
-        next={nextFunction}
-        prev={prevFunction}
-      />}
-
+      {loading ? (
+        <div className="justify-end">Loading...</div>
+      ) : (
+        <AppTable<DeploymentType>
+          totalPageCount={pagination?.last_page as number}
+          data={deploymentList}
+          columns={columns}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          next={nextFunction}
+          prev={prevFunction}
+        />
+      )}
     </div>
   );
 };

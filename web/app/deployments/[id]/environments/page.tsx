@@ -18,20 +18,20 @@ const EnvironmentPage: NextPage = () => {
       let envsArray = convertObjToEnv(deploymentDetails.env);
       setEnvs((prevState) => [...prevState, ...envsArray]);
     }
-
   }, []);
   const handleSaveAndRedeploy = async () => {
     setLoading(true);
     setError(null);
     let envObj = convertEnvToObj(envs);
-    updateEnv(deploymentDetails?._id, envObj).then(response => {
-      if (response.error) {
-        setError(response.error);
-      }
-    }).finally(() => {
-      setLoading(false);
-    });
-
+    updateEnv(deploymentDetails?._id, envObj)
+      .then((response) => {
+        if (response.error) {
+          setError(response.error);
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
   return (
     <div>
@@ -41,17 +41,10 @@ const EnvironmentPage: NextPage = () => {
         <EnvironmentComponent envs={envs} setEnvs={setEnvs} />
       </div>
       <div className="flex flex-row-reverse gap-2">
-        <Button
-          disabled={loading || envs.length === 0}
-          onClick={handleSaveAndRedeploy}
-          size="sm"
-          className="my-2"
-        >
+        <Button disabled={loading || envs.length === 0} onClick={handleSaveAndRedeploy} size="sm" className="my-2">
           Save & Redeploy
         </Button>
-
       </div>
-
     </div>
   );
 };

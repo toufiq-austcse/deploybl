@@ -1,14 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import Plyr from "plyr";
-import Hls from "hls.js";
+import React, { useEffect, useRef } from 'react';
+import Plyr from 'plyr';
+import Hls from 'hls.js';
 
-const PlyrHlsPlayer = ({
-  source,
-  thumbnailUrl,
-}: {
-  source: string;
-  thumbnailUrl: string;
-}) => {
+const PlyrHlsPlayer = ({ source, thumbnailUrl }: { source: string; thumbnailUrl: string }) => {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
 
@@ -42,14 +36,12 @@ const PlyrHlsPlayer = ({
         // @ts-ignore
         defaultOptions.i18n = {
           qualityLabel: {
-            0: "Auto",
+            0: 'Auto',
           },
         };
 
         hls.on(Hls.Events.LEVEL_SWITCHED, function (event, data) {
-          const span = document.querySelector(
-            ".plyr__menu__container [data-plyr='quality'][value='0'] span",
-          );
+          const span = document.querySelector(".plyr__menu__container [data-plyr='quality'][value='0'] span");
           if (hls.autoLevelEnabled) {
             // @ts-ignore
             span.innerHTML = `AUTO (${hls.levels[data.level].height}p)`;

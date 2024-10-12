@@ -2,8 +2,7 @@ import { useAuthContext } from '@/contexts/useAuthContext';
 import React, { ComponentType, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-
-const PrivateRoute =<P extends object>(Component: ComponentType<P>) => {
+const PrivateRoute = <P extends object>(Component: ComponentType<P>) => {
   return (props: any) => {
     const { currentUser } = useAuthContext();
     const router = useRouter();
@@ -11,7 +10,7 @@ const PrivateRoute =<P extends object>(Component: ComponentType<P>) => {
 
     useEffect(() => {
       if (!currentUser) {
-        router.push("/login");
+        router.push('/login');
         return;
       }
     }, []);

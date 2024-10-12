@@ -16,16 +16,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const formSchema = z.object({
   name: z.string({
-    required_error: 'Name is required'
+    required_error: 'Name is required',
   }),
   email: z.string().email({
-    message: 'Please enter a valid email address'
+    message: 'Please enter a valid email address',
   }),
   password: z.string({
-    required_error: 'Password is required'
-  })
+    required_error: 'Password is required',
+  }),
 });
-
 
 const SignUpPage: NextPage = () => {
   const router = useRouter();
@@ -33,7 +32,7 @@ const SignUpPage: NextPage = () => {
   const { signup } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema)
+    resolver: zodResolver(formSchema),
   });
 
   const onFormSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -52,7 +51,6 @@ const SignUpPage: NextPage = () => {
     } finally {
       setLoading(false);
     }
-
   };
 
   return (
@@ -60,12 +58,12 @@ const SignUpPage: NextPage = () => {
       <Card className="w-3/6 m-2">
         <CardHeader>
           <CardTitle className="flex justify-center">Sign Up</CardTitle>
-          <CardDescription className="flex justify-center">Already have an account <Link
-            href={'login'}
-            className="mx-1 underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
-          >
-            Login
-          </Link></CardDescription>
+          <CardDescription className="flex justify-center">
+            Already have an account{' '}
+            <Link href={'login'} className="mx-1 underline text-blue-600 hover:text-blue-800 visited:text-purple-600">
+              Login
+            </Link>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {error && <ErrorAlert error={error} />}
@@ -105,34 +103,22 @@ const SignUpPage: NextPage = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter your password"
-                        type="password"
-                        {...field}
-                      />
+                      <Input placeholder="Enter your password" type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <div className="flex flex-row-reverse">
-                <Button
-                  disabled={loading}
-                  type="submit"
-                  size="sm"
-                  form="signup-form"
-                  className="my-2"
-                >
+                <Button disabled={loading} type="submit" size="sm" form="signup-form" className="my-2">
                   Signup
                 </Button>
               </div>
             </form>
           </Form>
         </CardContent>
-
       </Card>
     </div>
   );
-
 };
 export default PublicRoute(SignUpPage);

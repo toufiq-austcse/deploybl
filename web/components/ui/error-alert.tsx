@@ -1,6 +1,6 @@
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
-import React from "react";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
+import React from 'react';
 
 const ErrorAlert = ({ error }: { error: string }) => {
   return (
