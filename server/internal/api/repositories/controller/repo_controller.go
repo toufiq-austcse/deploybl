@@ -31,7 +31,12 @@ func NewRepoController(githubHttpClient *github.GithubHttpClient) *RepoControlle
 func (controller RepoController) GetRepoDetails(context *gin.Context) {
 	repoUrl, isExist := context.GetQuery("repo_url")
 	if !isExist {
-		errRes := api_response.BuildErrorResponse(http.StatusBadRequest, "repo_url required in query", "", nil)
+		errRes := api_response.BuildErrorResponse(
+			http.StatusBadRequest,
+			"repo_url required in query",
+			"",
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -45,6 +50,10 @@ func (controller RepoController) GetRepoDetails(context *gin.Context) {
 
 	detailsRes := mapper.ToRepoDetailsRes(githubRes)
 
-	repoDetailsApiRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), detailsRes)
+	repoDetailsApiRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		detailsRes,
+	)
 	context.JSON(repoDetailsApiRes.Code, repoDetailsApiRes)
 }

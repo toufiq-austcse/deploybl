@@ -26,7 +26,10 @@ type BuildRepoWorker struct {
 	runRepoWorker     *RunRepoWorker
 }
 
-func NewBuildRepoWorker(deploymentService *service.DeploymentService, runRepoWorker *RunRepoWorker) *BuildRepoWorker {
+func NewBuildRepoWorker(
+	deploymentService *service.DeploymentService,
+	runRepoWorker *RunRepoWorker,
+) *BuildRepoWorker {
 	return &BuildRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 			"topic",
@@ -103,7 +106,9 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (st
 	return consumedPayload.DeploymentId, nil
 }
 
-func (worker *BuildRepoWorker) PublishBuildRepoJob(workerPayload payloads.BuildRepoWorkerPayload) error {
+func (worker *BuildRepoWorker) PublishBuildRepoJob(
+	workerPayload payloads.BuildRepoWorkerPayload,
+) error {
 	publisher, err := amqp.NewPublisher(worker.config, watermill.NewStdLogger(false, false))
 	if err != nil {
 		return err
@@ -152,7 +157,9 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 	return &dockerImageTag, nil
 }
 
-func (worker *BuildRepoWorker) PublishRunRepoWork(buildRepoWorkerPayload payloads.BuildRepoWorkerPayload) error {
+func (worker *BuildRepoWorker) PublishRunRepoWork(
+	buildRepoWorkerPayload payloads.BuildRepoWorkerPayload,
+) error {
 	runRepoWorkerPayload := mapper.ToRunRepoWorkerPayload(buildRepoWorkerPayload)
 	fmt.Println("Publishing ", runRepoWorkerPayload)
 	return worker.runRepoWorker.PublishRunRepoJob(runRepoWorkerPayload)

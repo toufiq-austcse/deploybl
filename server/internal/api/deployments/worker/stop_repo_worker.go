@@ -80,7 +80,10 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 	}
 	fmt.Println("consumed run job ", consumedPayload)
 
-	deployment := worker.deploymentService.FindById(consumedPayload.DeploymentId, context.Background())
+	deployment := worker.deploymentService.FindById(
+		consumedPayload.DeploymentId,
+		context.Background(),
+	)
 	if deployment == nil {
 		return consumedPayload.DeploymentId, app_errors.DeploymentNotFoundError
 	}
@@ -105,7 +108,9 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 	return consumedPayload.DeploymentId, nil
 }
 
-func (worker *StopRepoWorker) PublishStopRepoJob(stopRepoPayload payloads.StopRepoWorkerPayload) error {
+func (worker *StopRepoWorker) PublishStopRepoJob(
+	stopRepoPayload payloads.StopRepoWorkerPayload,
+) error {
 	publisher, err := amqp.NewPublisher(worker.config, watermill.NewStdLogger(false, false))
 	if err != nil {
 		return err

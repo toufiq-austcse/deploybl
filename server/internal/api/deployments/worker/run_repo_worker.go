@@ -81,7 +81,10 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string
 	}
 	fmt.Println("consumed run job ", consumedPayload)
 
-	deployment := worker.deploymentService.FindById(consumedPayload.DeploymentId, context.Background())
+	deployment := worker.deploymentService.FindById(
+		consumedPayload.DeploymentId,
+		context.Background(),
+	)
 	if deployment == nil {
 		return consumedPayload.DeploymentId, app_errors.DeploymentNotFoundError
 	}
@@ -102,17 +105,24 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string
 
 	}
 
-	containerId, runErr := worker.dockerService.RunContainer(*deployment.DockerImageTag, deployment.Env)
+	containerId, runErr := worker.dockerService.RunContainer(
+		*deployment.DockerImageTag,
+		deployment.Env,
+	)
 	if runErr != nil {
 		return consumedPayload.DeploymentId, runErr
 	}
 	fmt.Println("docker image run successfully...")
 
-	_, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-		"latest_status":    enums.LIVE,
-		"last_deployed_at": time.Now(),
-		"container_id":     containerId,
-	}, context.Background())
+	_, updateErr := worker.deploymentService.UpdateDeployment(
+		consumedPayload.DeploymentId,
+		map[string]interface{}{
+			"latest_status":    enums.LIVE,
+			"last_deployed_at": time.Now(),
+			"container_id":     containerId,
+		},
+		context.Background(),
+	)
 
 	if updateErr != nil {
 		return consumedPayload.DeploymentId, updateErr

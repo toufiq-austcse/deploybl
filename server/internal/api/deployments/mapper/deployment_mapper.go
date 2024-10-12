@@ -49,7 +49,10 @@ func MapCreateDeploymentReqToSave(
 	}
 }
 
-func MapUpdateDeploymentReqToUpdate(dto *req.UpdateDeploymentReqDto, repoName string) map[string]interface{} {
+func MapUpdateDeploymentReqToUpdate(
+	dto *req.UpdateDeploymentReqDto,
+	repoName string,
+) map[string]interface{} {
 	updateFields := map[string]interface{}{}
 
 	if dto.Title != nil {
@@ -131,7 +134,9 @@ func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWork
 	}
 }
 
-func ToBuildRepoWorkerPayload(payload payloads.PullRepoWorkerPayload) payloads.BuildRepoWorkerPayload {
+func ToBuildRepoWorkerPayload(
+	payload payloads.PullRepoWorkerPayload,
+) payloads.BuildRepoWorkerPayload {
 	return payloads.BuildRepoWorkerPayload{
 		DeploymentId:   payload.DeploymentId,
 		SubDomainName:  payload.SubDomainName,
@@ -147,7 +152,9 @@ func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload) payloads.Ru
 	}
 }
 
-func ToRunRepoWorkerPayloadFromDeployment(deployment model.Deployment) payloads.RunRepoWorkerPayload {
+func ToRunRepoWorkerPayloadFromDeployment(
+	deployment model.Deployment,
+) payloads.RunRepoWorkerPayload {
 	return payloads.RunRepoWorkerPayload{
 		DeploymentId: deployment.Id.Hex(),
 	}
@@ -165,12 +172,15 @@ func ToDeploymentLatestStatus(deployments []*model.Deployment) []res.DeploymentL
 	deploymentsLatestStatusRes := []res.DeploymentLatestStatusRes{}
 
 	for _, deployment := range deployments {
-		deploymentsLatestStatusRes = append(deploymentsLatestStatusRes, res.DeploymentLatestStatusRes{
-			Id:             deployment.Id,
-			LatestStatus:   deployment.LatestStatus,
-			LastDeployedAt: deployment.LastDeployedAt,
-			DomainUrl:      GetDomainUrl(deployment.SubDomainName),
-		})
+		deploymentsLatestStatusRes = append(
+			deploymentsLatestStatusRes,
+			res.DeploymentLatestStatusRes{
+				Id:             deployment.Id,
+				LatestStatus:   deployment.LatestStatus,
+				LastDeployedAt: deployment.LastDeployedAt,
+				DomainUrl:      GetDomainUrl(deployment.SubDomainName),
+			},
+		)
 	}
 	return deploymentsLatestStatusRes
 }

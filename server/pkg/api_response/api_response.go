@@ -34,7 +34,12 @@ func BuildResponse(code int, message string, data interface{}) Response {
 	}
 }
 
-func BuildPaginationResponse(code int, message string, data interface{}, pagination *Pagination) PaginationResponse {
+func BuildPaginationResponse(
+	code int,
+	message string,
+	data interface{},
+	pagination *Pagination,
+) PaginationResponse {
 	errors := make([]string, 0)
 	return PaginationResponse{
 		Code:       code,

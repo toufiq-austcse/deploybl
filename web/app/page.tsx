@@ -186,7 +186,7 @@ const HomePage: NextPage = () => {
       console.log('setting deployment list');
       setDeploymentList((deployments) => {
         return deployments.map((deployment) => {
-          let latestStatus = response.data.find((status) => status._id === deployment._id);
+          let latestStatus = response.data?.find((status) => status._id === deployment._id);
           if (latestStatus) {
             return {
               ...deployment,

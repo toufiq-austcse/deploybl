@@ -32,7 +32,10 @@ func (dockerService *DockerService) RemoveContainer(containerId string) error {
 	return nil
 }
 
-func (dockerService *DockerService) RunContainer(imageTag string, env *map[string]string) (*string, error) {
+func (dockerService *DockerService) RunContainer(
+	imageTag string,
+	env *map[string]string,
+) (*string, error) {
 	port := "4000"
 
 	args := []string{"run", "--network", deployItConfig.AppConfig.TRAEFIK_NETWORK_NAME}
@@ -43,7 +46,15 @@ func (dockerService *DockerService) RunContainer(imageTag string, env *map[strin
 		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
 	}
 
-	args = append(args, "-e", fmt.Sprintf("PORT=%s", port), "-p", fmt.Sprintf(":%s", port), "-d", imageTag)
+	args = append(
+		args,
+		"-e",
+		fmt.Sprintf("PORT=%s", port),
+		"-p",
+		fmt.Sprintf(":%s", port),
+		"-d",
+		imageTag,
+	)
 
 	// Construct the command
 	cmd := exec.Command(

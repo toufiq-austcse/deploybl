@@ -11,11 +11,19 @@ import (
 	"github.com/toufiq-austcse/deployit/pkg/firebase"
 )
 
-func AuthMiddleware(firebaseClient *firebase.Client, userService *service.UserService) gin.HandlerFunc {
+func AuthMiddleware(
+	firebaseClient *firebase.Client,
+	userService *service.UserService,
+) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authToken := context.GetHeader("Authorization")
 		if authToken == "" {
-			apiRes := api_response.BuildErrorResponse(http.StatusUnauthorized, "Authorization token required", "", nil)
+			apiRes := api_response.BuildErrorResponse(
+				http.StatusUnauthorized,
+				"Authorization token required",
+				"",
+				nil,
+			)
 			context.AbortWithStatusJSON(apiRes.Code, apiRes)
 			return
 		}
@@ -23,7 +31,12 @@ func AuthMiddleware(firebaseClient *firebase.Client, userService *service.UserSe
 
 		verifyRes, err := firebaseClient.AuthClient.VerifyIDToken(context, authToken)
 		if err != nil {
-			apiRes := api_response.BuildErrorResponse(http.StatusUnauthorized, "Invalid token", err.Error(), nil)
+			apiRes := api_response.BuildErrorResponse(
+				http.StatusUnauthorized,
+				"Invalid token",
+				err.Error(),
+				nil,
+			)
 			context.AbortWithStatusJSON(apiRes.Code, apiRes)
 			return
 
@@ -32,7 +45,12 @@ func AuthMiddleware(firebaseClient *firebase.Client, userService *service.UserSe
 		if user == nil {
 			record, getUserErr := firebaseClient.AuthClient.GetUser(context, verifyRes.UID)
 			if getUserErr != nil {
-				apiRes := api_response.BuildErrorResponse(http.StatusUnauthorized, "Invalid token", err.Error(), nil)
+				apiRes := api_response.BuildErrorResponse(
+					http.StatusUnauthorized,
+					"Invalid token",
+					err.Error(),
+					nil,
+				)
 				context.AbortWithStatusJSON(apiRes.Code, apiRes)
 				return
 			}

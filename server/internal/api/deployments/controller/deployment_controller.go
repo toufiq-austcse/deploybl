@@ -64,7 +64,12 @@ func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 		page = 1
 	}
 
-	deployments, pagination, err := controller.deploymentService.ListDeployment(page, limit, user.Id, context)
+	deployments, pagination, err := controller.deploymentService.ListDeployment(
+		page,
+		limit,
+		user.Id,
+		context,
+	)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
@@ -120,7 +125,12 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 			context.AbortWithStatusJSON(errRes.Code, errRes)
 			return
 		}
-		errRes := api_response.BuildErrorResponse(code, http.StatusText(code), http.StatusText(code), nil)
+		errRes := api_response.BuildErrorResponse(
+			code,
+			http.StatusText(code),
+			http.StatusText(code),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -136,7 +146,13 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 	}
 	existingDeployment := controller.deploymentService.FindBySubDomainName(&githubRes.Name, context)
 
-	newDeployment := mapper.MapCreateDeploymentReqToSave(body, "github", githubRes, existingDeployment, user)
+	newDeployment := mapper.MapCreateDeploymentReqToSave(
+		body,
+		"github",
+		githubRes,
+		existingDeployment,
+		user,
+	)
 	createErr := controller.deploymentService.Create(newDeployment, context)
 	if createErr != nil {
 		if mongo.IsDuplicateKeyError(createErr) {
@@ -193,7 +209,11 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		return
 	}
 
-	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	deployment := controller.deploymentService.FindUserDeploymentById(
+		deploymentId,
+		user.Id,
+		context,
+	)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusNotFound,
@@ -204,7 +224,9 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&deployment.RepositoryUrl)
+	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(
+		&deployment.RepositoryUrl,
+	)
 	if err != nil {
 		if code == http.StatusNotFound {
 			errRes := api_response.BuildErrorResponse(
@@ -216,7 +238,12 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 			context.AbortWithStatusJSON(errRes.Code, errRes)
 			return
 		}
-		errRes := api_response.BuildErrorResponse(code, http.StatusText(code), http.StatusText(code), nil)
+		errRes := api_response.BuildErrorResponse(
+			code,
+			http.StatusText(code),
+			http.StatusText(code),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -232,7 +259,11 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	}
 
 	updateFields := mapper.MapUpdateDeploymentReqToUpdate(body, githubRes.FullName)
-	updatedDeployment, err := controller.deploymentService.UpdateDeployment(deploymentId, updateFields, context)
+	updatedDeployment, err := controller.deploymentService.UpdateDeployment(
+		deploymentId,
+		updateFields,
+		context,
+	)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
@@ -252,9 +283,13 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 					fmt.Println("error while removing container ", removeErr.Error())
 				}
 				fmt.Println("container removed ", deployment.ContainerId)
-				_, updateErr := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
-					"container_id": nil,
-				}, context)
+				_, updateErr := controller.deploymentService.UpdateDeployment(
+					deploymentId,
+					map[string]interface{}{
+						"container_id": nil,
+					},
+					context,
+				)
 
 				if updateErr != nil {
 					fmt.Println("error while updating container ", updateErr.Error())
@@ -266,7 +301,11 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	}()
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
-	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	deploymentDetailsRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		deploymentRes,
+	)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 
@@ -292,7 +331,11 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 	}
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
-	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	deployment := controller.deploymentService.FindUserDeploymentById(
+		deploymentId,
+		user.Id,
+		context,
+	)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusNotFound,
@@ -303,7 +346,9 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(&deployment.RepositoryUrl)
+	githubRes, code, err := controller.githubHttpClient.ValidateRepositoryByUrl(
+		&deployment.RepositoryUrl,
+	)
 	if err != nil {
 		if code == http.StatusNotFound {
 			errRes := api_response.BuildErrorResponse(
@@ -315,7 +360,12 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 			context.AbortWithStatusJSON(errRes.Code, errRes)
 			return
 		}
-		errRes := api_response.BuildErrorResponse(code, http.StatusText(code), http.StatusText(code), nil)
+		errRes := api_response.BuildErrorResponse(
+			code,
+			http.StatusText(code),
+			http.StatusText(code),
+			nil,
+		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
@@ -330,10 +380,14 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		return
 	}
 
-	updatedDeployment, err := controller.deploymentService.UpdateDeployment(deploymentId, map[string]interface{}{
-		"env":           envBody,
-		"latest_status": enums.QUEUED,
-	}, context)
+	updatedDeployment, err := controller.deploymentService.UpdateDeployment(
+		deploymentId,
+		map[string]interface{}{
+			"env":           envBody,
+			"latest_status": enums.QUEUED,
+		},
+		context,
+	)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
@@ -354,7 +408,11 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
 
-	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	deploymentDetailsRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		deploymentRes,
+	)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 
@@ -369,7 +427,11 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
-	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	deployment := controller.deploymentService.FindUserDeploymentById(
+		deploymentId,
+		user.Id,
+		context,
+	)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusNotFound,
@@ -400,7 +462,11 @@ func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 func (controller *DeploymentController) DeploymentRestart(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
-	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	deployment := controller.deploymentService.FindUserDeploymentById(
+		deploymentId,
+		user.Id,
+		context,
+	)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusNotFound,
@@ -421,7 +487,11 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(
+		deploymentId,
+		enums.QUEUED,
+		context,
+	)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
@@ -442,7 +512,11 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
 
-	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	deploymentDetailsRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		deploymentRes,
+	)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 
@@ -457,7 +531,11 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
-	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	deployment := controller.deploymentService.FindUserDeploymentById(
+		deploymentId,
+		user.Id,
+		context,
+	)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusNotFound,
@@ -478,7 +556,11 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(
+		deploymentId,
+		enums.QUEUED,
+		context,
+	)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
@@ -495,7 +577,11 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
 
-	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	deploymentDetailsRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		deploymentRes,
+	)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 
@@ -510,7 +596,11 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
-	deployment := controller.deploymentService.FindUserDeploymentById(deploymentId, user.Id, context)
+	deployment := controller.deploymentService.FindUserDeploymentById(
+		deploymentId,
+		user.Id,
+		context,
+	)
 	if deployment == nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusNotFound,
@@ -545,7 +635,11 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 		return
 	}
 
-	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(deploymentId, enums.QUEUED, context)
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(
+		deploymentId,
+		enums.QUEUED,
+		context,
+	)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
@@ -559,7 +653,11 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
 
-	deploymentDetailsRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), deploymentRes)
+	deploymentDetailsRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		deploymentRes,
+	)
 	context.JSON(deploymentDetailsRes.Code, deploymentDetailsRes)
 }
 
@@ -588,7 +686,11 @@ func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Cont
 		return
 	}
 
-	deployments, err := controller.deploymentService.GetLatestStatusByIds(idsArray, user.Id, context)
+	deployments, err := controller.deploymentService.GetLatestStatusByIds(
+		idsArray,
+		user.Id,
+		context,
+	)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
@@ -645,6 +747,10 @@ func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 		" stopped ",
 		updatedCount,
 	)
-	updatedCountRes := api_response.BuildResponse(http.StatusOK, http.StatusText(http.StatusOK), updatedCount)
+	updatedCountRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		updatedCount,
+	)
 	context.JSON(updatedCountRes.Code, updatedCountRes)
 }

@@ -32,7 +32,8 @@ func (httpClient *GithubHttpClient) ValidateRepository(
 ) (*api_res.GithubRepoRes, int, error) {
 	var githubRes *api_res.GithubRepoRes
 
-	getRes, err := httpClient.restyReq.SetResult(&githubRes).Get("/repos/" + *repoOwner + "/" + *repoName)
+	getRes, err := httpClient.restyReq.SetResult(&githubRes).
+		Get("/repos/" + *repoOwner + "/" + *repoName)
 	fmt.Println(" getRes ", config.AppConfig.GITHUB_API_BASE_URL+"/repos/"+*repoOwner+"/"+*repoName)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -52,7 +53,9 @@ func (httpClient *GithubHttpClient) ValidateRepository(
 	return nil, getRes.StatusCode(), errors.New(githubErrorRes.Message)
 }
 
-func (httpClient *GithubHttpClient) ValidateRepositoryByUrl(repoUrl *string) (*api_res.GithubRepoRes, int, error) {
+func (httpClient *GithubHttpClient) ValidateRepositoryByUrl(
+	repoUrl *string,
+) (*api_res.GithubRepoRes, int, error) {
 	repoName, owner, err := httpClient.ParseRepoUrl(repoUrl)
 	if err != nil {
 		fmt.Println("error while validating repo url ", err.Error())
@@ -61,7 +64,9 @@ func (httpClient *GithubHttpClient) ValidateRepositoryByUrl(repoUrl *string) (*a
 	return httpClient.ValidateRepository(owner, repoName)
 }
 
-func (httpClient *GithubHttpClient) ParseRepoUrl(repoUrl *string) (repoOwner *string, repoName *string, err error) {
+func (httpClient *GithubHttpClient) ParseRepoUrl(
+	repoUrl *string,
+) (repoOwner *string, repoName *string, err error) {
 	urlWithoutHttps := strings.TrimLeft(*repoUrl, "https://")
 	parts := strings.Split(urlWithoutHttps, "/")
 	if len(parts) != 3 {

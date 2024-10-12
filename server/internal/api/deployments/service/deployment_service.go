@@ -20,7 +20,10 @@ type DeploymentService struct {
 	dockerService        *DockerService
 }
 
-func NewDeploymentService(database *mongo.Database, dockerService *DockerService) *DeploymentService {
+func NewDeploymentService(
+	database *mongo.Database,
+	dockerService *DockerService,
+) *DeploymentService {
 	collection := database.Collection("deployments")
 	go model.CreateDeploymentIndex(collection)
 	return &DeploymentService{deploymentCollection: collection, dockerService: dockerService}
@@ -31,7 +34,10 @@ func (service *DeploymentService) Create(model *model.Deployment, ctx context.Co
 	return err
 }
 
-func (service *DeploymentService) FindBySubDomainName(domainName *string, ctx context.Context) *model.Deployment {
+func (service *DeploymentService) FindBySubDomainName(
+	domainName *string,
+	ctx context.Context,
+) *model.Deployment {
 	var deployment *model.Deployment
 	filter := bson.M{"sub_domain_name": domainName}
 	err := service.deploymentCollection.FindOne(ctx, filter).Decode(&deployment)
@@ -200,7 +206,9 @@ func (service *DeploymentService) FindDeploymentByStatus(status string) []model.
 	return deployments
 }
 
-func (service *DeploymentService) GetContainerIdsFromDeployments(deployments []model.Deployment) []string {
+func (service *DeploymentService) GetContainerIdsFromDeployments(
+	deployments []model.Deployment,
+) []string {
 	var containerIds []string
 	for _, deployment := range deployments {
 		if deployment.ContainerId != nil {
@@ -216,7 +224,10 @@ func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(
 	updatedStatus string,
 	ctx context.Context,
 ) (int64, error) {
-	filter := bson.M{"container_id": bson.M{"$nin": skipContainerIds}, "latest_status": currentStatus}
+	filter := bson.M{
+		"container_id":  bson.M{"$nin": skipContainerIds},
+		"latest_status": currentStatus,
+	}
 	update := bson.M{"$set": bson.M{"latest_status": updatedStatus, "updated_at": time.Now()}}
 	result, err := service.deploymentCollection.UpdateMany(ctx, filter, update)
 	if err != nil {

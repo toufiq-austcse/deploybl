@@ -27,7 +27,10 @@ type PullRepoWorker struct {
 	buildRepoWorker   *BuildRepoWorker
 }
 
-func NewPullRepoWorker(deploymentService *service.DeploymentService, buildRepoWorker *BuildRepoWorker) *PullRepoWorker {
+func NewPullRepoWorker(
+	deploymentService *service.DeploymentService,
+	buildRepoWorker *BuildRepoWorker,
+) *PullRepoWorker {
 	return &PullRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 			"topic",
@@ -111,7 +114,9 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (stri
 	return consumedPayload.DeploymentId, nil
 }
 
-func (worker *PullRepoWorker) PublishPullRepoJob(workerPayload payloads.PullRepoWorkerPayload) error {
+func (worker *PullRepoWorker) PublishPullRepoJob(
+	workerPayload payloads.PullRepoWorkerPayload,
+) error {
 	publisher, err := amqp.NewPublisher(worker.config, watermill.NewStdLogger(false, false))
 	if err != nil {
 		return err
@@ -145,7 +150,9 @@ func (worker *PullRepoWorker) PublishPullRepoWork(deployment *model.Deployment) 
 	}
 }
 
-func (worker *PullRepoWorker) PublishBuildRepoWork(pullRepoJob payloads.PullRepoWorkerPayload) error {
+func (worker *PullRepoWorker) PublishBuildRepoWork(
+	pullRepoJob payloads.PullRepoWorkerPayload,
+) error {
 	buildRepoWorkerPayload := mapper.ToBuildRepoWorkerPayload(pullRepoJob)
 	fmt.Println("Publishing ", buildRepoWorkerPayload)
 	return worker.buildRepoWorker.PublishBuildRepoJob(buildRepoWorkerPayload)
