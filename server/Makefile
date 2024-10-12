@@ -8,6 +8,10 @@ build:
 
 run-app:
 	./bin/cmd
+
+tools-install:
+	chmod +x ./scripts/install-tools.sh
+	./scripts/install-tools.sh
 format:
 	chmod +x ./scripts/format.sh
 	./scripts/format.sh
