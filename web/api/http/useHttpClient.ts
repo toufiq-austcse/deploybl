@@ -16,7 +16,7 @@ export function useHttpClient() {
   const getDeploymentDetails = async (deploymentId: string): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/${deploymentId}`;
 
       const response = await axios.get(url, {
         headers: {
@@ -45,7 +45,7 @@ export function useHttpClient() {
 
   const listDeployments = async (page: number, limit: number): Promise<TPaginationResponse<DeploymentType[]>> => {
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments?page=${page}&limit=${limit}`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments?page=${page}&limit=${limit}`;
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
@@ -76,7 +76,12 @@ export function useHttpClient() {
     if (axios.isAxiosError(err)) {
       let errorResponse: any = (err as AxiosError).response?.data;
       if (errorResponse) {
-        error = errorResponse.errors.join(',');
+        if (typeof errorResponse === 'string') {
+          error = errorResponse;
+        } else {
+          error = errorResponse.errors.join(',');
+        }
+
         code = errorResponse.code;
       } else {
         error = (err as AxiosError).message;
@@ -95,7 +100,7 @@ export function useHttpClient() {
   const getRepoDetails = async (repoUrl: string): Promise<TResponse<RepoDetailsType>> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/repositories?repo_url=${repoUrl}`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/repositories?repo_url=${repoUrl}`;
 
       const response = await axios.get(url, {
         headers: {
@@ -131,7 +136,7 @@ export function useHttpClient() {
   }): Promise<TResponse<DeploymentType>> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments`;
       const response = await axios.post(url, body, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
@@ -158,7 +163,7 @@ export function useHttpClient() {
 
   const getDeploymentLatestStatus = async (deploymentIds: string[]): Promise<TResponse<DeploymentLatestStatusType[]>> => {
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/latest-status?ids=${deploymentIds}`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/latest-status?ids=${deploymentIds}`;
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
@@ -184,7 +189,7 @@ export function useHttpClient() {
   const updateDeployment = async (deploymentId: string, body: UpdateDeploymentReqBody): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/${deploymentId}`;
       const response = await axios.patch(url, body, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
@@ -212,7 +217,7 @@ export function useHttpClient() {
   const updateDeploymentEnv = async (deploymentId: string, env: object): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/env`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/${deploymentId}/env`;
       const response = await axios.patch(url, env, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
@@ -239,7 +244,7 @@ export function useHttpClient() {
   const restartDeployment = async (deploymentId: string): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/restart`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/${deploymentId}/restart`;
       const response = await axios.post(url, {}, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
@@ -266,7 +271,7 @@ export function useHttpClient() {
   const rebuildAndDeploy = async (deploymentId: string): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/rebuild-and-redeploy`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/${deploymentId}/rebuild-and-redeploy`;
       const response = await axios.post(url, {}, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
@@ -293,7 +298,7 @@ export function useHttpClient() {
   const stopDeployment = async (deploymentId: string): Promise<TResponse<DeploymentDetailsType>> => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/deployments/${deploymentId}/stop`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/${deploymentId}/stop`;
       const response = await axios.post(url, {}, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`

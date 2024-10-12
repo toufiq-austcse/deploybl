@@ -46,7 +46,7 @@ paths:
       summary: Health Check
       tags:
       - Index
-  /deployments:
+  /api/v1/deployments:
     get:
       consumes:
       - application/json
@@ -85,25 +85,7 @@ paths:
       summary: Create Deployment
       tags:
       - Deployments
-  /deployments/:id/env:
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Deployment ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Update Deployment Env
-      tags:
-      - Deployments
-  /deployments/{id}:
+  /api/v1/deployments/{id}:
     get:
       consumes:
       - application/json
@@ -144,7 +126,25 @@ paths:
       summary: Update Deployment
       tags:
       - Deployments
-  /deployments/{id}/rebuild-and-redeploy:
+  /api/v1/deployments/{id}/env:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Update Deployment Env
+      tags:
+      - Deployments
+  /api/v1/deployments/{id}/rebuild-and-redeploy:
     post:
       consumes:
       - application/json
@@ -162,7 +162,7 @@ paths:
       summary: Rebuild and Deploy Deployment
       tags:
       - Deployments
-  /deployments/{id}/restart:
+  /api/v1/deployments/{id}/restart:
     post:
       consumes:
       - application/json
@@ -180,7 +180,25 @@ paths:
       summary: Restart Deployment
       tags:
       - Deployments
-  /repositories:
+  /api/v1/deployments/{id}/stop:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Stop Deployment
+      tags:
+      - Deployments
+  /api/v1/repositories:
     get:
       consumes:
       - application/json

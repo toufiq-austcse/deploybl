@@ -34,7 +34,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments": {
+        "/api/v1/deployments": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -95,35 +95,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments/:id/env": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deployments"
-                ],
-                "summary": "Update Deployment Env",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Deployment ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
-        "/deployments/{id}": {
+        "/api/v1/deployments/{id}": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -186,7 +158,35 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments/{id}/rebuild-and-redeploy": {
+        "/api/v1/deployments/{id}/env": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployments"
+                ],
+                "summary": "Update Deployment Env",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/deployments/{id}/rebuild-and-redeploy": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -214,7 +214,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/deployments/{id}/restart": {
+        "/api/v1/deployments/{id}/restart": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -242,7 +242,35 @@ const docTemplate = `{
                 }
             }
         },
-        "/repositories": {
+        "/api/v1/deployments/{id}/stop": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployments"
+                ],
+                "summary": "Stop Deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/repositories": {
             "get": {
                 "consumes": [
                     "application/json"

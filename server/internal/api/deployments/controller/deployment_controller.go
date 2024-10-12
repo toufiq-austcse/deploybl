@@ -53,7 +53,7 @@ func NewDeploymentController(
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments [get]
+// @Router   /api/v1/deployments [get]
 func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
 
@@ -99,7 +99,7 @@ func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments [post]
+// @Router   /api/v1/deployments [post]
 func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
 	body := &req.CreateDeploymentReqDto{}
@@ -192,7 +192,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/{id} [patch]
+// @Router   /api/v1/deployments/{id} [patch]
 func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -316,7 +316,7 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/:id/env [put]
+// @Router   /api/v1/deployments/{id}/env [put]
 func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 	var envBody map[string]string
 	if err := context.BindJSON(&envBody); err != nil {
@@ -423,7 +423,7 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/{id} [get]
+// @Router   /api/v1/deployments/{id} [get]
 func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -458,7 +458,7 @@ func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/{id}/restart [post]
+// @Router   /api/v1/deployments/{id}/restart [post]
 func (controller *DeploymentController) DeploymentRestart(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -527,7 +527,7 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/{id}/rebuild-and-redeploy [post]
+// @Router   /api/v1/deployments/{id}/rebuild-and-redeploy [post]
 func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -592,7 +592,7 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /deployments/{id}/rebuild-and-redeploy [post]
+// @Router   /api/v1/deployments/{id}/stop [post]
 func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)

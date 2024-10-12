@@ -59,14 +59,14 @@ func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 		indexRouterGroup := apiServer.GinEngine.Group("")
 		indexRouter.Setup(indexRouterGroup)
 
-		deploymentsRouterGroup := apiServer.GinEngine.Group("deployments")
+		deploymentsRouterGroup := apiServer.GinEngine.Group("api/v1/deployments")
 		deploymentsRouterGroup.Use(middleware.AuthMiddleware(firebaseClient, userService))
 		deploymentRouter.Setup(deploymentsRouterGroup, deploymentController)
 
-		deploymentCronRouterGroup := apiServer.GinEngine.Group("deployments")
+		deploymentCronRouterGroup := apiServer.GinEngine.Group("api/v1/deployments")
 		deploymentRouter.SetupDeploymentCronRouter(deploymentCronRouterGroup, deploymentController)
 
-		repositoriesRouterGroup := apiServer.GinEngine.Group("repositories")
+		repositoriesRouterGroup := apiServer.GinEngine.Group("api/v1/repositories")
 		repositoriesRouterGroup.Use(middleware.AuthMiddleware(firebaseClient, userService))
 		repoRouter.Setup(repositoriesRouterGroup, repoController)
 	})

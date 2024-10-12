@@ -148,6 +148,7 @@ const HomePage: NextPage = () => {
     if (deploymentList.length === 0) {
       listDeployments(pageIndex, pageSize)
         .then(async (response) => {
+          console.log('listDeployments', response);
           if (!response.isSuccessful && response.code !== 401) {
             toast.error(response.error);
             return;

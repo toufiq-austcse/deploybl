@@ -27,7 +27,7 @@ func NewRepoController(githubHttpClient *github.GithubHttpClient) *RepoControlle
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /repositories [get]
+// @Router   /api/v1/repositories [get]
 func (controller RepoController) GetRepoDetails(context *gin.Context) {
 	repoUrl, isExist := context.GetQuery("repo_url")
 	if !isExist {
