@@ -12,3 +12,13 @@ func ToRepoDetailsRes(providerRes *api_res.GithubRepoRes) res.RepoDetailsRes {
 		Name:          providerRes.Name,
 	}
 }
+
+func ToRepoBranchesRes(githubBranchesRes []api_res.GithubGetBranchesAPIRes) []res.RepoBranchRes {
+	branches := []res.RepoBranchRes{}
+	for _, branch := range githubBranchesRes {
+		branches = append(branches, res.RepoBranchRes{
+			Name: branch.Name,
+		})
+	}
+	return branches
+}

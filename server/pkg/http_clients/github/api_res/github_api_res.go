@@ -126,3 +126,14 @@ type GithubErrorRes struct {
 	DocumentationURL string `json:"documentation_url"`
 	Status           string `json:"status"`
 }
+
+type GithubGetBranchesAPIRes struct {
+	Name      string `json:"name"`
+	Commit    Commit `json:"commit"`
+	Protected bool   `json:"protected"`
+}
+
+type Commit struct {
+	SHA string `json:"sha"`
+	URL string `json:"url"`
+}
