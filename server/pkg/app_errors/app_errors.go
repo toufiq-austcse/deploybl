@@ -11,4 +11,6 @@ var (
 	DeploymentNotStoppableError   = errors.New("deployment not stoppable")
 	IdsRequiredInQueryParamError  = errors.New("ids required in query param")
 	CannotUpdateError             = errors.New("cannot update")
+	DockerImageTagNotFoundError   = errors.New("docker image tag not found")
+	ContainerNotFoundError        = errors.New("container not found")
 )

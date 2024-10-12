@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -12,6 +11,7 @@ import (
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
+	"github.com/toufiq-austcse/deployit/pkg/app_errors"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
 )
 
@@ -71,13 +71,13 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 
 	deployment := worker.deploymentService.FindById(consumedPayload.DeploymentId, context.Background())
 	if deployment == nil {
-		return consumedPayload.DeploymentId, errors.New("deployment not found")
+		return consumedPayload.DeploymentId, app_errors.DeploymentNotFoundError
 	}
 	if deployment.ContainerId == nil {
-		return consumedPayload.DeploymentId, errors.New("container not found")
+		return consumedPayload.DeploymentId, app_errors.ContainerNotFoundError
 	}
 	if !worker.deploymentService.IsStopAble(deployment) {
-		return consumedPayload.DeploymentId, errors.New("deployment is not stoppable")
+		return consumedPayload.DeploymentId, app_errors.DeploymentNotStoppableError
 	}
 	if err := worker.dockerService.StopContainer(*deployment.ContainerId); err != nil {
 		return consumedPayload.DeploymentId, err
