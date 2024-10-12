@@ -125,6 +125,31 @@ export function useHttpClient() {
       setLoading(false);
     }
   };
+  const getRepoBranches = async (repoUrl: string): Promise<TResponse<string[]>> => {
+    try {
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/repositories/branches?repo_url=${repoUrl}`;
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${currentUser?.accessToken}`
+        }
+      });
+      return {
+        isSuccessful: true,
+        code: response.status,
+        data: response.data.data.map((branch: any) => branch.name),
+        error: null
+      };
+    } catch (err) {
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: [],
+        error,
+        code
+      };
+    }
+  };
 
   const createDeployment = async (body: {
     title: string
@@ -335,6 +360,7 @@ export function useHttpClient() {
     rebuildAndDeploy,
     restartDeployment,
     stopDeployment,
+    getRepoBranches,
     loading
   };
-};
+}
