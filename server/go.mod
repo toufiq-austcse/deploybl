@@ -6,9 +6,11 @@ require (
 	firebase.google.com/go/v4 v4.14.1
 	github.com/ThreeDotsLabs/watermill v1.3.7
 	github.com/ThreeDotsLabs/watermill-amqp/v2 v2.1.3
+	github.com/caarlos0/env/v11 v11.2.2
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-resty/resty/v2 v2.14.0
+	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/spf13/viper v1.15.0
 	github.com/swaggo/files v1.0.1
@@ -16,6 +18,7 @@ require (
 	github.com/swaggo/swag v1.16.1
 	go.mongodb.org/mongo-driver v1.16.1
 	go.uber.org/dig v1.17.0
+	google.golang.org/api v0.170.0
 )
 
 require (
@@ -98,7 +101,6 @@ require (
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
-	google.golang.org/api v0.170.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/appengine/v2 v2.0.2 // indirect
 	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect

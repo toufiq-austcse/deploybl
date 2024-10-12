@@ -24,7 +24,9 @@ import (
 )
 
 func Run(configPath string) error {
-	config.Init(configPath)
+	if err := config.Init(configPath); err != nil {
+		return err
+	}
 	apiServer := server.NewServer()
 	enableCors(apiServer.GinEngine)
 	setupSwagger(apiServer)
