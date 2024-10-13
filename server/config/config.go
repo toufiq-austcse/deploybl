@@ -62,7 +62,7 @@ func Init(envFilePath string) error {
 func parseConfigFile(envFilePath string) error {
 	err := godotenv.Load(envFilePath)
 	if err != nil {
-		return err
+		fmt.Println("Error loading .env file ", err.Error())
 	}
 	return env.Parse(&AppConfig)
 }
