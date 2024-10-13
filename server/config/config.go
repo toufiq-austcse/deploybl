@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -49,8 +48,8 @@ type (
 
 var AppConfig Config
 
-func Init(envFilePath string) error {
-	err := parseConfigFile(envFilePath)
+func Init() error {
+	err := parseConfigFile()
 	if err != nil {
 		return err
 	}
@@ -58,13 +57,11 @@ func Init(envFilePath string) error {
 	return nil
 }
 
-func parseConfigFile(envFilePath string) error {
+func parseConfigFile() error {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file ", err.Error())
 	}
-
-	fmt.Println("os ", os.Getenv("RABBIT_MQ_CONNECTION_URL"))
 
 	return env.Parse(&AppConfig)
 }

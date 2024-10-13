@@ -7,10 +7,8 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/app"
 )
 
-const configPath = ".env"
-
 func main() {
-	err := app.Run(configPath)
+	err := app.Run()
 	if err != nil {
 		fmt.Println("error in running application ", err)
 		debug.PrintStack()

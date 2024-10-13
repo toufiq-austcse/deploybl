@@ -23,8 +23,8 @@ import (
 	"go.uber.org/dig"
 )
 
-func Run(configPath string) error {
-	if err := config.Init(configPath); err != nil {
+func Run() error {
+	if err := config.Init(); err != nil {
 		return err
 	}
 	apiServer := server.NewServer()
