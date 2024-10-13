@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -62,6 +63,8 @@ func parseConfigFile(envFilePath string) error {
 	if err != nil {
 		fmt.Println("Error loading .env file ", err.Error())
 	}
+
+	fmt.Println("os ", os.Getenv("RABBIT_MQ_CONNECTION_URL"))
 
 	return env.Parse(&AppConfig)
 }
