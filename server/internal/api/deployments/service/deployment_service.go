@@ -269,3 +269,11 @@ func (service *DeploymentService) IsStopAble(deployment *model.Deployment) bool 
 	}
 	return false
 }
+
+func (service *DeploymentService) CountDeploymentByRepositoryName(
+	repositoryName string,
+	ctx context.Context,
+) (int64, error) {
+	filter := bson.M{"repository_name": repositoryName}
+	return service.deploymentCollection.CountDocuments(ctx, filter)
+}
