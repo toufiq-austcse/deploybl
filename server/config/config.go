@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
 )
@@ -58,9 +57,10 @@ func Init(envFilePath string) error {
 }
 
 func parseConfigFile(envFilePath string) error {
-	err := godotenv.Load(envFilePath)
+	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file ", err.Error())
 	}
+
 	return env.Parse(&AppConfig)
 }
