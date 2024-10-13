@@ -148,13 +148,12 @@ const HomePage: NextPage = () => {
     if (deploymentList.length === 0) {
       listDeployments(pageIndex, pageSize)
         .then(async (response) => {
-          console.log('listDeployments', response);
           if (!response.isSuccessful && response.code !== 401) {
             toast.error(response.error);
             return;
           }
-          setDeploymentList(response.data as DeploymentType[]);
-          setPagination(response.pagination as PaginationType);
+          setDeploymentList(response.data);
+          setPagination(response.pagination);
         })
         .finally(() => setLoading(false));
     }
@@ -283,7 +282,7 @@ const HomePage: NextPage = () => {
         <div className="justify-end">Loading...</div>
       ) : (
         <AppTable<DeploymentType>
-          totalPageCount={pagination?.last_page as number}
+          totalPageCount={pagination?.last_page}
           data={deploymentList}
           columns={columns}
           pageIndex={pageIndex}

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/toufiq-austcse/deployit/enums"
@@ -94,7 +95,7 @@ func (service *DeploymentService) ListDeployment(
 	if err != nil {
 		return deployments, nil, err
 	}
-	lastPage := int64(float64(totalDocs) / float64(limit))
+	lastPage := int64(math.Ceil(float64(totalDocs) / float64(limit)))
 
 	findOptions := options.Find()
 	skip := page*limit - limit
