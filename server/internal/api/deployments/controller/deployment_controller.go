@@ -144,13 +144,17 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	existingDeployment := controller.deploymentService.FindBySubDomainName(&githubRes.Name, context)
+
+	deploymentCount, _ := controller.deploymentService.CountDeploymentByRepositoryName(
+		githubRes.Name,
+		context,
+	)
 
 	newDeployment := mapper.MapCreateDeploymentReqToSave(
 		body,
 		"github",
 		githubRes,
-		existingDeployment,
+		deploymentCount,
 		user,
 	)
 	createErr := controller.deploymentService.Create(newDeployment, context)

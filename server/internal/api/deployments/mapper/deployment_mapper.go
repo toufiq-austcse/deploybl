@@ -1,9 +1,9 @@
 package mapper
 
 import (
-	"strconv"
 	"time"
 
+	"github.com/sqids/sqids-go"
 	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/req"
@@ -19,12 +19,12 @@ func MapCreateDeploymentReqToSave(
 	dto *req.CreateDeploymentReqDto,
 	provider string,
 	githubRes *api_res.GithubRepoRes,
-	existingDeployment *model.Deployment,
+	deploymentCount int64,
 	user *userModel.User,
 ) *model.Deployment {
 	subDomainName := githubRes.Name
-	if existingDeployment != nil {
-		subDomainName += "-" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	if deploymentCount > 0 {
+		subDomainName += "-" + GenerateShortId(deploymentCount)
 	}
 
 	return &model.Deployment{
@@ -192,4 +192,13 @@ func ShouldRedeploy(updatedFieldMap map[string]interface{}) bool {
 		}
 	}
 	return false
+}
+
+func GenerateShortId(id int64) string {
+	s, _ := sqids.New(sqids.Options{
+		MinLength: 5,
+		Alphabet:  "abcdefghijklmnopqrstuvwxyz0123456789",
+	})
+	generatedId, _ := s.Encode([]uint64{uint64(id)})
+	return generatedId
 }
