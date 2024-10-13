@@ -196,11 +196,7 @@ const NewDeploymentPage: NextPage = () => {
                           <FormLabel className="w-1/3 flex flex-col justify-center">Branch Name</FormLabel>
                           <div className="flex flex-col w-full">
                             <FormControl>
-                              <Select
-                                value={field.value}
-                                onValueChange={field.onChange}
-                                onOpenChange={(open) => console.log('adsds ', open)}
-                              >
+                              <Select value={field.value} onValueChange={field.onChange}>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select Branch" />
                                 </SelectTrigger>
