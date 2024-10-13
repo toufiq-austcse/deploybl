@@ -41,7 +41,7 @@ const SettingsPage: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [generalError, serGeneralError] = useState<string | null>(null);
   const [buildAndDeployError, setBuildAndDeployError] = useState<string | null>(null);
-  const [branches, setBranches] = useState<string[]>([deploymentDetails.branch_name]);
+  const [branches, setBranches] = useState<string[]>([deploymentDetails?.branch_name]);
   const { getRepoBranches } = useHttpClient();
 
   const validateGeneralUpdateForm = useForm<z.infer<typeof generalUpdateSchema>>({

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { FaChevronDown, FaGithub, FaRegCopy } from 'react-icons/fa';
 import * as React from 'react';
 import { useEffect } from 'react';
@@ -14,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 const DeploymentDetails = () => {
   const {
@@ -91,14 +91,14 @@ const DeploymentDetails = () => {
             </DropdownMenu>
           </div>
         </div>
-        <Link href={''} className="flex gap-2">
+        <Link href={deploymentDetails.repository_url} className="flex gap-2" target="_blank">
           <div className="flex flex-col justify-center">
             <FaGithub />
           </div>
-          <Link className="flex flex-row gap-2" href={deploymentDetails.repository_url} target="_blank">
+          <div className="flex flex-row gap-2">
             <p className="underline">{deploymentDetails?.repository_name}</p>
             <p className="underline">{deploymentDetails?.branch_name}</p>
-          </Link>
+          </div>
         </Link>
 
         <div className="flex gap-2 justify-between">
