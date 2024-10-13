@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { convertEnvToObj } from '@/lib/utils';
 import PrivateRoute from '@/components/private-route';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const validateRepositorySchema = z.object({
   repository_url: z.string().url({
@@ -51,8 +52,9 @@ const createDeploymentSchema = z.object({
 
 const NewDeploymentPage: NextPage = () => {
   const router = useRouter();
-  const { loading, createDeployment, getRepoDetails } = useHttpClient();
+  const { loading, createDeployment, getRepoDetails, getRepoBranches } = useHttpClient();
   const [repoDetails, setRepoDetails] = useState<RepoDetailsType | null>(null);
+  const [branches, setBranches] = useState<string[]>([]);
   const [error, setError] = React.useState<string | null>(null);
   const [envs, setEnvs] = useState<EnvironmentVariableType[]>([]);
 
@@ -71,10 +73,19 @@ const NewDeploymentPage: NextPage = () => {
       return;
     }
     setRepoDetails(data);
+    setBranches([data.default_branch]);
     createDeploymentForm.setValue('title', data.name);
     createDeploymentForm.setValue('repository_url', data.svn_url);
     createDeploymentForm.setValue('branch_name', data.default_branch);
     createDeploymentForm.setValue('docker_file_path', 'Dockerfile');
+    initBranches(values.repository_url);
+  };
+
+  const initBranches = async (repoUrl: string) => {
+    let { data, error, isSuccessful } = await getRepoBranches(repoUrl);
+    if (isSuccessful) {
+      setBranches(data);
+    }
   };
 
   const onCreateDeploymentFormSubmit = async (values: z.infer<typeof createDeploymentSchema>) => {
@@ -185,7 +196,16 @@ const NewDeploymentPage: NextPage = () => {
                           <FormLabel className="w-1/3 flex flex-col justify-center">Branch Name</FormLabel>
                           <div className="flex flex-col w-full">
                             <FormControl>
-                              <Input {...field} />
+                              <Select value={field.value} onValueChange={field.onChange}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select Branch" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {branches.map((branch) => (
+                                    <SelectItem value={branch}>{branch}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </FormControl>
                             <FormMessage />
                           </div>

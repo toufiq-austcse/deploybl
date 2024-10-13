@@ -11,6 +11,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import ErrorAlert from '@/components/ui/error-alert';
 import { toast } from 'sonner';
+import { useHttpClient } from '@/api/http/useHttpClient';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const generalUpdateSchema = z.object({
   title: z
@@ -36,10 +38,11 @@ const buildAndDeploySchema = z.object({
 });
 const SettingsPage: NextPage = () => {
   const { deploymentDetails, updateDeploymentDetails } = useDeploymentContext();
-  const [latestDeploymentDetails] = useState(deploymentDetails);
   const [loading, setLoading] = useState(false);
   const [generalError, serGeneralError] = useState<string | null>(null);
   const [buildAndDeployError, setBuildAndDeployError] = useState<string | null>(null);
+  const [branches, setBranches] = useState<string[]>([deploymentDetails?.branch_name]);
+  const { getRepoBranches } = useHttpClient();
 
   const validateGeneralUpdateForm = useForm<z.infer<typeof generalUpdateSchema>>({
     resolver: zodResolver(generalUpdateSchema),
@@ -58,7 +61,18 @@ const SettingsPage: NextPage = () => {
     );
     validateBuildAndDeployForm.setValue('branch_name', deploymentDetails?.branch_name);
     validateBuildAndDeployForm.setValue('docker_file_path', deploymentDetails?.docker_file_path);
-  }, [latestDeploymentDetails]);
+    initBranches();
+  }, []);
+
+  const initBranches = async () => {
+    getRepoBranches(deploymentDetails?.repository_url).then((response) => {
+      if (response.error) {
+        toast.error(response.error);
+        return;
+      }
+      setBranches(response.data);
+    });
+  };
 
   const onGeneralUpdateFormSubmit = async (values: z.infer<typeof generalUpdateSchema>) => {
     setLoading(true);
@@ -156,7 +170,16 @@ const SettingsPage: NextPage = () => {
                         <div className="w-1/3">Branch</div>
                         <div className="flex flex-col w-full">
                           <FormControl>
-                            <Input {...field} />
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Branch" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {branches.map((branch) => (
+                                  <SelectItem value={branch}>{branch}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage />
                         </div>

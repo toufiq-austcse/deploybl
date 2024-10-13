@@ -2,9 +2,8 @@ import Link from 'next/link';
 import * as React from 'react';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 
-const DeploymentDetailsNavbar = () => {
+const DeploymentDetailsSidebar = () => {
   const { deploymentDetails } = useDeploymentContext();
-  console.log('deploymentDetails ', deploymentDetails);
   return (
     <nav className="flex flex-col w-1/6">
       <Link
@@ -23,4 +22,4 @@ const DeploymentDetailsNavbar = () => {
     </nav>
   );
 };
-export default DeploymentDetailsNavbar;
+export default DeploymentDetailsSidebar;
