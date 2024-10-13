@@ -7,7 +7,7 @@ services:
     hostname: just-deploy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.deploy.rule=Host(`just-deploy-api.toufiq.dev`)"
+      - "traefik.http.routers.deploy.rule=Host(`api.deploybl.com`)"
     env_file:
       - .env
     volumes:
