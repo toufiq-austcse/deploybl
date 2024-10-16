@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/sqids/sqids-go"
@@ -26,7 +27,6 @@ func MapCreateDeploymentReqToSave(
 	if deploymentCount > 0 {
 		subDomainName += "-" + GenerateShortId(deploymentCount)
 	}
-
 	return &model.Deployment{
 		Id:                 primitive.NewObjectID(),
 		UserId:             user.Id,
@@ -53,6 +53,7 @@ func MapUpdateDeploymentReqToUpdate(
 	dto *req.UpdateDeploymentReqDto,
 	repoName string,
 ) map[string]interface{} {
+	fmt.Println("")
 	updateFields := map[string]interface{}{}
 
 	if dto.Title != nil {
