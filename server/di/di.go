@@ -1,9 +1,10 @@
 package di
 
 import (
+	"os/exec"
+
 	controller2 "github.com/toufiq-austcse/deployit/internal/api/index/controller"
 	"github.com/toufiq-austcse/deployit/internal/api/index/event_bus"
-	"os/exec"
 
 	_ "github.com/lib/pq" // <------------ here
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"

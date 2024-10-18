@@ -2,10 +2,11 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/internal/api/index/event_bus"
-	"net/http"
 )
 
 type HealthController struct {

@@ -1,8 +1,9 @@
 package app
 
 import (
-	controller2 "github.com/toufiq-austcse/deployit/internal/api/index/controller"
 	"time"
+
+	controller2 "github.com/toufiq-austcse/deployit/internal/api/index/controller"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

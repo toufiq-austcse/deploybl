@@ -17,6 +17,7 @@ func (eventBus *EventBus) Publish(eventType string, msg string) {
 		subscriber <- msg
 	}
 }
+
 func (eventBus *EventBus) Subscribe(eventType string, subscriber chan<- string) {
 	fmt.Println("subscribing to ", eventType)
 	eventBus.subscribers[eventType] = append(eventBus.subscribers[eventType], subscriber)
