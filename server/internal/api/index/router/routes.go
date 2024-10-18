@@ -5,6 +5,6 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/index/controller"
 )
 
-func Setup(group *gin.RouterGroup) {
-	group.GET("", controller.Index())
+func Setup(group *gin.RouterGroup, controller *controller.HealthController) {
+	group.GET("", controller.Index)
 }

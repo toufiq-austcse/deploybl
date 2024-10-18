@@ -1,6 +1,8 @@
 package di
 
 import (
+	controller2 "github.com/toufiq-austcse/deployit/internal/api/index/controller"
+	"github.com/toufiq-austcse/deployit/internal/api/index/event_bus"
 	"os/exec"
 
 	_ "github.com/lib/pq" // <------------ here
@@ -20,11 +22,13 @@ func NewDiContainer() (*dig.Container, error) {
 	c := dig.New()
 	providers := []interface{}{
 		mongodb.New,
+		event_bus.NewEventBus,
 		github.NewGithubHttpClient,
 		firebaseClient.NewFirebaseClient,
 		service.NewDeploymentService,
 		userService.NewUserService,
 		service.NewDockerService,
+		controller2.NewHealthController,
 		controller.NewDeploymentController,
 		repoController.NewRepoController,
 		worker.NewPullRepoWorker,

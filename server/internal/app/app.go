@@ -1,6 +1,7 @@
 package app
 
 import (
+	controller2 "github.com/toufiq-austcse/deployit/internal/api/index/controller"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -54,12 +55,13 @@ func Run() error {
 func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 	err := container.Invoke(func(deploymentController *controller.DeploymentController,
 		repoController *repoController.RepoController,
+		healthController *controller2.HealthController,
 		subscriber *worker.PullRepoWorker,
 		firebaseClient *firebase.Client,
 		userService *service.UserService,
 	) {
 		indexRouterGroup := apiServer.GinEngine.Group("")
-		indexRouter.Setup(indexRouterGroup)
+		indexRouter.Setup(indexRouterGroup, healthController)
 
 		deploymentsRouterGroup := apiServer.GinEngine.Group("api/v1/deployments")
 		deploymentsRouterGroup.Use(middleware.AuthMiddleware(firebaseClient, userService))
