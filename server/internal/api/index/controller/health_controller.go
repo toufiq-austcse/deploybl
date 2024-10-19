@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/config"
@@ -45,6 +46,9 @@ func (healthController *HealthController) Index(context *gin.Context) {
 
 func HandleEvent(eventChan <-chan string) {
 	for event := range eventChan {
-		fmt.Println("event received: ", event)
+		go func(e string) {
+			time.Sleep(2 * time.Second)
+			fmt.Println("event received: ", event)
+		}(event)
 	}
 }
