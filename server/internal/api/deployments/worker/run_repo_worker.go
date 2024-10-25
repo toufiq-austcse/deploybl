@@ -74,7 +74,6 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 					fmt.Println("error in updating deployment status ", updateErr.Error())
 				}
 			}
-
 		}
 	}
 }
