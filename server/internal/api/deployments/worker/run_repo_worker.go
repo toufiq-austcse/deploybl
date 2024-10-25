@@ -103,6 +103,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 	if portErr != nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.ContainerPortNotFoundError
 	}
+	fmt.Println("port found ", *port)
 	if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, removeErr
 	}
