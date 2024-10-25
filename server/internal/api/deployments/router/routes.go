@@ -22,4 +22,5 @@ func SetupDeploymentCronRouter(
 	controller *controller.DeploymentController,
 ) {
 	group.POST("check-stopped-cron", controller.LiveCheckCron)
+	group.POST("check-deploying-cron", controller.DeployingCheckCron)
 }

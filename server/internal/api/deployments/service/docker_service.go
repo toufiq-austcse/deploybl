@@ -147,7 +147,7 @@ func (dockerService *DockerService) StopContainer(containerId string) error {
 	return nil
 }
 
-func GetTcpPort(containerID string) (*string, error) {
+func (dockerService *DockerService) GetTcpPort(containerID string) (*string, error) {
 	// Run docker exec with netstat command
 	cmd := exec.Command(
 		"docker",

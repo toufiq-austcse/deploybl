@@ -9,16 +9,17 @@ import (
 
 type (
 	Config struct {
-		PORT                 string `env:"PORT"                          envDefault:"3000"`
-		APP_NAME             string `env:"APP_NAME"                      envDefault:"Boilerplate"`
-		APP_URL              string `env:"APP_URL"`
-		GITHUB_API_TOKEN     string `env:"GITHUB_API_TOKEN,required"`
-		GITHUB_API_BASE_URL  string `env:"GITHUB_API_BASE_URL,required"`
-		MONGO_DB_CONFIG      MONGO_DB_CONFIG
-		RABBIT_MQ_CONFIG     RABBIT_MQ_CONFIG
-		REPOSITORIES_PATH    string `env:"REPOSITORIES_PATH,required"`
-		BASE_DOMAIN          string `env:"BASE_DOMAIN,required"`
-		TRAEFIK_NETWORK_NAME string `env:"TRAEFIK_NETWORK_NAME,required"`
+		PORT                                 string `env:"PORT"                                          envDefault:"3000"`
+		APP_NAME                             string `env:"APP_NAME"                                      envDefault:"Boilerplate"`
+		APP_URL                              string `env:"APP_URL"`
+		GITHUB_API_TOKEN                     string `env:"GITHUB_API_TOKEN,required"`
+		GITHUB_API_BASE_URL                  string `env:"GITHUB_API_BASE_URL,required"`
+		MONGO_DB_CONFIG                      MONGO_DB_CONFIG
+		RABBIT_MQ_CONFIG                     RABBIT_MQ_CONFIG
+		REPOSITORIES_PATH                    string `env:"REPOSITORIES_PATH,required"`
+		BASE_DOMAIN                          string `env:"BASE_DOMAIN,required"`
+		TRAEFIK_NETWORK_NAME                 string `env:"TRAEFIK_NETWORK_NAME,required"`
+		MAX_DEPLOYING_STATUS_TIME_IN_MINUTES int    `env:"MAX_DEPLOYING_STATUS_TIME_IN_MINUTES,required"`
 	}
 	DB_CONFIG struct {
 		DB_NAME       string `env:"DB_NAME"`

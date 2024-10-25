@@ -53,11 +53,18 @@ func (worker *RunRepoWorker) InitRunRepoSubscriber() {
 
 func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		deploymentId, err := worker.ProcessRunRepoMessage(msg)
+		deploymentId, lastDeploymentInitiateAt, err := worker.ProcessRunRepoMessage(msg)
 		if err != nil {
-			fmt.Println("error in processing run repo message ", err.Error())
-
 			if deploymentId != "" {
+				if err.Error() == app_errors.ContainerPortNotFoundError.Error() &&
+					lastDeploymentInitiateAt != nil {
+					timeElapsed := time.Since(*lastDeploymentInitiateAt)
+					if int(
+						timeElapsed.Minutes(),
+					) < deployItConfig.AppConfig.MAX_DEPLOYING_STATUS_TIME_IN_MINUTES {
+						continue
+					}
+				}
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
@@ -72,12 +79,14 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 	}
 }
 
-func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string, error) {
+func (worker *RunRepoWorker) ProcessRunRepoMessage(
+	msg *message.Message,
+) (string, *time.Time, error) {
 	defer msg.Ack()
 
 	consumedPayload := payloads.RunRepoWorkerPayload{}
 	if err := json.Unmarshal(msg.Payload, &consumedPayload); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	fmt.Println("consumed run job ", consumedPayload)
 
@@ -86,28 +95,24 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string
 		context.Background(),
 	)
 	if deployment == nil {
-		return consumedPayload.DeploymentId, app_errors.DeploymentNotFoundError
+		return consumedPayload.DeploymentId, nil, app_errors.DeploymentNotFoundError
 	}
 	if deployment.DockerImageTag == nil {
-		return consumedPayload.DeploymentId, app_errors.DockerImageTagNotFoundError
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.DockerImageTagNotFoundError
 	}
-	if deployment.ContainerId != nil {
-		if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
-			return consumedPayload.DeploymentId, removeErr
-		}
-
-		fmt.Println("container removed ", deployment.ContainerId)
-		if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-			"container_id": nil,
-		}, context.Background()); updateErr != nil {
-			return consumedPayload.DeploymentId, updateErr
-		}
-
+	port, portErr := worker.dockerService.GetTcpPort(*deployment.ContainerId)
+	if portErr != nil {
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.ContainerPortNotFoundError
 	}
-	port, err := worker.dockerService.PreRun(*deployment.DockerImageTag,
-		deployment.Env)
-	if err != nil {
-		return consumedPayload.DeploymentId, err
+	if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, removeErr
+	}
+
+	fmt.Println("container removed ", deployment.ContainerId)
+	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+		"container_id": nil,
+	}, context.Background()); updateErr != nil {
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, updateErr
 	}
 
 	containerId, runErr := worker.dockerService.RunContainer(
@@ -116,7 +121,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string
 		*port,
 	)
 	if runErr != nil {
-		return consumedPayload.DeploymentId, runErr
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, runErr
 	}
 	fmt.Println("docker image run successfully...")
 
@@ -131,9 +136,9 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(msg *message.Message) (string
 	)
 
 	if updateErr != nil {
-		return consumedPayload.DeploymentId, updateErr
+		return consumedPayload.DeploymentId, nil, updateErr
 	}
-	return consumedPayload.DeploymentId, nil
+	return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, nil
 }
 
 func (worker *RunRepoWorker) PublishRunRepoJob(runRepoPayload payloads.RunRepoWorkerPayload) error {

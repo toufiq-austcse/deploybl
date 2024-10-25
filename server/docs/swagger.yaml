@@ -198,8 +198,20 @@ paths:
       summary: Stop Deployment
       tags:
       - Deployments
+  /api/v1/deployments/check-deploying-cron:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Check Deploying state Deployments
+      tags:
+      - Deployments
   /api/v1/deployments/check-stopped-cron:
-    get:
+    post:
       consumes:
       - application/json
       produces:
@@ -244,6 +256,24 @@ paths:
         "200":
           description: OK
       summary: Get Repo Details
+      tags:
+      - Repositories
+  /api/v1/repositories/branches:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Repo Url
+        in: query
+        name: repo_url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Get Repo Branches
       tags:
       - Repositories
 swagger: "2.0"

@@ -189,7 +189,7 @@ func (service *DeploymentService) GetLatestStatusByIds(
 	return deployments, nil
 }
 
-func (service *DeploymentService) FindDeploymentByStatus(status string) []model.Deployment {
+func (service *DeploymentService) FindByDeploymentStatus(status string) []model.Deployment {
 	var deployments []model.Deployment
 	filter := bson.M{"latest_status": status}
 	cursor, err := service.deploymentCollection.Find(context.Background(), filter)
