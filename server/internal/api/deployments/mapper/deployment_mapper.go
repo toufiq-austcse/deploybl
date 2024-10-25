@@ -26,26 +26,28 @@ func MapCreateDeploymentReqToSave(
 	if deploymentCount > 0 {
 		subDomainName += "-" + GenerateShortId(deploymentCount)
 	}
+	lastDeploymentInitiatedAt := time.Now()
 
 	return &model.Deployment{
-		Id:                 primitive.NewObjectID(),
-		UserId:             user.Id,
-		Title:              dto.Title,
-		SubDomainName:      subDomainName,
-		LatestStatus:       enums.QUEUED,
-		LastDeployedAt:     nil,
-		RepositoryProvider: provider,
-		RepositoryUrl:      dto.RepositoryUrl,
-		RepositoryName:     githubRes.Name,
-		GitUrl:             githubRes.CloneURL,
-		BranchName:         dto.BranchName,
-		RootDirectory:      dto.RootDir,
-		DockerFilePath:     *dto.DockerFilePath,
-		DockerImageTag:     nil,
-		ContainerId:        nil,
-		Env:                dto.Env,
-		CreatedAt:          time.Now(),
-		UpdatedAt:          time.Now(),
+		Id:                        primitive.NewObjectID(),
+		UserId:                    user.Id,
+		Title:                     dto.Title,
+		SubDomainName:             subDomainName,
+		LatestStatus:              enums.QUEUED,
+		LastDeploymentInitiatedAt: &lastDeploymentInitiatedAt,
+		LastDeployedAt:            nil,
+		RepositoryProvider:        provider,
+		RepositoryUrl:             dto.RepositoryUrl,
+		RepositoryName:            githubRes.Name,
+		GitUrl:                    githubRes.CloneURL,
+		BranchName:                dto.BranchName,
+		RootDirectory:             dto.RootDir,
+		DockerFilePath:            *dto.DockerFilePath,
+		DockerImageTag:            nil,
+		ContainerId:               nil,
+		Env:                       dto.Env,
+		CreatedAt:                 time.Now(),
+		UpdatedAt:                 time.Now(),
 	}
 }
 
@@ -146,8 +148,10 @@ func ToBuildRepoWorkerPayload(
 	}
 }
 
-func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload) payloads.RunRepoWorkerPayload {
-	return payloads.RunRepoWorkerPayload{
+func ToPreRunRepoWorkerPayload(
+	payload payloads.BuildRepoWorkerPayload,
+) payloads.PreRunRepoWorkerPayload {
+	return payloads.PreRunRepoWorkerPayload{
 		DeploymentId: payload.DeploymentId,
 	}
 }

@@ -1,8 +1,6 @@
 package di
 
 import (
-	"os/exec"
-
 	_ "github.com/lib/pq" // <------------ here
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
@@ -29,6 +27,7 @@ func NewDiContainer() (*dig.Container, error) {
 		repoController.NewRepoController,
 		worker.NewPullRepoWorker,
 		worker.NewBuildRepoWorker,
+		worker.NewPreRunRepoWorker,
 		worker.NewRunRepoWorker,
 		worker.NewStopRepoWorker,
 	}
@@ -37,6 +36,5 @@ func NewDiContainer() (*dig.Container, error) {
 			return nil, err
 		}
 	}
-	exec.Command("")
 	return c, nil
 }

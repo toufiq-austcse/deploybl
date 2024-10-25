@@ -84,8 +84,27 @@
                 }
             }
         },
+        "/api/v1/deployments/check-deploying-cron": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployments"
+                ],
+                "summary": "Check Deploying state Deployments",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/api/v1/deployments/check-stopped-cron": {
-            "get": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -318,6 +337,34 @@
                     "Repositories"
                 ],
                 "summary": "Get Repo Details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repo Url",
+                        "name": "repo_url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/repositories/branches": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Repositories"
+                ],
+                "summary": "Get Repo Branches",
                 "parameters": [
                     {
                         "type": "string",

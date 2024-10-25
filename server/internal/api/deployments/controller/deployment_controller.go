@@ -290,7 +290,8 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 				_, updateErr := controller.deploymentService.UpdateDeployment(
 					deploymentId,
 					map[string]interface{}{
-						"container_id": nil,
+						"container_id":                 nil,
+						"last_deployment_initiated_at": time.Now(),
 					},
 					context,
 				)
@@ -387,8 +388,9 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 	updatedDeployment, err := controller.deploymentService.UpdateDeployment(
 		deploymentId,
 		map[string]interface{}{
-			"env":           envBody,
-			"latest_status": enums.QUEUED,
+			"env":                          envBody,
+			"latest_status":                enums.QUEUED,
+			"last_deployment_initiated_at": time.Now(),
 		},
 		context,
 	)
@@ -729,7 +731,7 @@ func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Cont
 // @Accept   json
 // @Produce  json
 // @Success  200
-// @Router   /api/v1/deployments/check-stopped-cron [get]
+// @Router   /api/v1/deployments/check-stopped-cron [post]
 func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 	runningContainerIds, err := controller.dockerService.ListRunningContainerIds()
 	if err != nil {
@@ -772,4 +774,31 @@ func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 		updatedCount,
 	)
 	context.JSON(updatedCountRes.Code, updatedCountRes)
+}
+
+// DeployingCheckCron
+// @Summary  Check Deploying state Deployments
+// @Tags     Deployments
+// @Accept   json
+// @Produce  json
+// @Success  200
+// @Router   /api/v1/deployments/check-deploying-cron [post]
+func (controller *DeploymentController) DeployingCheckCron(context *gin.Context) {
+	count := 0
+
+	deployments := controller.deploymentService.FindByDeploymentStatus(enums.DEPLOYING)
+	for _, deployment := range deployments {
+		runRepoPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(deployment)
+		if err := controller.runRepoWorker.PublishRunRepoJob(runRepoPayload); err != nil {
+			fmt.Println("error while publishing job ", err.Error())
+		} else {
+			count++
+		}
+	}
+	cronRes := api_response.BuildResponse(
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		count,
+	)
+	context.JSON(cronRes.Code, cronRes)
 }

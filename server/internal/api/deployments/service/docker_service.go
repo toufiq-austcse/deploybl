@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/toufiq-austcse/deployit/pkg/app_errors"
+
 	deployItConfig "github.com/toufiq-austcse/deployit/config"
 )
 
@@ -35,9 +37,8 @@ func (dockerService *DockerService) RemoveContainer(containerId string) error {
 func (dockerService *DockerService) RunContainer(
 	imageTag string,
 	env *map[string]string,
+	port string,
 ) (*string, error) {
-	port := "4000"
-
 	args := []string{"run", "--network", deployItConfig.AppConfig.TRAEFIK_NETWORK_NAME}
 	for k, v := range *env {
 		if k == "PORT" {
@@ -72,6 +73,40 @@ func (dockerService *DockerService) RunContainer(
 	outputString := string(output)
 	containerId := strings.Replace(outputString, "\n", "", -1)
 	fmt.Printf("Container ID: %s\n", string(output))
+	return &containerId, nil
+}
+
+func (dockerService *DockerService) PreRun(
+	imageTag string,
+	env *map[string]string,
+) (*string, error) {
+	args := []string{"run"}
+	for k, v := range *env {
+		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
+	}
+
+	args = append(
+		args,
+		"-d",
+		imageTag,
+	)
+
+	// Construct the command
+	cmd := exec.Command(
+		"docker", args...,
+	)
+	fmt.Println("executing ", cmd.String())
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		fmt.Printf("Output: %s\n", string(output))
+		return nil, err
+	}
+
+	outputString := string(output)
+	containerId := strings.Replace(outputString, "\n", "", -1)
+
 	return &containerId, nil
 }
 
@@ -110,4 +145,40 @@ func (dockerService *DockerService) StopContainer(containerId string) error {
 		return errors.New(err.String())
 	}
 	return nil
+}
+
+func (dockerService *DockerService) GetTcpPort(containerID string) (*string, error) {
+	// Run docker exec with netstat command
+	cmd := exec.Command(
+		"docker",
+		"exec",
+		containerID,
+		"netstat",
+		"-tulpn",
+	)
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	fmt.Println("executing " + cmd.String())
+	err := cmd.Run()
+	if err != nil {
+		return nil, err
+	}
+	output := string(out.Bytes())
+	lines := strings.Split(output, "\n")
+	if len(lines) < 3 {
+		return nil, nil
+	}
+	tcpLine := strings.Split(output, "\n")[2]
+	fields := strings.Fields(tcpLine)
+	if len(fields) < 4 {
+		return nil, nil
+	}
+	localAddress := fields[3]
+	parts := strings.Split(localAddress, ":")
+	if len(parts) < 2 {
+		return nil, app_errors.ContainerPortNotFoundError
+	}
+	return &parts[1], err
 }

@@ -23,12 +23,12 @@ import (
 type BuildRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
-	runRepoWorker     *RunRepoWorker
+	preRunRepoWorker  *PreRunRepoWorker
 }
 
 func NewBuildRepoWorker(
 	deploymentService *service.DeploymentService,
-	runRepoWorker *RunRepoWorker,
+	preRunRepoWorker *PreRunRepoWorker,
 ) *BuildRepoWorker {
 	return &BuildRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
@@ -36,7 +36,7 @@ func NewBuildRepoWorker(
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_BUILD_QUEUE,
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_BUILD_ROUTING_KEY),
 		deploymentService: deploymentService,
-		runRepoWorker:     runRepoWorker,
+		preRunRepoWorker:  preRunRepoWorker,
 	}
 }
 
@@ -99,7 +99,7 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (st
 		return consumedPayload.DeploymentId, updateErr
 	}
 
-	if publishRunRepoError := worker.PublishRunRepoWork(consumedPayload); publishRunRepoError != nil {
+	if publishRunRepoError := worker.PublishPreRunRepoWork(consumedPayload); publishRunRepoError != nil {
 		return consumedPayload.DeploymentId, publishRunRepoError
 	}
 
@@ -157,10 +157,10 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 	return &dockerImageTag, nil
 }
 
-func (worker *BuildRepoWorker) PublishRunRepoWork(
+func (worker *BuildRepoWorker) PublishPreRunRepoWork(
 	buildRepoWorkerPayload payloads.BuildRepoWorkerPayload,
 ) error {
-	runRepoWorkerPayload := mapper.ToRunRepoWorkerPayload(buildRepoWorkerPayload)
-	fmt.Println("Publishing ", runRepoWorkerPayload)
-	return worker.runRepoWorker.PublishRunRepoJob(runRepoWorkerPayload)
+	preRunRepoWorkerPayload := mapper.ToPreRunRepoWorkerPayload(buildRepoWorkerPayload)
+	fmt.Println("Publishing ", preRunRepoWorkerPayload)
+	return worker.preRunRepoWorker.PublishPreRunRepoJob(preRunRepoWorkerPayload)
 }
