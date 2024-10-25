@@ -178,8 +178,8 @@ func (dockerService *DockerService) GetTcpPort(containerID string) (*string, err
 	}
 	localAddress := fields[3]
 	parts := strings.Split(localAddress, ":")
-	if len(parts) < 2 {
+	if len(parts) == 0 {
 		return nil, app_errors.ContainerPortNotFoundError
 	}
-	return &parts[1], err
+	return &parts[len(parts)-1], err
 }
