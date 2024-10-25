@@ -91,7 +91,7 @@ const DeploymentDetails = () => {
             </DropdownMenu>
           </div>
         </div>
-        <Link href={deploymentDetails.repository_url} className="flex gap-2" target="_blank">
+        <Link href={deploymentDetails.repository_url} className="flex gap-2 max-w-fit" target="_blank">
           <div className="flex flex-col justify-center">
             <FaGithub />
           </div>

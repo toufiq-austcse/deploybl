@@ -31,6 +31,10 @@ func NewDeploymentService(
 }
 
 func (service *DeploymentService) Create(model *model.Deployment, ctx context.Context) error {
+	currentTime := time.Now()
+	model.CreatedAt = currentTime
+	model.UpdatedAt = currentTime
+	model.LastDeploymentInitiatedAt = &currentTime
 	_, err := service.deploymentCollection.InsertOne(ctx, model)
 	return err
 }
@@ -130,6 +134,9 @@ func (service *DeploymentService) UpdateDeployment(
 	ctx context.Context,
 ) (*model.Deployment, error) {
 	updates["updated_at"] = time.Now()
+	if updates["latest_status"] == enums.QUEUED {
+		updates["last_deployment_initiated_at"] = time.Now()
+	}
 	fmt.Println("updating ", deploymentId, updates)
 	oId, err := primitive.ObjectIDFromHex(deploymentId)
 	if err != nil {

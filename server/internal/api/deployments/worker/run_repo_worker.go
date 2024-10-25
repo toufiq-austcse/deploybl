@@ -99,6 +99,9 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 	if deployment.DockerImageTag == nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.DockerImageTagNotFoundError
 	}
+	if deployment.ContainerId == nil {
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.ContainerPortNotFoundError
+	}
 	port, portErr := worker.dockerService.GetTcpPort(*deployment.ContainerId)
 	if portErr != nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.ContainerPortNotFoundError
