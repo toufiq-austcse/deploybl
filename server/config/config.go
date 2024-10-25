@@ -33,16 +33,18 @@ type (
 		DB_NAME string `env:"MONGO_DB_NAME,required"`
 	}
 	RABBIT_MQ_CONFIG struct {
-		URL                          string `env:"RABBIT_MQ_CONNECTION_URL,required"`
-		EXCHANGE                     string `env:"RABBIT_MQ_EXCHANGE,required"`
-		REPOSITORY_PULL_ROUTING_KEY  string `env:"RABBIT_MQ_REPOSITORY_PULL_ROUTING_KEY,required"`
-		REPOSITORY_PULL_QUEUE        string `env:"RABBIT_MQ_REPOSITORY_PULL_QUEUE,required"`
-		REPOSITORY_BUILD_ROUTING_KEY string `env:"RABBIT_MQ_REPOSITORY_BUILD_ROUTING_KEY,required"`
-		REPOSITORY_BUILD_QUEUE       string `env:"RABBIT_MQ_REPOSITORY_BUILD_QUEUE,required"`
-		REPOSITORY_RUN_ROUTING_KEY   string `env:"RABBIT_MQ_REPOSITORY_RUN_ROUTING_KEY,required"`
-		REPOSITORY_RUN_QUEUE         string `env:"RABBIT_MQ_REPOSITORY_RUN_QUEUE,required"`
-		REPOSITORY_STOP_ROUTING_KEY  string `env:"RABBIT_MQ_REPOSITORY_STOP_ROUTING_KEY,required"`
-		REPOSITORY_STOP_QUEUE        string `env:"RABBIT_MQ_REPOSITORY_STOP_QUEUE,required"`
+		URL                                      string `env:"RABBIT_MQ_CONNECTION_URL,required"`
+		EXCHANGE                                 string `env:"RABBIT_MQ_EXCHANGE,required"`
+		REPOSITORY_PULL_ROUTING_KEY              string `env:"RABBIT_MQ_REPOSITORY_PULL_ROUTING_KEY,required"`
+		REPOSITORY_PULL_QUEUE                    string `env:"RABBIT_MQ_REPOSITORY_PULL_QUEUE,required"`
+		REPOSITORY_BUILD_ROUTING_KEY             string `env:"RABBIT_MQ_REPOSITORY_BUILD_ROUTING_KEY,required"`
+		REPOSITORY_BUILD_QUEUE                   string `env:"RABBIT_MQ_REPOSITORY_BUILD_QUEUE,required"`
+		REPOSITORY_RUN_ROUTING_KEY               string `env:"RABBIT_MQ_REPOSITORY_RUN_ROUTING_KEY,required"`
+		REPOSITORY_RUN_QUEUE                     string `env:"RABBIT_MQ_REPOSITORY_RUN_QUEUE,required"`
+		REPOSITORY_STOP_ROUTING_KEY              string `env:"RABBIT_MQ_REPOSITORY_STOP_ROUTING_KEY,required"`
+		REPOSITORY_STOP_QUEUE                    string `env:"RABBIT_MQ_REPOSITORY_STOP_QUEUE,required"`
+		RABBIT_MQ_REPOSITORY_PRE_RUN_ROUTING_KEY string `env:"RABBIT_MQ_REPOSITORY_PRE_RUN_ROUTING_KEY,required"`
+		RABBIT_MQ_REPOSITORY_PRE_RUN_QUEUE       string `env:"RABBIT_MQ_REPOSITORY_PRE_RUN_QUEUE,required"`
 	}
 )
 

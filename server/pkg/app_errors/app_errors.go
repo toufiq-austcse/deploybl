@@ -13,4 +13,5 @@ var (
 	CannotUpdateError             = errors.New("cannot update")
 	DockerImageTagNotFoundError   = errors.New("docker image tag not found")
 	ContainerNotFoundError        = errors.New("container not found")
+	ContainerPortNotFoundError    = errors.New("container port not found")
 )

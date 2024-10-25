@@ -146,8 +146,10 @@ func ToBuildRepoWorkerPayload(
 	}
 }
 
-func ToRunRepoWorkerPayload(payload payloads.BuildRepoWorkerPayload) payloads.RunRepoWorkerPayload {
-	return payloads.RunRepoWorkerPayload{
+func ToPreRunRepoWorkerPayload(
+	payload payloads.BuildRepoWorkerPayload,
+) payloads.PreRunRepoWorkerPayload {
+	return payloads.PreRunRepoWorkerPayload{
 		DeploymentId: payload.DeploymentId,
 	}
 }

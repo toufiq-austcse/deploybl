@@ -82,9 +82,11 @@ func SetupSubscribers(container *dig.Container) error {
 	err := container.Invoke(
 		func(pullRepoWorker *worker.PullRepoWorker, buildRepoWorker *worker.BuildRepoWorker,
 			runRepoWorker *worker.RunRepoWorker, stopRepoWorker *worker.StopRepoWorker,
+			preRunRepoWorker *worker.PreRunRepoWorker,
 		) {
 			pullRepoWorker.InitPullRepoSubscriber()
 			buildRepoWorker.InitBuildRepoSubscriber()
+			preRunRepoWorker.InitPreRunRepoSubscriber()
 			runRepoWorker.InitRunRepoSubscriber()
 			stopRepoWorker.InitStopRepoSubscriber()
 		},
