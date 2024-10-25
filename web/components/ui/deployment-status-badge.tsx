@@ -10,7 +10,8 @@ const DeploymentStatusBadge = ({ status }: { status: string }) => {
   if (
     status === DEPLOYMENT_STATUS.PULLING ||
     status === DEPLOYMENT_STATUS.BUILDING ||
-    status === DEPLOYMENT_STATUS.QUEUED
+    status === DEPLOYMENT_STATUS.QUEUED ||
+    status === DEPLOYMENT_STATUS.DEPLOYING
   ) {
     return (
       <div className={`${badgeVariants({ variant: 'default' })} capitalize gap-2`}>

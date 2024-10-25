@@ -9,7 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -21,7 +21,7 @@ const DeploymentDetails = () => {
     updateLatestDeploymentStatus,
     restartDeploymentContext,
     rebuildAndDeployContext,
-    stopDeploymentContext,
+    stopDeploymentContext
   } = useDeploymentContext();
 
   const onRestartClicked = async (deploymentId: string) => {
@@ -57,7 +57,7 @@ const DeploymentDetails = () => {
       () => {
         updateLatestDeploymentStatus(deploymentDetails._id);
       },
-      +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string),
+      +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string)
     );
 
     return () => clearInterval(interval);
@@ -91,7 +91,7 @@ const DeploymentDetails = () => {
             </DropdownMenu>
           </div>
         </div>
-        <Link href={deploymentDetails.repository_url} className="flex gap-2" target="_blank">
+        <Link href={deploymentDetails.repository_url} className="flex gap-2 max-w-fit" target="_blank">
           <div className="flex flex-col justify-center">
             <FaGithub />
           </div>

@@ -3,5 +3,6 @@ export const DEPLOYMENT_STATUS = {
     PULLING: 'pulling',
     BUILDING: 'building',
     LIVE: 'live',
-    FAILED: 'failed'
+    FAILED: 'failed',
+    DEPLOYING: 'deploying'
 };
