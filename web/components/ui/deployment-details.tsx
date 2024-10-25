@@ -9,7 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -21,7 +21,7 @@ const DeploymentDetails = () => {
     updateLatestDeploymentStatus,
     restartDeploymentContext,
     rebuildAndDeployContext,
-    stopDeploymentContext
+    stopDeploymentContext,
   } = useDeploymentContext();
 
   const onRestartClicked = async (deploymentId: string) => {
@@ -57,7 +57,7 @@ const DeploymentDetails = () => {
       () => {
         updateLatestDeploymentStatus(deploymentDetails._id);
       },
-      +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string)
+      +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string),
     );
 
     return () => clearInterval(interval);
