@@ -12,24 +12,25 @@ import (
 )
 
 type Deployment struct {
-	Id                 primitive.ObjectID `bson:"_id"`
-	UserId             primitive.ObjectID `bson:"user_id"`
-	Title              string             `bson:"title"`
-	SubDomainName      string             `bson:"sub_domain_name"`
-	LatestStatus       string             `bson:"latest_status"`
-	LastDeployedAt     *time.Time         `bson:"last_deployed_at"`
-	RepositoryProvider string             `bson:"repository_provider"`
-	RepositoryUrl      string             `bson:"repository_url"`
-	RepositoryName     string             `bson:"repository_name"`
-	GitUrl             string             `bson:"git_url"`
-	BranchName         string             `bson:"branch_name"`
-	RootDirectory      *string            `bson:"root_directory"`
-	DockerFilePath     string             `bson:"docker_file_path"`
-	DockerImageTag     *string            `bson:"docker_image_tag"`
-	ContainerId        *string            `bson:"container_id"`
-	Env                *map[string]string `bson:"env"`
-	CreatedAt          time.Time          `bson:"created_at"`
-	UpdatedAt          time.Time          `bson:"updated_at"`
+	Id                        primitive.ObjectID `bson:"_id"`
+	UserId                    primitive.ObjectID `bson:"user_id"`
+	Title                     string             `bson:"title"`
+	SubDomainName             string             `bson:"sub_domain_name"`
+	LatestStatus              string             `bson:"latest_status"`
+	LastDeploymentInitiatedAt *time.Time         `bson:"last_deployment_initiated_at"`
+	LastDeployedAt            *time.Time         `bson:"last_deployed_at"`
+	RepositoryProvider        string             `bson:"repository_provider"`
+	RepositoryUrl             string             `bson:"repository_url"`
+	RepositoryName            string             `bson:"repository_name"`
+	GitUrl                    string             `bson:"git_url"`
+	BranchName                string             `bson:"branch_name"`
+	RootDirectory             *string            `bson:"root_directory"`
+	DockerFilePath            string             `bson:"docker_file_path"`
+	DockerImageTag            *string            `bson:"docker_image_tag"`
+	ContainerId               *string            `bson:"container_id"`
+	Env                       *map[string]string `bson:"env"`
+	CreatedAt                 time.Time          `bson:"created_at"`
+	UpdatedAt                 time.Time          `bson:"updated_at"`
 }
 
 func CreateDeploymentIndex(deploymentCollection *mongo.Collection) {
