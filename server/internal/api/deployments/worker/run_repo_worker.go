@@ -121,7 +121,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 	containerId, runErr := worker.dockerService.RunContainer(
 		*deployment.DockerImageTag,
 		deployment.Env,
-		*port,
+		port,
 	)
 	if runErr != nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, runErr
