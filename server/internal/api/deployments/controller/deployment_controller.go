@@ -27,6 +27,7 @@ type DeploymentController struct {
 	pullRepoWorker    *worker.PullRepoWorker
 	runRepoWorker     *worker.RunRepoWorker
 	stopRepoWorker    *worker.StopRepoWorker
+	preRunRepoWorker  *worker.PreRunRepoWorker
 }
 
 func NewDeploymentController(
@@ -35,6 +36,7 @@ func NewDeploymentController(
 	pullRepoWorker *worker.PullRepoWorker,
 	runRepoWorker *worker.RunRepoWorker,
 	stopRepoWorker *worker.StopRepoWorker,
+	preRunRepoWorker *worker.PreRunRepoWorker,
 ) *DeploymentController {
 	return &DeploymentController{
 		githubHttpClient:  githubHttpClient,
@@ -42,6 +44,7 @@ func NewDeploymentController(
 		pullRepoWorker:    pullRepoWorker,
 		runRepoWorker:     runRepoWorker,
 		stopRepoWorker:    stopRepoWorker,
+		preRunRepoWorker:  preRunRepoWorker,
 	}
 }
 
@@ -486,8 +489,8 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 		return
 	}
 	go func() {
-		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(*deployment)
-		publishJobErr := controller.runRepoWorker.PublishRunRepoJob(runRepoJobPayload)
+		runRepoJobPayload := mapper.ToPreRunRepoWorkerPayloadFromDeployment(*deployment)
+		publishJobErr := controller.preRunRepoWorker.PublishPreRunRepoJob(runRepoJobPayload)
 		if publishJobErr != nil {
 			fmt.Println("error while publishing job ", publishJobErr.Error())
 		}
