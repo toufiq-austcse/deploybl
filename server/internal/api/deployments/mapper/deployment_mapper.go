@@ -160,6 +160,14 @@ func ToRunRepoWorkerPayloadFromDeployment(
 	}
 }
 
+func ToPreRunRepoWorkerPayloadFromDeployment(
+	deployment model.Deployment,
+) payloads.PreRunRepoWorkerPayload {
+	return payloads.PreRunRepoWorkerPayload{
+		DeploymentId: deployment.Id.Hex(),
+	}
+}
+
 func ToStopRepoWorkerPayload(deployment model.Deployment) payloads.StopRepoWorkerPayload {
 	return payloads.StopRepoWorkerPayload{DeploymentId: deployment.Id.Hex()}
 }
