@@ -41,9 +41,6 @@ func (dockerService *DockerService) RunContainer(
 ) (*string, error) {
 	args := []string{"run", "--network", deployItConfig.AppConfig.TRAEFIK_NETWORK_NAME}
 	for k, v := range *env {
-		if k == "PORT" {
-			continue
-		}
 		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
 	}
 
