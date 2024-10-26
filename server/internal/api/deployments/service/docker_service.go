@@ -94,17 +94,25 @@ func (dockerService *DockerService) GetTcpPort(containerID string) (*string, err
 	if len(lines) < 3 {
 		return nil, app_errors.ContainerPortNotFoundError
 	}
-	tcpLine := strings.Split(*output, "\n")[2]
-	fields := strings.Fields(tcpLine)
-	if len(fields) < 4 {
-		return nil, app_errors.ContainerNotFoundError
+	for i := 2; i < len(lines); i++ {
+		if !strings.Contains(lines[i], "tcp") {
+			continue
+		}
+		fields := strings.Fields(lines[i])
+		if len(fields) < 4 {
+			continue
+		}
+		localAddress := fields[3]
+		if strings.Contains(localAddress, ":::") || strings.Contains(localAddress, "0.0.0.0") {
+			parts := strings.Split(localAddress, ":")
+			if len(parts) == 0 {
+				continue
+			}
+			return &parts[len(parts)-1], nil
+		}
 	}
-	localAddress := fields[3]
-	parts := strings.Split(localAddress, ":")
-	if len(parts) == 0 {
-		return nil, app_errors.ContainerPortNotFoundError
-	}
-	return &parts[len(parts)-1], err
+
+	return nil, app_errors.ContainerPortNotFoundError
 }
 
 func (dockerService *DockerService) BuildImage(
