@@ -3,6 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
+	"github.com/toufiq-austcse/deployit/enums/deployment_events_triggered_by"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
 	"math"
 	"time"
 
@@ -19,24 +22,44 @@ import (
 type DeploymentService struct {
 	deploymentCollection *mongo.Collection
 	dockerService        *DockerService
+	eventService         *EventService
 }
 
 func NewDeploymentService(
 	database *mongo.Database,
 	dockerService *DockerService,
+	eventService *EventService,
 ) *DeploymentService {
 	collection := database.Collection("deployments")
 	go model.CreateDeploymentIndex(collection)
-	return &DeploymentService{deploymentCollection: collection, dockerService: dockerService}
+	return &DeploymentService{
+		deploymentCollection: collection,
+		dockerService:        dockerService,
+		eventService:         eventService,
+	}
 }
 
 func (service *DeploymentService) Create(model *model.Deployment, ctx context.Context) error {
+	model.Id = primitive.NewObjectID()
 	currentTime := time.Now()
 	model.CreatedAt = currentTime
 	model.UpdatedAt = currentTime
 	model.LastDeploymentInitiatedAt = &currentTime
 	_, err := service.deploymentCollection.InsertOne(ctx, model)
-	return err
+	if err != nil {
+		return err
+	}
+	newEventModel := mapper.MapEventModelToSave(
+		model.Id,
+		deployment_events_enums.NEW_DEPLOYMENT,
+		deployment_events_triggered_by.USER,
+		model.UserId.Hex(),
+		nil,
+		model.LatestStatus,
+	)
+	_ = service.eventService.Create(newEventModel, ctx)
+
+	return nil
 }
 
 func (service *DeploymentService) FindBySubDomainName(

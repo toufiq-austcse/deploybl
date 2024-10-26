@@ -12,7 +12,6 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	userModel "github.com/toufiq-austcse/deployit/internal/api/users/model"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github/api_res"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func MapCreateDeploymentReqToSave(
@@ -28,7 +27,6 @@ func MapCreateDeploymentReqToSave(
 	}
 
 	return &model.Deployment{
-		Id:                 primitive.NewObjectID(),
 		UserId:             user.Id,
 		Title:              dto.Title,
 		SubDomainName:      subDomainName,

@@ -21,6 +21,7 @@ func NewDiContainer() (*dig.Container, error) {
 		github.NewGithubHttpClient,
 		firebaseClient.NewFirebaseClient,
 		service.NewDeploymentService,
+		service.NewEventService,
 		userService.NewUserService,
 		service.NewDockerService,
 		controller.NewDeploymentController,
