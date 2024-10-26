@@ -1,11 +1,10 @@
 package service
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
-	"os/exec"
 	"strings"
+
+	"github.com/toufiq-austcse/deployit/pkg/cmd_runner"
 
 	"github.com/toufiq-austcse/deployit/pkg/app_errors"
 
@@ -19,17 +18,9 @@ func NewDockerService() *DockerService {
 }
 
 func (dockerService *DockerService) RemoveContainer(containerId string) error {
-	cmd := exec.Command("docker", "rm", "-f", containerId[:5])
-	var out bytes.Buffer
-	var err bytes.Buffer
-
-	cmd.Stdout = &out
-	cmd.Stderr = &err
-
-	fmt.Println("executing " + cmd.String())
-	runErr := cmd.Run()
-	if runErr != nil {
-		return errors.New(err.String())
+	_, err := cmd_runner.RunCommand("docker", []string{"rm", "-f", containerId[:5]})
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -37,90 +28,45 @@ func (dockerService *DockerService) RemoveContainer(containerId string) error {
 func (dockerService *DockerService) RunContainer(
 	imageTag string,
 	env *map[string]string,
-	port string,
+	port *string,
 ) (*string, error) {
 	args := []string{"run", "--network", deployItConfig.AppConfig.TRAEFIK_NETWORK_NAME}
 	for k, v := range *env {
 		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
 	}
 
-	args = append(
-		args,
-		"-e",
-		fmt.Sprintf("PORT=%s", port),
-		"-p",
-		fmt.Sprintf(":%s", port),
-		"-d",
-		imageTag,
-	)
+	if port != nil {
+		args = append(
+			args,
+			"-e",
+			fmt.Sprintf("PORT=%s", *port),
+			"-p",
+			fmt.Sprintf(":%s", *port),
+		)
+	}
+	args = append(args, "-d", imageTag)
 
-	// Construct the command
-	cmd := exec.Command(
-		"docker", args...,
-	)
-	fmt.Println("executing ", cmd.String())
-
-	output, err := cmd.CombinedOutput()
+	output, err := cmd_runner.RunCommand("docker", args)
 	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		fmt.Printf("Output: %s\n", string(output))
 		return nil, err
 	}
-
-	outputString := string(output)
-	containerId := strings.Replace(outputString, "\n", "", -1)
-	fmt.Printf("Container ID: %s\n", string(output))
-	return &containerId, nil
-}
-
-func (dockerService *DockerService) PreRun(
-	imageTag string,
-	env *map[string]string,
-) (*string, error) {
-	args := []string{"run"}
-	for k, v := range *env {
-		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
-	}
-
-	args = append(
-		args,
-		"-d",
-		imageTag,
-	)
-
-	// Construct the command
-	cmd := exec.Command(
-		"docker", args...,
-	)
-	fmt.Println("executing ", cmd.String())
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		fmt.Printf("Output: %s\n", string(output))
-		return nil, err
-	}
-
-	outputString := string(output)
-	containerId := strings.Replace(outputString, "\n", "", -1)
-
+	containerId := strings.Replace(*output, "\n", "", -1)
+	fmt.Printf("Container ID: %s\n", containerId)
 	return &containerId, nil
 }
 
 func (dockerService *DockerService) ListRunningContainerIds() ([]string, error) {
 	containerIds := []string{}
 
-	cmd := exec.Command("docker", "ps", "--no-trunc", "--format", "{{.ID}}")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	fmt.Println("executing " + cmd.String())
-	err := cmd.Run()
+	output, err := cmd_runner.RunCommand(
+		"docker",
+		[]string{"ps", "--no-trunc", "--format", "{{.ID}}"},
+	)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
-	containerIdsStringRes := string(out.Bytes())
-	containerIds = strings.Split(containerIdsStringRes, "\n")
+
+	containerIds = strings.Split(*output, "\n")
 	if len(containerIds) > 0 {
 		containerIds = containerIds[:len(containerIds)-1]
 	}
@@ -129,46 +75,26 @@ func (dockerService *DockerService) ListRunningContainerIds() ([]string, error) 
 }
 
 func (dockerService *DockerService) StopContainer(containerId string) error {
-	cmd := exec.Command("docker", "stop", containerId[:5])
-	var out bytes.Buffer
-	var err bytes.Buffer
-
-	cmd.Stdout = &out
-	cmd.Stderr = &err
-
-	fmt.Println("executing " + cmd.String())
-	runErr := cmd.Run()
-	if runErr != nil {
-		return errors.New(err.String())
+	_, err := cmd_runner.RunCommand("docker", []string{"stop", containerId[:5]})
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
 func (dockerService *DockerService) GetTcpPort(containerID string) (*string, error) {
-	// Run docker exec with netstat command
-	cmd := exec.Command(
+	output, err := cmd_runner.RunCommand(
 		"docker",
-		"exec",
-		containerID,
-		"netstat",
-		"-tulpn",
+		[]string{"exec", containerID, "netstat", "-tulpn"},
 	)
-
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	fmt.Println("executing " + cmd.String())
-	err := cmd.Run()
 	if err != nil {
 		return nil, err
 	}
-	output := string(out.Bytes())
-	fmt.Println("output: ", output)
-	lines := strings.Split(output, "\n")
+	lines := strings.Split(*output, "\n")
 	if len(lines) < 3 {
 		return nil, app_errors.ContainerPortNotFoundError
 	}
-	tcpLine := strings.Split(output, "\n")[2]
+	tcpLine := strings.Split(*output, "\n")[2]
 	fields := strings.Fields(tcpLine)
 	if len(fields) < 4 {
 		return nil, app_errors.ContainerNotFoundError
@@ -179,4 +105,23 @@ func (dockerService *DockerService) GetTcpPort(containerID string) (*string, err
 		return nil, app_errors.ContainerPortNotFoundError
 	}
 	return &parts[len(parts)-1], err
+}
+
+func (dockerService *DockerService) BuildImage(
+	dockerFilePath string,
+	localDir string,
+	dockerImageTag string,
+	labels map[string]string,
+) (*string, error) {
+	args := []string{
+		"build", "-f", dockerFilePath, localDir, "-t", dockerImageTag,
+	}
+	for k, v := range labels {
+		args = append(args, "--label", fmt.Sprintf("%s=%s", k, v))
+	}
+	output, err := cmd_runner.RunCommand("docker", args)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
 }

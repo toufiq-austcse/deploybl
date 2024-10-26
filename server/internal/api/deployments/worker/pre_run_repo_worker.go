@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -104,8 +103,8 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 		}
 
 	}
-	containerId, preRunErr := worker.dockerService.PreRun(*deployment.DockerImageTag,
-		deployment.Env)
+	containerId, preRunErr := worker.dockerService.RunContainer(*deployment.DockerImageTag,
+		deployment.Env, nil)
 	if preRunErr != nil {
 		return consumedPayload.DeploymentId, preRunErr
 	}
@@ -115,9 +114,8 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 	_, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,
 		map[string]interface{}{
-			"latest_status":    enums.DEPLOYING,
-			"last_deployed_at": time.Now(),
-			"container_id":     containerId,
+			"latest_status": enums.DEPLOYING,
+			"container_id":  containerId,
 		},
 		context.Background(),
 	)

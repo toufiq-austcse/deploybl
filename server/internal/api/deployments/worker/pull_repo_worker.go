@@ -1,12 +1,10 @@
 package worker
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -17,6 +15,7 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
+	"github.com/toufiq-austcse/deployit/pkg/cmd_runner"
 	"github.com/toufiq-austcse/deployit/pkg/rabbit_mq"
 	"github.com/toufiq-austcse/deployit/pkg/utils"
 )
@@ -132,12 +131,11 @@ func (worker *PullRepoWorker) PublishPullRepoJob(
 }
 
 func (worker *PullRepoWorker) CloneRepo(gitUrl, branch, path string) error {
-	cmd := exec.Command("git", "clone", "-b", branch, gitUrl, path)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	fmt.Println("executing " + cmd.String())
-	return cmd.Run()
+	_, err := cmd_runner.RunCommand("git", []string{"clone", "-b", branch, gitUrl, path})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (worker *PullRepoWorker) PublishPullRepoWork(deployment *model.Deployment) {

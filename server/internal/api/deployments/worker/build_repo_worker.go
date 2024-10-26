@@ -1,12 +1,9 @@
 package worker
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"os/exec"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -24,11 +21,13 @@ type BuildRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
 	preRunRepoWorker  *PreRunRepoWorker
+	dockerService     *service.DockerService
 }
 
 func NewBuildRepoWorker(
 	deploymentService *service.DeploymentService,
 	preRunRepoWorker *PreRunRepoWorker,
+	dockerService *service.DockerService,
 ) *BuildRepoWorker {
 	return &BuildRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
@@ -37,6 +36,7 @@ func NewBuildRepoWorker(
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_BUILD_ROUTING_KEY),
 		deploymentService: deploymentService,
 		preRunRepoWorker:  preRunRepoWorker,
+		dockerService:     dockerService,
 	}
 }
 
@@ -136,24 +136,11 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 		"traefik.enable": "true",
 		fmt.Sprintf("traefik.http.routers.%s.rule", payload.DeploymentId): hostRule,
 	}
-	args := []string{
-		"build", "-f", dockerFilePath, localDir, "-t", dockerImageTag,
-	}
-	for k, v := range labels {
-		args = append(args, "--label", fmt.Sprintf("%s=%s", k, v))
-	}
-	cmd := exec.Command("docker", args...)
-	var out bytes.Buffer
-	var stdErr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stdErr
-
-	fmt.Println("executing " + cmd.String())
-	err := cmd.Run()
+	_, err := worker.dockerService.BuildImage(dockerFilePath, localDir, dockerImageTag, labels)
 	if err != nil {
-		return nil, errors.New(stdErr.String())
+		return nil, err
 	}
-	fmt.Println(out.String())
+
 	return &dockerImageTag, nil
 }
 

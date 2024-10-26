@@ -1,6 +1,8 @@
 package mapper
 
 import (
+	"time"
+
 	"github.com/sqids/sqids-go"
 	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/enums"
@@ -197,6 +199,6 @@ func GenerateShortId(id int64) string {
 		MinLength: 5,
 		Alphabet:  "abcdefghijklmnopqrstuvwxyz0123456789",
 	})
-	generatedId, _ := s.Encode([]uint64{uint64(id)})
+	generatedId, _ := s.Encode([]uint64{uint64(id), uint64(time.Now().UnixMilli())})
 	return generatedId
 }
