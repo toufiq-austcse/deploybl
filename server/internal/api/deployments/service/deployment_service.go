@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
+	"time"
+
 	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
 	"github.com/toufiq-austcse/deployit/enums/deployment_events_triggered_by"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
-	"math"
-	"time"
 
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"

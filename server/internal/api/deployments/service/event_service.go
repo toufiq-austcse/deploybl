@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"go.mongodb.org/mongo-driver/mongo"

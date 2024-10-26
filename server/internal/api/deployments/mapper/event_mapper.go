@@ -21,5 +21,4 @@ func MapEventModelToSave(
 		Reason:         reason,
 		LatestStatus:   latestStatus,
 	}
-
 }
