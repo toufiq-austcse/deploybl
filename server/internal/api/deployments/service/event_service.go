@@ -30,6 +30,7 @@ func (service *EventService) Create(model *model.Event, ctx context.Context) err
 	_, err := service.eventCollection.InsertOne(ctx, model)
 	return err
 }
+
 func (service *EventService) FindByDeploymentIdAndLatestStatus(
 	deploymentId primitive.ObjectID,
 	latestStatus string,

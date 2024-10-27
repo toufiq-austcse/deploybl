@@ -2,11 +2,12 @@ package controller
 
 import (
 	"fmt"
-	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
 
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/enums"
@@ -38,7 +39,6 @@ func NewDeploymentController(
 	pullRepoWorker *worker.PullRepoWorker,
 	runRepoWorker *worker.RunRepoWorker,
 	stopRepoWorker *worker.StopRepoWorker,
-
 ) *DeploymentController {
 	return &DeploymentController{
 		githubHttpClient:  githubHttpClient,
