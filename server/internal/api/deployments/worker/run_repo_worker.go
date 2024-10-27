@@ -65,9 +65,10 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 						continue
 					}
 				}
-				_, updateErr := worker.deploymentService.UpdateLatestStatus(
+				_, _, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
+					"",
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -112,9 +113,9 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 	}
 
 	fmt.Println("container removed ", deployment.ContainerId)
-	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+	if _, _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 		"container_id": nil,
-	}, context.Background()); updateErr != nil {
+	}, "", context.Background()); updateErr != nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, updateErr
 	}
 
@@ -128,13 +129,14 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 	}
 	fmt.Println("docker image run successfully...")
 
-	_, updateErr := worker.deploymentService.UpdateDeployment(
+	_, _, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,
 		map[string]interface{}{
 			"latest_status":    enums.LIVE,
 			"last_deployed_at": time.Now(),
 			"container_id":     containerId,
 		},
+		"",
 		context.Background(),
 	)
 

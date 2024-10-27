@@ -118,7 +118,10 @@ func ToDeploymentListRes(deploymentModels []*model.Deployment) []res.DeploymentR
 	return deployments
 }
 
-func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWorkerPayload {
+func ToPullRepoWorkerPayload(
+	deployment *model.Deployment,
+	event *model.Event,
+) payloads.PullRepoWorkerPayload {
 	return payloads.PullRepoWorkerPayload{
 		DeploymentId:   deployment.Id.Hex(),
 		BranchName:     deployment.BranchName,
@@ -127,6 +130,7 @@ func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWork
 		RootDir:        deployment.RootDirectory,
 		DockerFilePath: deployment.DockerFilePath,
 		Env:            deployment.Env,
+		EventId:        event.Id,
 	}
 }
 
@@ -139,6 +143,7 @@ func ToBuildRepoWorkerPayload(
 		DockerFilePath: payload.DockerFilePath,
 		BranchName:     payload.BranchName,
 		Env:            payload.Env,
+		EventId:        payload.EventId,
 	}
 }
 
@@ -147,14 +152,17 @@ func ToPreRunRepoWorkerPayload(
 ) payloads.PreRunRepoWorkerPayload {
 	return payloads.PreRunRepoWorkerPayload{
 		DeploymentId: payload.DeploymentId,
+		EventId:      payload.EventId,
 	}
 }
 
 func ToRunRepoWorkerPayloadFromDeployment(
 	deployment model.Deployment,
+	event model.Event,
 ) payloads.RunRepoWorkerPayload {
 	return payloads.RunRepoWorkerPayload{
 		DeploymentId: deployment.Id.Hex(),
+		EventId:      event.Id,
 	}
 }
 

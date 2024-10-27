@@ -57,9 +57,10 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessages(messages <-chan *messa
 			fmt.Println("error in processing pre run repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, updateErr := worker.deploymentService.UpdateLatestStatus(
+				_, _, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
+					"",
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -96,9 +97,9 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 		}
 
 		fmt.Println("container removed ", deployment.ContainerId)
-		if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+		if _, _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 			"container_id": nil,
-		}, context.Background()); updateErr != nil {
+		}, "", context.Background()); updateErr != nil {
 			return consumedPayload.DeploymentId, updateErr
 		}
 
@@ -111,12 +112,13 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 
 	fmt.Println("docker image pre run successfully...")
 
-	_, updateErr := worker.deploymentService.UpdateDeployment(
+	_, _, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,
 		map[string]interface{}{
 			"latest_status": enums.DEPLOYING,
 			"container_id":  containerId,
 		},
+		"",
 		context.Background(),
 	)
 

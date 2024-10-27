@@ -40,7 +40,10 @@ func NewDeploymentService(
 	}
 }
 
-func (service *DeploymentService) Create(model *model.Deployment, ctx context.Context) error {
+func (service *DeploymentService) Create(
+	model *model.Deployment,
+	ctx context.Context,
+) (*model.Event, error) {
 	model.Id = primitive.NewObjectID()
 	currentTime := time.Now()
 	model.CreatedAt = currentTime
@@ -48,7 +51,7 @@ func (service *DeploymentService) Create(model *model.Deployment, ctx context.Co
 	model.LastDeploymentInitiatedAt = &currentTime
 	_, err := service.deploymentCollection.InsertOne(ctx, model)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	newEventModel := mapper.MapEventModelToSave(
 		model.Id,
@@ -60,7 +63,7 @@ func (service *DeploymentService) Create(model *model.Deployment, ctx context.Co
 	)
 	_ = service.eventService.Create(newEventModel, ctx)
 
-	return nil
+	return newEventModel, err
 }
 
 func (service *DeploymentService) FindBySubDomainName(
@@ -155,8 +158,11 @@ func (service *DeploymentService) ListDeployment(
 func (service *DeploymentService) UpdateDeployment(
 	deploymentId string,
 	updates map[string]interface{},
+	reason string,
 	ctx context.Context,
-) (*model.Deployment, error) {
+) (*model.Deployment, *model.Event, error) {
+	var newEventModel *model.Event = nil
+
 	updates["updated_at"] = time.Now()
 	if updates["latest_status"] == enums.QUEUED {
 		updates["last_deployment_initiated_at"] = time.Now()
@@ -164,18 +170,31 @@ func (service *DeploymentService) UpdateDeployment(
 	fmt.Println("updating ", deploymentId, updates)
 	oId, err := primitive.ObjectIDFromHex(deploymentId)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	updatedResult, err := service.deploymentCollection.UpdateByID(ctx, oId, bson.M{
 		"$set": updates,
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if updatedResult.MatchedCount != 1 {
-		return nil, app_errors.CannotUpdateError
+		return nil, nil, app_errors.CannotUpdateError
 	}
-	return service.FindById(deploymentId, ctx), err
+	updatedDeployment := service.FindById(deploymentId, ctx)
+	if reason != "" {
+		newEventModel = mapper.MapEventModelToSave(
+			updatedDeployment.Id,
+			reason,
+			deployment_events_triggered_by.USER,
+			updatedDeployment.UserId.Hex(),
+			nil,
+			updatedDeployment.LatestStatus,
+		)
+		_ = service.eventService.Create(newEventModel, ctx)
+	}
+
+	return updatedDeployment, newEventModel, nil
 }
 
 func (service *DeploymentService) GetLatestStatusByIds(
@@ -271,11 +290,12 @@ func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(
 func (service *DeploymentService) UpdateLatestStatus(
 	deploymentId string,
 	status string,
+	reason string,
 	context context.Context,
-) (*model.Deployment, error) {
+) (*model.Deployment, *model.Event, error) {
 	return service.UpdateDeployment(deploymentId, map[string]interface{}{
 		"latest_status": status,
-	}, context)
+	}, reason, context)
 }
 
 func (service *DeploymentService) IsRestartable(deployment *model.Deployment) bool {

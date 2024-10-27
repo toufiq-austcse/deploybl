@@ -65,9 +65,10 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessages(messages <-chan *message
 			fmt.Println("error in processing build repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, updateErr := worker.deploymentService.UpdateLatestStatus(
+				_, _, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
+					"",
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -93,9 +94,9 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (st
 		return consumedPayload.DeploymentId, buildRepoErr
 	}
 	fmt.Println("Docker image built successfully")
-	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+	if _, _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 		"docker_image_tag": dockerImageTag,
-	}, context.Background()); updateErr != nil {
+	}, "", context.Background()); updateErr != nil {
 		return consumedPayload.DeploymentId, updateErr
 	}
 

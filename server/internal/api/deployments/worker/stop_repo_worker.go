@@ -57,9 +57,10 @@ func (worker *StopRepoWorker) ProcessStopRepoMessages(messages <-chan *message.M
 			fmt.Println("error in processing run repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, updateErr := worker.deploymentService.UpdateLatestStatus(
+				_, _, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
+					"",
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -97,9 +98,10 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 		return consumedPayload.DeploymentId, err
 	}
 
-	_, err := worker.deploymentService.UpdateLatestStatus(
+	_, _, err := worker.deploymentService.UpdateLatestStatus(
 		consumedPayload.DeploymentId,
 		enums.STOPPED,
+		"",
 		context.Background(),
 	)
 	if err != nil {

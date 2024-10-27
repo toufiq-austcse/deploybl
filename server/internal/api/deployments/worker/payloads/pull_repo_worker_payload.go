@@ -1,5 +1,7 @@
 package payloads
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type PullRepoWorkerPayload struct {
 	DeploymentId   string             `json:"deployment_id"`
 	BranchName     string             `json:"branch_name"`
@@ -8,4 +10,5 @@ type PullRepoWorkerPayload struct {
 	RootDir        *string            `json:"root_dir"`
 	DockerFilePath string             `json:"docker_file_path"`
 	Env            *map[string]string `json:"env"`
+	EventId        primitive.ObjectID `json:"event_id"`
 }

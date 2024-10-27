@@ -65,9 +65,10 @@ func (worker *PullRepoWorker) ProcessPullRepoMessages(messages <-chan *message.M
 			fmt.Println("error in processing pull repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, updateErr := worker.deploymentService.UpdateLatestStatus(
+				_, _, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
+					"",
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -86,9 +87,9 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (stri
 		return "", err
 	}
 
-	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+	if _, _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 		"latest_status": enums.PULLING,
-	}, context.Background()); updateErr != nil {
+	}, "", context.Background()); updateErr != nil {
 		return consumedPayload.DeploymentId, updateErr
 	}
 
@@ -106,7 +107,7 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (stri
 		return consumedPayload.DeploymentId, buildRepoWorkPublishErr
 	}
 
-	if _, updateErr := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.BUILDING, context.Background()); updateErr != nil {
+	if _, _, updateErr := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.BUILDING, "", context.Background()); updateErr != nil {
 		return consumedPayload.DeploymentId, updateErr
 	}
 
@@ -138,8 +139,11 @@ func (worker *PullRepoWorker) CloneRepo(gitUrl, branch, path string) error {
 	return nil
 }
 
-func (worker *PullRepoWorker) PublishPullRepoWork(deployment *model.Deployment) {
-	pullRepoWorkerPayload := mapper.ToPullRepoWorkerPayload(deployment)
+func (worker *PullRepoWorker) PublishPullRepoWork(
+	deployment *model.Deployment,
+	event *model.Event,
+) {
+	pullRepoWorkerPayload := mapper.ToPullRepoWorkerPayload(deployment, event)
 	fmt.Println("publishing pull repo worker payload ", pullRepoWorkerPayload)
 	err := worker.PublishPullRepoJob(pullRepoWorkerPayload)
 	if err != nil {
