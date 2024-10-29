@@ -192,6 +192,16 @@ func (service *DeploymentService) UpdateDeployment(
 			updatedDeployment.LatestStatus,
 		)
 		_ = service.eventService.Create(newEventModel, ctx)
+	} else {
+		updateEvent, eventUpdateErr := service.eventService.UpdateLatestStatusByDeploymentId(
+			updatedDeployment.Id,
+			updatedDeployment.LatestStatus,
+			ctx,
+		)
+		if eventUpdateErr == nil {
+			newEventModel = updateEvent
+		}
+
 	}
 
 	return updatedDeployment, newEventModel, nil
