@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -47,6 +48,7 @@ func (service *EventService) FindByDeploymentIdAndLatestStatus(
 	}
 	return event, nil
 }
+
 func (service *EventService) FindById(id primitive.ObjectID) (*model.Event, error) {
 	var event *model.Event
 	filter := bson.M{"_id": id}
@@ -71,5 +73,4 @@ func (service *EventService) UpdateLatestStatusByDeploymentId(
 		return nil, err
 	}
 	return service.FindById(deploymentId)
-
 }
