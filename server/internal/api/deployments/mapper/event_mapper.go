@@ -47,6 +47,7 @@ func ToDeploymentEvent(event *model.Event) res.EventRes {
 		UpdatedAt:      event.UpdatedAt,
 	}
 }
+
 func GenerateTitle(event *model.Event) string {
 	switch event.Type {
 	case deployment_events_enums.NEW_DEPLOYMENT:
@@ -60,5 +61,4 @@ func GenerateTitle(event *model.Event) string {
 	default:
 		return ""
 	}
-
 }

@@ -1,12 +1,13 @@
 package controller
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
-	"net/http"
-	"strconv"
 )
 
 type EventController struct {
@@ -24,7 +25,7 @@ func NewEventController(eventService *service.EventService) *EventController {
 // @Tags     Deployments
 // @Param    page   query  string  false  "Page"
 // @Param    limit  query  string  false  "Limit"
-// @Param    id       path  string                      true  "Deployment ID"
+// @Param    id     path   string  true   "Deployment ID"
 // @Accept   json
 // @Produce  json
 // @Success  200
