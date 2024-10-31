@@ -54,6 +54,7 @@ func Run() error {
 func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 	err := container.Invoke(func(deploymentController *controller.DeploymentController,
 		repoController *repoController.RepoController,
+		eventController *controller.EventController,
 		subscriber *worker.PullRepoWorker,
 		firebaseClient *firebase.Client,
 		userService *service.UserService,
@@ -63,7 +64,7 @@ func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 
 		deploymentsRouterGroup := apiServer.GinEngine.Group("api/v1/deployments")
 		deploymentsRouterGroup.Use(middleware.AuthMiddleware(firebaseClient, userService))
-		deploymentRouter.Setup(deploymentsRouterGroup, deploymentController)
+		deploymentRouter.Setup(deploymentsRouterGroup, deploymentController, eventController)
 
 		deploymentCronRouterGroup := apiServer.GinEngine.Group("api/v1/deployments")
 		deploymentRouter.SetupDeploymentCronRouter(deploymentCronRouterGroup, deploymentController)

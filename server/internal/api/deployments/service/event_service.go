@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"github.com/toufiq-austcse/deployit/pkg/api_response"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"math"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -73,4 +76,50 @@ func (service *EventService) UpdateLatestStatusByDeploymentId(
 		return nil, err
 	}
 	return service.FindById(deploymentId)
+}
+
+func (service *EventService) ListEvent(
+	page, limit int64,
+	deploymentId string,
+	ctx context.Context,
+) ([]*model.Event, *api_response.Pagination, error) {
+	deploymentIdObj, err := primitive.ObjectIDFromHex(deploymentId)
+	if err != nil {
+		return nil, nil, err
+	}
+	events := []*model.Event{}
+
+	filter := bson.M{"deployment_id": deploymentIdObj}
+
+	totalDocs, err := service.eventCollection.CountDocuments(ctx, filter)
+	if err != nil {
+		return events, nil, err
+	}
+	lastPage := int64(math.Ceil(float64(totalDocs) / float64(limit)))
+
+	findOptions := options.Find()
+	skip := page*limit - limit
+	findOptions.SetSort(bson.M{"created_at": -1}).SetLimit(limit).SetSkip(skip)
+
+	cursor, err := service.eventCollection.Find(ctx, filter, findOptions)
+	if err != nil {
+		return events, nil, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var event *model.Event
+		decodeErr := cursor.Decode(&event)
+		if decodeErr != nil {
+			return events, nil, decodeErr
+		}
+		events = append(events, event)
+	}
+
+	return events, &api_response.Pagination{
+		Total:       totalDocs,
+		CurrentPage: page,
+		LastPage:    lastPage,
+		PerPage:     limit,
+	}, nil
 }

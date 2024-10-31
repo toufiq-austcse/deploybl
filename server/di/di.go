@@ -25,6 +25,7 @@ func NewDiContainer() (*dig.Container, error) {
 		userService.NewUserService,
 		service.NewDockerService,
 		controller.NewDeploymentController,
+		controller.NewEventController,
 		repoController.NewRepoController,
 		worker.NewPullRepoWorker,
 		worker.NewBuildRepoWorker,

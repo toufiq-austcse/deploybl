@@ -144,6 +144,27 @@ paths:
       summary: Update Deployment Env
       tags:
       - Deployments
+  /api/v1/deployments/{id}/events:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Deployment Events
+      tags:
+      - Deployments
   /api/v1/deployments/{id}/rebuild-and-redeploy:
     post:
       consumes:
