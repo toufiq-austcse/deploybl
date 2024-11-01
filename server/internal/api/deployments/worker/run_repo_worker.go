@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -21,15 +22,17 @@ type RunRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
 	dockerService     *service.DockerService
+	eventService      *service.EventService
 }
 
-func NewRunRepoWorker(deploymentService *service.DeploymentService) *RunRepoWorker {
+func NewRunRepoWorker(deploymentService *service.DeploymentService, eventService *service.EventService) *RunRepoWorker {
 	return &RunRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 			"topic",
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_RUN_QUEUE,
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_RUN_ROUTING_KEY),
 		deploymentService: deploymentService,
+		eventService:      eventService,
 	}
 }
 
@@ -53,7 +56,7 @@ func (worker *RunRepoWorker) InitRunRepoSubscriber() {
 
 func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		deploymentId, lastDeploymentInitiateAt, err := worker.ProcessRunRepoMessage(msg)
+		deploymentId, lastDeploymentInitiateAt, event, err := worker.ProcessRunRepoMessage(msg)
 		if err != nil {
 			if deploymentId != "" {
 				if err.Error() == app_errors.ContainerPortNotFoundError.Error() &&
@@ -65,10 +68,10 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 						continue
 					}
 				}
-				_, _, updateErr := worker.deploymentService.UpdateLatestStatus(
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
-					"",
+					event,
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -81,12 +84,12 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 
 func (worker *RunRepoWorker) ProcessRunRepoMessage(
 	msg *message.Message,
-) (string, *time.Time, error) {
+) (string, *time.Time, *model.Event, error) {
 	defer msg.Ack()
 
 	consumedPayload := payloads.RunRepoWorkerPayload{}
 	if err := json.Unmarshal(msg.Payload, &consumedPayload); err != nil {
-		return "", nil, err
+		return "", nil, nil, err
 	}
 	fmt.Println("consumed run job ", consumedPayload)
 
@@ -95,28 +98,34 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		context.Background(),
 	)
 	if deployment == nil {
-		return consumedPayload.DeploymentId, nil, app_errors.DeploymentNotFoundError
+		return consumedPayload.DeploymentId, nil, nil, app_errors.DeploymentNotFoundError
 	}
+
+	existingEvent, err := worker.eventService.FindById(consumedPayload.EventId)
+	if err != nil {
+		fmt.Println("error in finding event ", err.Error())
+	}
+
 	if deployment.DockerImageTag == nil {
-		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.DockerImageTagNotFoundError
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, app_errors.DockerImageTagNotFoundError
 	}
 	if deployment.ContainerId == nil {
-		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.ContainerPortNotFoundError
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, app_errors.ContainerPortNotFoundError
 	}
 	port, portErr := worker.dockerService.GetTcpPort(*deployment.ContainerId)
 	if portErr != nil {
-		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, app_errors.ContainerPortNotFoundError
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, app_errors.ContainerPortNotFoundError
 	}
 	fmt.Println("port found ", *port)
 	if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
-		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, removeErr
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, removeErr
 	}
 
 	fmt.Println("container removed ", deployment.ContainerId)
-	if _, _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
+	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 		"container_id": nil,
-	}, "", context.Background()); updateErr != nil {
-		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, updateErr
+	}, existingEvent, context.Background()); updateErr != nil {
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, updateErr
 	}
 
 	containerId, runErr := worker.dockerService.RunContainer(
@@ -125,25 +134,25 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		port,
 	)
 	if runErr != nil {
-		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, runErr
+		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, runErr
 	}
 	fmt.Println("docker image run successfully...")
 
-	_, _, updateErr := worker.deploymentService.UpdateDeployment(
+	_, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,
 		map[string]interface{}{
 			"latest_status":    enums.LIVE,
 			"last_deployed_at": time.Now(),
 			"container_id":     containerId,
 		},
-		"",
+		existingEvent,
 		context.Background(),
 	)
 
 	if updateErr != nil {
-		return consumedPayload.DeploymentId, nil, updateErr
+		return consumedPayload.DeploymentId, nil, existingEvent, updateErr
 	}
-	return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, nil
+	return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, nil
 }
 
 func (worker *RunRepoWorker) PublishRunRepoJob(runRepoPayload payloads.RunRepoWorkerPayload) error {

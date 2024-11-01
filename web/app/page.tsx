@@ -66,7 +66,7 @@ const HomePage: NextPage = () => {
       header: 'Title',
       cell: ({ row }) => {
         return (
-          <Link className="flex space-x-4" href={`/deployments/${row.original._id}/settings`}>
+          <Link className="flex space-x-4" href={`/deployments/${row.original._id}/events`}>
             <div className="lowercase font-medium">{row.getValue('title')}</div>
           </Link>
         );

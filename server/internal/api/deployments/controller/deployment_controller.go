@@ -2,6 +2,9 @@ package controller
 
 import (
 	"fmt"
+	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
+	"github.com/toufiq-austcse/deployit/enums/deployment_events_triggered_by"
+	"github.com/toufiq-austcse/deployit/enums/reasons"
 	"net/http"
 	"strconv"
 	"strings"
@@ -267,10 +270,10 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	}
 
 	updateFields := mapper.MapUpdateDeploymentReqToUpdate(body, githubRes.FullName)
-	updatedDeployment, newEvent, err := controller.deploymentService.UpdateDeployment(
+	updatedDeployment, err := controller.deploymentService.UpdateDeployment(
 		deploymentId,
 		updateFields,
-		deployment_events_enums.NEW_DEPLOYMENT,
+		nil,
 		context,
 	)
 	if err != nil {
@@ -282,6 +285,18 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 		)
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
+	}
+
+	newEvent := mapper.MapEventModelToSave(
+		deployment.Id,
+		deployment_events_enums.INITIAL_DEPLPYMENT,
+		deployment_events_triggered_by.USER,
+		user.Id.Hex(),
+		nil,
+	)
+	eventErr := controller.eventService.Create(newEvent, context)
+	if eventErr != nil {
+		fmt.Println("error in creating event ", eventErr.Error())
 	}
 	go func() {
 		if updatedDeployment.LatestStatus == enums.QUEUED {
@@ -369,13 +384,13 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		return
 	}
 
-	updatedDeployment, event, err := controller.deploymentService.UpdateDeployment(
+	updatedDeployment, err := controller.deploymentService.UpdateDeployment(
 		deploymentId,
 		map[string]interface{}{
 			"env":           envBody,
 			"latest_status": enums.QUEUED,
 		},
-		deployment_events_enums.NEW_DEPLOYMENT,
+		nil,
 		context,
 	)
 	if err != nil {
@@ -388,8 +403,16 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
+	newEvent := mapper.MapEventModelToSave(
+		deployment.Id,
+		deployment_events_enums.NEW_DEPLOYMENT,
+		deployment_events_triggered_by.USER, user.Id.Hex(),
+		reasons.GetReasonPtr(reasons.ENV_UPDATED))
+	if eventErr := controller.eventService.Create(newEvent, context); eventErr != nil {
+		fmt.Println("error in creating event ", eventErr.Error())
+	}
 	go func() {
-		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(*deployment, *event)
+		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(*deployment, *newEvent)
 		publishJobErr := controller.runRepoWorker.PublishRunRepoJob(runRepoJobPayload)
 		if publishJobErr != nil {
 			fmt.Println("error while publishing job ", publishJobErr.Error())
@@ -477,10 +500,10 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	updatedDeployment, event, err := controller.deploymentService.UpdateLatestStatus(
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(
 		deploymentId,
 		enums.QUEUED,
-		deployment_events_enums.RESTARTED,
+		nil,
 		context,
 	)
 	if err != nil {
@@ -493,8 +516,21 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
+	newEvent := mapper.MapEventModelToSave(
+		deployment.Id,
+		deployment_events_enums.NEW_DEPLOYMENT,
+		deployment_events_triggered_by.USER,
+		user.Id.Hex(),
+		reasons.GetReasonPtr(reasons.RESTART_DEPLOYMENT),
+	)
+
+	eventErr := controller.eventService.Create(newEvent, context)
+	if eventErr != nil {
+		fmt.Println("error in creating event ", eventErr.Error())
+	}
+
 	go func() {
-		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(*deployment, *event)
+		runRepoJobPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(*deployment, *newEvent)
 		publishJobErr := controller.runRepoWorker.PublishRunRepoJob(runRepoJobPayload)
 		if publishJobErr != nil {
 			fmt.Println("error while publishing job ", publishJobErr.Error())
@@ -547,10 +583,10 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
-	updatedDeployment, event, err := controller.deploymentService.UpdateLatestStatus(
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(
 		deploymentId,
 		enums.QUEUED,
-		deployment_events_enums.NEW_DEPLOYMENT,
+		nil,
 		context,
 	)
 	if err != nil {
@@ -563,8 +599,19 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 		context.AbortWithStatusJSON(errRes.Code, errRes)
 		return
 	}
+	newEvent := mapper.MapEventModelToSave(
+		deployment.Id,
+		deployment_events_enums.NEW_DEPLOYMENT,
+		deployment_events_triggered_by.USER,
+		user.Id.Hex(),
+		reasons.GetReasonPtr(reasons.REBUILD_DEPLOYMENT),
+	)
+	eventErr := controller.eventService.Create(newEvent, context)
+	if eventErr != nil {
+		fmt.Println("error in creating event ", eventErr.Error())
+	}
 	go func() {
-		controller.pullRepoWorker.PublishPullRepoWork(updatedDeployment, event)
+		controller.pullRepoWorker.PublishPullRepoWork(updatedDeployment, newEvent)
 	}()
 
 	deploymentRes := mapper.ToDeploymentDetailsRes(updatedDeployment)
@@ -627,12 +674,25 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 		return
 	}
 
-	updatedDeployment, _, err := controller.deploymentService.UpdateLatestStatus(
+	updatedDeployment, err := controller.deploymentService.UpdateLatestStatus(
 		deploymentId,
 		enums.QUEUED,
-		deployment_events_enums.STOPPED,
+		nil,
 		context,
 	)
+
+	newEvent := mapper.MapEventModelToSave(
+		deployment.Id,
+		deployment_events_enums.STOP_DEPLOYMENT,
+		deployment_events_triggered_by.USER,
+		user.Id.Hex(),
+		reasons.GetReasonPtr(reasons.STOP_DEPLOYMENT),
+	)
+	eventErr := controller.eventService.Create(newEvent, context)
+	if eventErr != nil {
+		fmt.Println("error in creating event ", eventErr.Error())
+	}
+
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
@@ -775,9 +835,9 @@ func (controller *DeploymentController) DeployingCheckCron(context *gin.Context)
 
 	deployments := controller.deploymentService.FindByDeploymentStatus(enums.DEPLOYING)
 	for _, deployment := range deployments {
-		event, err := controller.eventService.FindByDeploymentIdAndLatestStatus(
+		event, err := controller.eventService.FindByDeploymentIdAndStatus(
 			deployment.Id,
-			enums.DEPLOYING,
+			deployment_event_status_enums.PROCESSING,
 			context,
 		)
 		if err != nil {

@@ -80,3 +80,16 @@ export interface TPaginationResponse<T> {
   code: number,
   pagination: PaginationType
 }
+
+export interface DeploymentEventType {
+  id: string;
+  deployment_id: string;
+  title: string;
+  type: string;
+  triggered_by: string;
+  triggered_value: string;
+  status: string;
+  reason: string;
+  created_at: Date;
+  updated_at: Date;
+}

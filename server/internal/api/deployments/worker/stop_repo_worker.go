@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -20,15 +21,17 @@ type StopRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
 	dockerService     *service.DockerService
+	eventService      *service.EventService
 }
 
-func NewStopRepoWorker(deploymentService *service.DeploymentService) *StopRepoWorker {
+func NewStopRepoWorker(deploymentService *service.DeploymentService, eventService *service.EventService) *StopRepoWorker {
 	return &StopRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 			"topic",
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_STOP_QUEUE,
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_STOP_ROUTING_KEY),
 		deploymentService: deploymentService,
+		eventService:      eventService,
 	}
 }
 
@@ -52,15 +55,15 @@ func (worker *StopRepoWorker) InitStopRepoSubscriber() {
 
 func (worker *StopRepoWorker) ProcessStopRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		deploymentId, err := worker.ProcessStopRepoMessage(msg)
+		deploymentId, event, err := worker.ProcessStopRepoMessage(msg)
 		if err != nil {
 			fmt.Println("error in processing run repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, _, updateErr := worker.deploymentService.UpdateLatestStatus(
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
-					"",
+					event,
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -72,12 +75,12 @@ func (worker *StopRepoWorker) ProcessStopRepoMessages(messages <-chan *message.M
 	}
 }
 
-func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (string, error) {
+func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (string, *model.Event, error) {
 	defer msg.Ack()
 
 	consumedPayload := payloads.StopRepoWorkerPayload{}
 	if err := json.Unmarshal(msg.Payload, &consumedPayload); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	fmt.Println("consumed run job ", consumedPayload)
 
@@ -85,29 +88,31 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 		consumedPayload.DeploymentId,
 		context.Background(),
 	)
+
 	if deployment == nil {
-		return consumedPayload.DeploymentId, app_errors.DeploymentNotFoundError
+		return consumedPayload.DeploymentId, nil, app_errors.DeploymentNotFoundError
 	}
+	event, err := worker.eventService.FindById(consumedPayload.EventId)
 	if deployment.ContainerId == nil {
-		return consumedPayload.DeploymentId, app_errors.ContainerNotFoundError
+		return consumedPayload.DeploymentId, event, app_errors.ContainerNotFoundError
 	}
 	if !worker.deploymentService.IsStopAble(deployment) {
-		return consumedPayload.DeploymentId, app_errors.DeploymentNotStoppableError
+		return consumedPayload.DeploymentId, event, app_errors.DeploymentNotStoppableError
 	}
 	if err := worker.dockerService.StopContainer(*deployment.ContainerId); err != nil {
-		return consumedPayload.DeploymentId, err
+		return consumedPayload.DeploymentId, event, err
 	}
 
-	_, _, err := worker.deploymentService.UpdateLatestStatus(
+	_, err = worker.deploymentService.UpdateLatestStatus(
 		consumedPayload.DeploymentId,
 		enums.STOPPED,
-		"",
+		event,
 		context.Background(),
 	)
 	if err != nil {
-		return consumedPayload.DeploymentId, err
+		return consumedPayload.DeploymentId, event, err
 	}
-	return consumedPayload.DeploymentId, nil
+	return consumedPayload.DeploymentId, event, nil
 }
 
 func (worker *StopRepoWorker) PublishStopRepoJob(

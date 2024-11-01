@@ -23,11 +23,13 @@ import (
 type PullRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
+	eventService      *service.EventService
 	buildRepoWorker   *BuildRepoWorker
 }
 
 func NewPullRepoWorker(
 	deploymentService *service.DeploymentService,
+	eventService *service.EventService,
 	buildRepoWorker *BuildRepoWorker,
 ) *PullRepoWorker {
 	return &PullRepoWorker{
@@ -36,6 +38,7 @@ func NewPullRepoWorker(
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE,
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_ROUTING_KEY),
 		deploymentService: deploymentService,
+		eventService:      eventService,
 		buildRepoWorker:   buildRepoWorker,
 	}
 }
@@ -60,15 +63,15 @@ func (worker *PullRepoWorker) InitPullRepoSubscriber() {
 
 func (worker *PullRepoWorker) ProcessPullRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		deploymentId, err := worker.ProcessPullRepoMessage(msg)
+		deploymentId, event, err := worker.ProcessPullRepoMessage(msg)
 		if err != nil {
 			fmt.Println("error in processing pull repo message ", err.Error())
 
 			if deploymentId != "" {
-				_, _, updateErr := worker.deploymentService.UpdateLatestStatus(
+				_, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
-					"",
+					event,
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -79,39 +82,41 @@ func (worker *PullRepoWorker) ProcessPullRepoMessages(messages <-chan *message.M
 	}
 }
 
-func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (string, error) {
+func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (string, *model.Event, error) {
 	defer msg.Ack()
 
 	consumedPayload := payloads.PullRepoWorkerPayload{}
 	if err := json.Unmarshal(msg.Payload, &consumedPayload); err != nil {
-		return "", err
+		return "", nil, err
+	}
+	existingEvent, err := worker.eventService.FindById(consumedPayload.EventId)
+	if err != nil {
+		fmt.Println("error in finding event ", err.Error())
 	}
 
-	if _, _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
-		"latest_status": enums.PULLING,
-	}, "", context.Background()); updateErr != nil {
-		return consumedPayload.DeploymentId, updateErr
+	if _, updateErr := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.PULLING, existingEvent, context.Background()); updateErr != nil {
+		return consumedPayload.DeploymentId, nil, updateErr
 	}
 
 	localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId, consumedPayload.BranchName)
 	if removeErr := os.RemoveAll(localRepoDir); removeErr != nil {
-		return consumedPayload.DeploymentId, removeErr
+		return consumedPayload.DeploymentId, existingEvent, removeErr
 	}
 
 	if cloneError := worker.CloneRepo(consumedPayload.GitUrl, consumedPayload.BranchName, localRepoDir); cloneError != nil {
-		return consumedPayload.DeploymentId, cloneError
+		return consumedPayload.DeploymentId, existingEvent, cloneError
 	}
 	fmt.Println("repository cloned successfully...")
 
 	if buildRepoWorkPublishErr := worker.PublishBuildRepoWork(consumedPayload); buildRepoWorkPublishErr != nil {
-		return consumedPayload.DeploymentId, buildRepoWorkPublishErr
+		return consumedPayload.DeploymentId, existingEvent, buildRepoWorkPublishErr
 	}
 
-	if _, _, updateErr := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.BUILDING, "", context.Background()); updateErr != nil {
-		return consumedPayload.DeploymentId, updateErr
+	if _, updateErr := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.BUILDING, existingEvent, context.Background()); updateErr != nil {
+		return consumedPayload.DeploymentId, existingEvent, updateErr
 	}
 
-	return consumedPayload.DeploymentId, nil
+	return consumedPayload.DeploymentId, existingEvent, nil
 }
 
 func (worker *PullRepoWorker) PublishPullRepoJob(

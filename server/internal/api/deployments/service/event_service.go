@@ -37,15 +37,15 @@ func (service *EventService) Create(model *model.Event, ctx context.Context) err
 	return err
 }
 
-func (service *EventService) FindByDeploymentIdAndLatestStatus(
+func (service *EventService) FindByDeploymentIdAndStatus(
 	deploymentId primitive.ObjectID,
-	latestStatus string,
+	status string,
 	ctx context.Context,
 ) (*model.Event, error) {
 	var event *model.Event
 	err := service.eventCollection.FindOne(
 		ctx,
-		model.Event{DeploymentId: deploymentId, LatestStatus: latestStatus},
+		bson.M{"deployment_id": deploymentId, "status": status},
 	).Decode(&event)
 	if err != nil {
 		return nil, err
@@ -63,20 +63,36 @@ func (service *EventService) FindById(id primitive.ObjectID) (*model.Event, erro
 	return event, nil
 }
 
-func (service *EventService) UpdateLatestStatusByDeploymentId(
+func (service *EventService) UpdateStatusByDeploymentId(
 	deploymentId primitive.ObjectID,
-	latestStatus string,
+	status string,
 	ctx context.Context,
 ) (*model.Event, error) {
 	_, err := service.eventCollection.UpdateOne(
 		ctx,
 		bson.M{"deployment_id": deploymentId},
-		bson.M{"$set": bson.M{"latest_status": latestStatus}},
+		bson.M{"$set": bson.M{"status": status}},
 	)
 	if err != nil {
 		return nil, err
 	}
 	return service.FindById(deploymentId)
+}
+
+func (service *EventService) UpdateStatusById(
+	id primitive.ObjectID,
+	status string,
+	ctx context.Context,
+) (*model.Event, error) {
+	_, err := service.eventCollection.UpdateOne(
+		ctx,
+		bson.M{"_id": id},
+		bson.M{"$set": bson.M{"status": status}},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return service.FindById(id)
 }
 
 func (service *EventService) ListEvent(

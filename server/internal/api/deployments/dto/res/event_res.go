@@ -9,7 +9,7 @@ type EventRes struct {
 	Type           string    `json:"type"`
 	TriggeredBy    string    `json:"triggered_by"`
 	TriggeredValue string    `json:"triggered_value"`
-	LatestStatus   string    `json:"latest_status"`
+	Status         string    `json:"status"`
 	Reason         *string   `json:"reason"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`

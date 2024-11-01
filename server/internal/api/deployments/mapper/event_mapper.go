@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
 	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/res"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
@@ -13,7 +14,6 @@ func MapEventModelToSave(
 	triggeredBy string,
 	triggeredValue string,
 	reason *string,
-	latestStatus string,
 ) *model.Event {
 	return &model.Event{
 		Type:           eventType,
@@ -21,7 +21,7 @@ func MapEventModelToSave(
 		TriggeredBy:    triggeredBy,
 		TriggeredValue: triggeredValue,
 		Reason:         reason,
-		LatestStatus:   latestStatus,
+		Status:         deployment_event_status_enums.PROCESSING,
 	}
 }
 
@@ -41,7 +41,7 @@ func ToDeploymentEvent(event *model.Event) res.EventRes {
 		Type:           event.Type,
 		TriggeredBy:    event.TriggeredBy,
 		TriggeredValue: event.TriggeredValue,
-		LatestStatus:   event.LatestStatus,
+		Status:         event.Status,
 		Reason:         event.Reason,
 		CreatedAt:      event.CreatedAt,
 		UpdatedAt:      event.UpdatedAt,
@@ -52,12 +52,10 @@ func GenerateTitle(event *model.Event) string {
 	switch event.Type {
 	case deployment_events_enums.NEW_DEPLOYMENT:
 		return "New deployment started"
-	case deployment_events_enums.RESTARTED:
-		return "Deployment restarted"
-	case deployment_events_enums.STOPPED:
+	case deployment_events_enums.STOP_DEPLOYMENT:
 		return "Deployment stopped"
 	case deployment_events_enums.INITIAL_DEPLPYMENT:
-		return "Initial deployment started"
+		return "First deployment started"
 	default:
 		return ""
 	}

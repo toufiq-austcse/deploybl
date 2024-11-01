@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
 	"math"
 	"time"
 
@@ -55,11 +56,10 @@ func (service *DeploymentService) Create(
 	}
 	newEventModel := mapper.MapEventModelToSave(
 		model.Id,
-		deployment_events_enums.NEW_DEPLOYMENT,
+		deployment_events_enums.INITIAL_DEPLPYMENT,
 		deployment_events_triggered_by.USER,
 		model.UserId.Hex(),
 		nil,
-		model.LatestStatus,
 	)
 	_ = service.eventService.Create(newEventModel, ctx)
 
@@ -158,11 +158,9 @@ func (service *DeploymentService) ListDeployment(
 func (service *DeploymentService) UpdateDeployment(
 	deploymentId string,
 	updates map[string]interface{},
-	reason string,
+	existingEvent *model.Event,
 	ctx context.Context,
-) (*model.Deployment, *model.Event, error) {
-	var newEventModel *model.Event = nil
-
+) (*model.Deployment, error) {
 	updates["updated_at"] = time.Now()
 	if updates["latest_status"] == enums.QUEUED {
 		updates["last_deployment_initiated_at"] = time.Now()
@@ -170,41 +168,24 @@ func (service *DeploymentService) UpdateDeployment(
 	fmt.Println("updating ", deploymentId, updates)
 	oId, err := primitive.ObjectIDFromHex(deploymentId)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	updatedResult, err := service.deploymentCollection.UpdateByID(ctx, oId, bson.M{
 		"$set": updates,
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if updatedResult.MatchedCount != 1 {
-		return nil, nil, app_errors.CannotUpdateError
+		return nil, app_errors.CannotUpdateError
 	}
 	updatedDeployment := service.FindById(deploymentId, ctx)
-	if reason != "" {
-		newEventModel = mapper.MapEventModelToSave(
-			updatedDeployment.Id,
-			reason,
-			deployment_events_triggered_by.USER,
-			updatedDeployment.UserId.Hex(),
-			nil,
-			updatedDeployment.LatestStatus,
-		)
-		_ = service.eventService.Create(newEventModel, ctx)
-	} else {
-		updateEvent, eventUpdateErr := service.eventService.UpdateLatestStatusByDeploymentId(
-			updatedDeployment.Id,
-			updatedDeployment.LatestStatus,
-			ctx,
-		)
-		if eventUpdateErr == nil {
-			newEventModel = updateEvent
-		}
 
+	if updates["latest_status"] != nil && existingEvent != nil {
+		eventStatus := service.GetEventStatusByDeploymentStatus(existingEvent, updates["latest_status"].(string))
+		service.eventService.UpdateStatusById(existingEvent.Id, eventStatus, ctx)
 	}
-
-	return updatedDeployment, newEventModel, nil
+	return updatedDeployment, nil
 }
 
 func (service *DeploymentService) GetLatestStatusByIds(
@@ -300,12 +281,12 @@ func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(
 func (service *DeploymentService) UpdateLatestStatus(
 	deploymentId string,
 	status string,
-	reason string,
+	existingEvent *model.Event,
 	context context.Context,
-) (*model.Deployment, *model.Event, error) {
+) (*model.Deployment, error) {
 	return service.UpdateDeployment(deploymentId, map[string]interface{}{
 		"latest_status": status,
-	}, reason, context)
+	}, existingEvent, context)
 }
 
 func (service *DeploymentService) IsRestartable(deployment *model.Deployment) bool {
@@ -337,4 +318,38 @@ func (service *DeploymentService) CountDeploymentByRepositoryName(
 ) (int64, error) {
 	filter := bson.M{"repository_name": repositoryName}
 	return service.deploymentCollection.CountDocuments(ctx, filter)
+}
+func (service *DeploymentService) GetEventStatusByDeploymentStatus(
+	event *model.Event,
+	deploymentStatus string,
+) string {
+	switch event.Type {
+	case deployment_events_enums.NEW_DEPLOYMENT:
+		if deploymentStatus == enums.LIVE {
+			return deployment_event_status_enums.SUCCESS
+		} else if deploymentStatus == enums.FAILED {
+			return deployment_event_status_enums.FAILED
+		} else {
+			return deployment_event_status_enums.PROCESSING
+		}
+	case deployment_events_enums.INITIAL_DEPLPYMENT:
+		if deploymentStatus == enums.LIVE {
+			return deployment_event_status_enums.SUCCESS
+		} else if deploymentStatus == enums.FAILED {
+			return deployment_event_status_enums.FAILED
+		} else {
+			return deployment_event_status_enums.PROCESSING
+		}
+	case deployment_events_enums.STOP_DEPLOYMENT:
+		if deploymentStatus == enums.STOPPED {
+			return deployment_event_status_enums.SUCCESS
+		} else if deploymentStatus == enums.FAILED {
+			return deployment_event_status_enums.FAILED
+		} else {
+			return deployment_event_status_enums.PROCESSING
+		}
+	default:
+		return ""
+
+	}
 }
