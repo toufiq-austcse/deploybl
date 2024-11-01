@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"time"
+
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"

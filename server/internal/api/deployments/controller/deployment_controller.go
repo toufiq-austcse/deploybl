@@ -2,13 +2,14 @@ package controller
 
 import (
 	"fmt"
-	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
-	"github.com/toufiq-austcse/deployit/enums/deployment_events_triggered_by"
-	"github.com/toufiq-austcse/deployit/enums/reasons"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
+	"github.com/toufiq-austcse/deployit/enums/deployment_events_triggered_by"
+	"github.com/toufiq-austcse/deployit/enums/reasons"
 
 	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
 

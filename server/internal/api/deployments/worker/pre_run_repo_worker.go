@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -24,7 +25,10 @@ type PreRunRepoWorker struct {
 	eventService      *service.EventService
 }
 
-func NewPreRunRepoWorker(deploymentService *service.DeploymentService, eventService *service.EventService) *PreRunRepoWorker {
+func NewPreRunRepoWorker(
+	deploymentService *service.DeploymentService,
+	eventService *service.EventService,
+) *PreRunRepoWorker {
 	return &PreRunRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 			"topic",

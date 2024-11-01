@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -24,7 +25,10 @@ type StopRepoWorker struct {
 	eventService      *service.EventService
 }
 
-func NewStopRepoWorker(deploymentService *service.DeploymentService, eventService *service.EventService) *StopRepoWorker {
+func NewStopRepoWorker(
+	deploymentService *service.DeploymentService,
+	eventService *service.EventService,
+) *StopRepoWorker {
 	return &StopRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 			"topic",

@@ -9,29 +9,29 @@ import {
   PaginationState,
   SortingState,
   useReactTable,
-  VisibilityState
+  VisibilityState,
 } from '@tanstack/react-table';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-const AppTable = <T, >({
-                         showHeader = true,
-                         showCaption = true,
-                         data,
-                         columns,
-                         pageIndex,
-                         pageSize,
-                         totalPageCount,
-                         next,
-                         prev
-                       }: {
+const AppTable = <T,>({
+  showHeader = true,
+  showCaption = true,
+  data,
+  columns,
+  pageIndex,
+  pageSize,
+  totalPageCount,
+  next,
+  prev,
+}: {
   showHeader?: boolean;
   showCaption?: boolean;
   data: T[];
@@ -64,8 +64,8 @@ const AppTable = <T, >({
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection
-    }
+      rowSelection,
+    },
   });
 
   return (
@@ -110,10 +110,12 @@ const AppTable = <T, >({
           </Table>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
-          {showCaption && <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-            selected.
-          </div>}
+          {showCaption && (
+            <div className="flex-1 text-sm text-muted-foreground">
+              {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
+              selected.
+            </div>
+          )}
           <div className="space-x-2">
             <Button
               variant="outline"

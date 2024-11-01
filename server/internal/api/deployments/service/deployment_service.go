@@ -3,9 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
-	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
 	"math"
 	"time"
+
+	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
 
 	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
 	"github.com/toufiq-austcse/deployit/enums/deployment_events_triggered_by"
@@ -319,6 +320,7 @@ func (service *DeploymentService) CountDeploymentByRepositoryName(
 	filter := bson.M{"repository_name": repositoryName}
 	return service.deploymentCollection.CountDocuments(ctx, filter)
 }
+
 func (service *DeploymentService) GetEventStatusByDeploymentStatus(
 	event *model.Event,
 	deploymentStatus string,
