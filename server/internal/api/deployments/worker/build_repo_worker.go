@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
+
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -22,12 +24,14 @@ type BuildRepoWorker struct {
 	deploymentService *service.DeploymentService
 	preRunRepoWorker  *PreRunRepoWorker
 	dockerService     *service.DockerService
+	eventService      *service.EventService
 }
 
 func NewBuildRepoWorker(
 	deploymentService *service.DeploymentService,
 	preRunRepoWorker *PreRunRepoWorker,
 	dockerService *service.DockerService,
+	eventService *service.EventService,
 ) *BuildRepoWorker {
 	return &BuildRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
@@ -37,6 +41,7 @@ func NewBuildRepoWorker(
 		deploymentService: deploymentService,
 		preRunRepoWorker:  preRunRepoWorker,
 		dockerService:     dockerService,
+		eventService:      eventService,
 	}
 }
 
@@ -60,7 +65,7 @@ func (worker *BuildRepoWorker) InitBuildRepoSubscriber() {
 
 func (worker *BuildRepoWorker) ProcessBuildRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		deploymentId, err := worker.ProcessBuildRepoMessage(msg)
+		deploymentId, event, err := worker.ProcessBuildRepoMessage(msg)
 		if err != nil {
 			fmt.Println("error in processing build repo message ", err.Error())
 
@@ -68,6 +73,7 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessages(messages <-chan *message
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
+					event,
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -78,32 +84,36 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessages(messages <-chan *message
 	}
 }
 
-func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (string, error) {
+func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (string, *model.Event, error) {
 	defer msg.Ack()
 
 	consumedPayload := payloads.BuildRepoWorkerPayload{}
 	err := json.Unmarshal(msg.Payload, &consumedPayload)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	fmt.Println("consumed build job ", consumedPayload)
+	event, err := worker.eventService.FindById(consumedPayload.EventId)
+	if err != nil {
+		fmt.Println("error in finding event ", err.Error())
+	}
 
 	dockerImageTag, buildRepoErr := worker.BuildRepo(consumedPayload)
 	if buildRepoErr != nil {
-		return consumedPayload.DeploymentId, buildRepoErr
+		return consumedPayload.DeploymentId, event, buildRepoErr
 	}
 	fmt.Println("Docker image built successfully")
 	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 		"docker_image_tag": dockerImageTag,
-	}, context.Background()); updateErr != nil {
-		return consumedPayload.DeploymentId, updateErr
+	}, event, context.Background()); updateErr != nil {
+		return consumedPayload.DeploymentId, event, updateErr
 	}
 
 	if publishRunRepoError := worker.PublishPreRunRepoWork(consumedPayload); publishRunRepoError != nil {
-		return consumedPayload.DeploymentId, publishRunRepoError
+		return consumedPayload.DeploymentId, event, publishRunRepoError
 	}
 
-	return consumedPayload.DeploymentId, nil
+	return consumedPayload.DeploymentId, event, nil
 }
 
 func (worker *BuildRepoWorker) PublishBuildRepoJob(

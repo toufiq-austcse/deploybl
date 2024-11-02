@@ -22,6 +22,8 @@ import { ChevronDown } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const AppTable = <T,>({
+  showHeader = true,
+  showCaption = true,
   data,
   columns,
   pageIndex,
@@ -30,6 +32,8 @@ const AppTable = <T,>({
   next,
   prev,
 }: {
+  showHeader?: boolean;
+  showCaption?: boolean;
   data: T[];
   columns: ColumnDef<T, any>[];
   pageIndex: number;
@@ -69,19 +73,23 @@ const AppTable = <T,>({
       <div className="w-full">
         <div className="rounded-md border">
           <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
+            {showHeader && (
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+            )}
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
@@ -102,10 +110,12 @@ const AppTable = <T,>({
           </Table>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-            selected.
-          </div>
+          {showCaption && (
+            <div className="flex-1 text-sm text-muted-foreground">
+              {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
+              selected.
+            </div>
+          )}
           <div className="space-x-2">
             <Button
               variant="outline"

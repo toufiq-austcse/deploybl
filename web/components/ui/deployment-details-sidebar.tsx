@@ -7,6 +7,13 @@ const DeploymentDetailsSidebar = () => {
   return (
     <nav className="flex flex-col w-1/6">
       <Link
+        href={`/deployments/${deploymentDetails?._id}/events`}
+        className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        prefetch={false}
+      >
+        <h1 className="hidden sm:block">Events</h1>
+      </Link>
+      <Link
         href={`/deployments/${deploymentDetails?._id}/settings`}
         className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         prefetch={false}

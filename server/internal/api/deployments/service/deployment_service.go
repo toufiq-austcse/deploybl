@@ -6,6 +6,12 @@ import (
 	"math"
 	"time"
 
+	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
+
+	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
+	"github.com/toufiq-austcse/deployit/enums/deployment_events_triggered_by"
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/mapper"
+
 	"github.com/toufiq-austcse/deployit/enums"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
@@ -19,24 +25,46 @@ import (
 type DeploymentService struct {
 	deploymentCollection *mongo.Collection
 	dockerService        *DockerService
+	eventService         *EventService
 }
 
 func NewDeploymentService(
 	database *mongo.Database,
 	dockerService *DockerService,
+	eventService *EventService,
 ) *DeploymentService {
 	collection := database.Collection("deployments")
 	go model.CreateDeploymentIndex(collection)
-	return &DeploymentService{deploymentCollection: collection, dockerService: dockerService}
+	return &DeploymentService{
+		deploymentCollection: collection,
+		dockerService:        dockerService,
+		eventService:         eventService,
+	}
 }
 
-func (service *DeploymentService) Create(model *model.Deployment, ctx context.Context) error {
+func (service *DeploymentService) Create(
+	model *model.Deployment,
+	ctx context.Context,
+) (*model.Event, error) {
+	model.Id = primitive.NewObjectID()
 	currentTime := time.Now()
 	model.CreatedAt = currentTime
 	model.UpdatedAt = currentTime
 	model.LastDeploymentInitiatedAt = &currentTime
 	_, err := service.deploymentCollection.InsertOne(ctx, model)
-	return err
+	if err != nil {
+		return nil, err
+	}
+	newEventModel := mapper.MapEventModelToSave(
+		model.Id,
+		deployment_events_enums.INITIAL_DEPLPYMENT,
+		deployment_events_triggered_by.USER,
+		model.UserId.Hex(),
+		nil,
+	)
+	_ = service.eventService.Create(newEventModel, ctx)
+
+	return newEventModel, err
 }
 
 func (service *DeploymentService) FindBySubDomainName(
@@ -131,6 +159,7 @@ func (service *DeploymentService) ListDeployment(
 func (service *DeploymentService) UpdateDeployment(
 	deploymentId string,
 	updates map[string]interface{},
+	existingEvent *model.Event,
 	ctx context.Context,
 ) (*model.Deployment, error) {
 	updates["updated_at"] = time.Now()
@@ -151,7 +180,14 @@ func (service *DeploymentService) UpdateDeployment(
 	if updatedResult.MatchedCount != 1 {
 		return nil, app_errors.CannotUpdateError
 	}
-	return service.FindById(deploymentId, ctx), err
+	updatedDeployment := service.FindById(deploymentId, ctx)
+
+	if updates["latest_status"] != nil && existingEvent != nil {
+		eventStatus := service.GetEventStatusByDeploymentStatus(existingEvent, updatedDeployment.LatestStatus)
+		fmt.Println("event status ", eventStatus)
+		service.eventService.UpdateStatusById(existingEvent.Id, eventStatus, ctx)
+	}
+	return updatedDeployment, nil
 }
 
 func (service *DeploymentService) GetLatestStatusByIds(
@@ -247,11 +283,12 @@ func (service *DeploymentService) UpdateDeploymentStatusByContainerIds(
 func (service *DeploymentService) UpdateLatestStatus(
 	deploymentId string,
 	status string,
+	existingEvent *model.Event,
 	context context.Context,
 ) (*model.Deployment, error) {
 	return service.UpdateDeployment(deploymentId, map[string]interface{}{
 		"latest_status": status,
-	}, context)
+	}, existingEvent, context)
 }
 
 func (service *DeploymentService) IsRestartable(deployment *model.Deployment) bool {
@@ -283,4 +320,48 @@ func (service *DeploymentService) CountDeploymentByRepositoryName(
 ) (int64, error) {
 	filter := bson.M{"repository_name": repositoryName}
 	return service.deploymentCollection.CountDocuments(ctx, filter)
+}
+
+func (service *DeploymentService) GetEventStatusByDeploymentStatus(
+	event *model.Event,
+	deploymentStatus string,
+) string {
+	fmt.Println("event type ", event.Type, " deployment status ", deploymentStatus)
+	switch event.Type {
+	case deployment_events_enums.RESTART_DEPLOYMENT:
+		if deploymentStatus == enums.LIVE {
+			return deployment_event_status_enums.SUCCESS
+		} else if deploymentStatus == enums.FAILED {
+			return deployment_event_status_enums.FAILED
+		} else {
+			return deployment_event_status_enums.PROCESSING
+		}
+	case deployment_events_enums.REBUILD_DEPLOYMENT:
+		if deploymentStatus == enums.LIVE {
+			return deployment_event_status_enums.SUCCESS
+		} else if deploymentStatus == enums.FAILED {
+			return deployment_event_status_enums.FAILED
+		} else {
+			return deployment_event_status_enums.PROCESSING
+		}
+	case deployment_events_enums.INITIAL_DEPLPYMENT:
+		if deploymentStatus == enums.LIVE {
+			return deployment_event_status_enums.SUCCESS
+		} else if deploymentStatus == enums.FAILED {
+			return deployment_event_status_enums.FAILED
+		} else {
+			return deployment_event_status_enums.PROCESSING
+		}
+	case deployment_events_enums.STOP_DEPLOYMENT:
+		if deploymentStatus == enums.STOPPED {
+			return deployment_event_status_enums.SUCCESS
+		} else if deploymentStatus == enums.FAILED {
+			return deployment_event_status_enums.FAILED
+		} else {
+			return deployment_event_status_enums.PROCESSING
+		}
+	default:
+		return ""
+
+	}
 }

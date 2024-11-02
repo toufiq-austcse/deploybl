@@ -120,7 +120,7 @@ func ToDeploymentListRes(deploymentModels []*model.Deployment) []res.DeploymentR
 	return deployments
 }
 
-func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWorkerPayload {
+func ToPullRepoWorkerPayload(deployment *model.Deployment, event *model.Event) payloads.PullRepoWorkerPayload {
 	return payloads.PullRepoWorkerPayload{
 		DeploymentId:   deployment.Id.Hex(),
 		BranchName:     deployment.BranchName,
@@ -129,6 +129,7 @@ func ToPullRepoWorkerPayload(deployment *model.Deployment) payloads.PullRepoWork
 		RootDir:        deployment.RootDirectory,
 		DockerFilePath: deployment.DockerFilePath,
 		Env:            deployment.Env,
+		EventId:        event.Id,
 	}
 }
 
@@ -154,22 +155,26 @@ func ToPreRunRepoWorkerPayload(
 
 func ToRunRepoWorkerPayloadFromDeployment(
 	deployment model.Deployment,
+	event model.Event,
 ) payloads.RunRepoWorkerPayload {
 	return payloads.RunRepoWorkerPayload{
 		DeploymentId: deployment.Id.Hex(),
+		EventId:      event.Id,
 	}
 }
 
-func ToPreRunRepoWorkerPayloadFromDeployment(
+func ToPreRunRepoFromDeployment(
 	deployment model.Deployment,
+	event model.Event,
 ) payloads.PreRunRepoWorkerPayload {
 	return payloads.PreRunRepoWorkerPayload{
 		DeploymentId: deployment.Id.Hex(),
+		EventId:      event.Id,
 	}
 }
 
-func ToStopRepoWorkerPayload(deployment model.Deployment) payloads.StopRepoWorkerPayload {
-	return payloads.StopRepoWorkerPayload{DeploymentId: deployment.Id.Hex()}
+func ToStopRepoWorkerPayload(deployment model.Deployment, event *model.Event) payloads.StopRepoWorkerPayload {
+	return payloads.StopRepoWorkerPayload{DeploymentId: deployment.Id.Hex(), EventId: event.Id}
 }
 
 func GetDomainUrl(subDomainName string) string {

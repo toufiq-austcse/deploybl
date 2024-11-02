@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
+
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -20,15 +22,20 @@ type PreRunRepoWorker struct {
 	config            amqp.Config
 	deploymentService *service.DeploymentService
 	dockerService     *service.DockerService
+	eventService      *service.EventService
 }
 
-func NewPreRunRepoWorker(deploymentService *service.DeploymentService) *PreRunRepoWorker {
+func NewPreRunRepoWorker(
+	deploymentService *service.DeploymentService,
+	eventService *service.EventService,
+) *PreRunRepoWorker {
 	return &PreRunRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 			"topic",
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.RABBIT_MQ_REPOSITORY_PRE_RUN_QUEUE,
 			deployItConfig.AppConfig.RABBIT_MQ_CONFIG.RABBIT_MQ_REPOSITORY_PRE_RUN_ROUTING_KEY),
 		deploymentService: deploymentService,
+		eventService:      eventService,
 	}
 }
 
@@ -52,7 +59,7 @@ func (worker *PreRunRepoWorker) InitPreRunRepoSubscriber() {
 
 func (worker *PreRunRepoWorker) ProcessPreRunRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		deploymentId, err := worker.ProcessPreRunRepoMessage(msg)
+		deploymentId, event, err := worker.ProcessPreRunRepoMessage(msg)
 		if err != nil {
 			fmt.Println("error in processing pre run repo message ", err.Error())
 
@@ -60,6 +67,7 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessages(messages <-chan *messa
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
 					deploymentId,
 					enums.FAILED,
+					event,
 					context.Background(),
 				)
 				if updateErr != nil {
@@ -71,12 +79,12 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessages(messages <-chan *messa
 	}
 }
 
-func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (string, error) {
+func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (string, *model.Event, error) {
 	defer msg.Ack()
 
 	consumedPayload := payloads.PreRunRepoWorkerPayload{}
 	if err := json.Unmarshal(msg.Payload, &consumedPayload); err != nil {
-		return "", err
+		return "", nil, err
 	}
 	fmt.Println("consumed pre run job ", consumedPayload)
 
@@ -85,28 +93,32 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 		context.Background(),
 	)
 	if deployment == nil {
-		return consumedPayload.DeploymentId, app_errors.DeploymentNotFoundError
+		return consumedPayload.DeploymentId, nil, app_errors.DeploymentNotFoundError
+	}
+	event, err := worker.eventService.FindById(consumedPayload.EventId)
+	if err != nil {
+		fmt.Println("error in finding event ", err.Error())
 	}
 	if deployment.DockerImageTag == nil {
-		return consumedPayload.DeploymentId, app_errors.DockerImageTagNotFoundError
+		return consumedPayload.DeploymentId, event, app_errors.DockerImageTagNotFoundError
 	}
 	if deployment.ContainerId != nil {
 		if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
-			return consumedPayload.DeploymentId, removeErr
+			return consumedPayload.DeploymentId, event, removeErr
 		}
 
 		fmt.Println("container removed ", deployment.ContainerId)
 		if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 			"container_id": nil,
-		}, context.Background()); updateErr != nil {
-			return consumedPayload.DeploymentId, updateErr
+		}, event, context.Background()); updateErr != nil {
+			return consumedPayload.DeploymentId, event, updateErr
 		}
 
 	}
 	containerId, preRunErr := worker.dockerService.RunContainer(*deployment.DockerImageTag,
 		deployment.Env, nil)
 	if preRunErr != nil {
-		return consumedPayload.DeploymentId, preRunErr
+		return consumedPayload.DeploymentId, event, preRunErr
 	}
 
 	fmt.Println("docker image pre run successfully...")
@@ -117,13 +129,14 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 			"latest_status": enums.DEPLOYING,
 			"container_id":  containerId,
 		},
+		event,
 		context.Background(),
 	)
 
 	if updateErr != nil {
-		return consumedPayload.DeploymentId, updateErr
+		return consumedPayload.DeploymentId, event, updateErr
 	}
-	return consumedPayload.DeploymentId, nil
+	return consumedPayload.DeploymentId, event, nil
 }
 
 func (worker *PreRunRepoWorker) PublishPreRunRepoJob(

@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -29,6 +31,25 @@ func Run() error {
 	}
 	apiServer := server.NewServer()
 	enableCors(apiServer.GinEngine)
+	apiServer.GinEngine.Use(func(c *gin.Context) {
+		defer func() {
+			fmt.Println("recovering")
+			if err := recover(); err != nil {
+				var errStr string
+				switch v := err.(type) {
+				case string:
+					errStr = v
+				case error:
+					errStr = v.Error()
+				default:
+					errStr = fmt.Sprintf("recovered from: %v", v)
+				}
+				c.JSON(http.StatusInternalServerError, gin.H{"error": errStr})
+				return
+			}
+		}()
+		c.Next()
+	})
 	setupSwagger(apiServer)
 	container, err := di.NewDiContainer()
 	if err != nil {
@@ -54,6 +75,7 @@ func Run() error {
 func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 	err := container.Invoke(func(deploymentController *controller.DeploymentController,
 		repoController *repoController.RepoController,
+		eventController *controller.EventController,
 		subscriber *worker.PullRepoWorker,
 		firebaseClient *firebase.Client,
 		userService *service.UserService,
@@ -63,7 +85,7 @@ func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 
 		deploymentsRouterGroup := apiServer.GinEngine.Group("api/v1/deployments")
 		deploymentsRouterGroup.Use(middleware.AuthMiddleware(firebaseClient, userService))
-		deploymentRouter.Setup(deploymentsRouterGroup, deploymentController)
+		deploymentRouter.Setup(deploymentsRouterGroup, deploymentController, eventController)
 
 		deploymentCronRouterGroup := apiServer.GinEngine.Group("api/v1/deployments")
 		deploymentRouter.SetupDeploymentCronRouter(deploymentCronRouterGroup, deploymentController)

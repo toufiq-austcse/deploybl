@@ -27,6 +27,7 @@ import { DEPLOYMENT_STATUS } from '@/lib/constant';
 import { onCopyUrlClicked } from '@/lib/utils';
 import PrivateRoute from '@/components/private-route';
 import { toast } from 'sonner';
+import moment from 'moment/moment';
 
 const HomePage: NextPage = () => {
   const router = useRouter();
@@ -66,7 +67,7 @@ const HomePage: NextPage = () => {
       header: 'Title',
       cell: ({ row }) => {
         return (
-          <Link className="flex space-x-4" href={`/deployments/${row.original._id}/settings`}>
+          <Link className="flex space-x-4" href={`/deployments/${row.original._id}/events`}>
             <div className="lowercase font-medium">{row.getValue('title')}</div>
           </Link>
         );
@@ -95,9 +96,8 @@ const HomePage: NextPage = () => {
         if (!lastDeployedAt) {
           return <div>Not Deployed Yet</div>;
         }
-        const date = new Date(row.getValue('last_deployed_at')).toDateString();
 
-        return <div>{date}</div>;
+        return <div>{moment(row.getValue('last_deployed_at')).fromNow()}</div>;
       },
     },
     {
