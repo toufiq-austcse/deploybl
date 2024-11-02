@@ -3,19 +3,22 @@ import { NextPage } from 'next';
 import { ColumnDef } from '@tanstack/react-table';
 import AppTable from '@/components/ui/app-table';
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { GoCheckCircleFill, GoXCircleFill } from 'react-icons/go';
 import { useHttpClient } from '@/api/http/useHttpClient';
-import { useEffect } from 'react';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
-import { DeploymentEventType } from '@/api/http/types/deployment_type';
-import { DEPLOYMENT_EVENT_STATUS, DEPLOYMENT_STATUS } from '@/lib/constant';
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+import { DeploymentEventType, PaginationType } from '@/api/http/types/deployment_type';
+import { DEPLOYMENT_EVENT_STATUS } from '@/lib/constant';
+import { toast } from 'sonner';
 
 const EventPage: NextPage = () => {
   const { deploymentDetails } = useDeploymentContext();
-  const { getDeploymentEvents } = useHttpClient();
+  const { listDeploymentEvents } = useHttpClient();
   const [loading, setLoading] = React.useState(false);
+  let pageSize = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_EVENT_LIST_PAGE_SIZE) || 10;
+  let [pageIndex, setPageIndex] = useState(1);
+  let [pagination, setPagination] = useState<PaginationType>();
+
   const [deploymentEvents, setDeploymentEvents] = React.useState<DeploymentEventType[]>([]);
 
   const columns: ColumnDef<DeploymentEventType>[] = [
@@ -45,9 +48,14 @@ const EventPage: NextPage = () => {
       accessorKey: 'created_at',
       header: 'Created At',
       cell: ({ row }) => {
-        const date = new Date(row.getValue('created_at')).toDateString();
-
-        return <div>{date}</div>;
+        const formatted = new Intl.DateTimeFormat('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        }).format(new Date(row.original.created_at));
+        return <div>{formatted}</div>;
       },
     },
   ];
@@ -55,9 +63,9 @@ const EventPage: NextPage = () => {
   const getDeploymentEventIcon = (status: string) => {
     switch (status) {
       case DEPLOYMENT_EVENT_STATUS.SUCCESS:
-        return <GoCheckCircleFill className="text-green-500 mt-1" size={16} />;
+        return <GoCheckCircleFill className="text-green-800/80 mt-1" size={16} />;
       case DEPLOYMENT_EVENT_STATUS.FAILED:
-        return <GoXCircleFill className="text-red-500 mt-1" size={16} />;
+        return <GoXCircleFill className="text-red-800/80 mt-1" size={16} />;
       default:
         return (
           <div className="mt-1">
@@ -84,19 +92,56 @@ const EventPage: NextPage = () => {
   };
 
   useEffect(() => {
-    setLoading(true);
-    getDeploymentEvents(deploymentDetails._id)
+    if (!deploymentDetails) {
+      return;
+    }
+    if (deploymentEvents.length == 0) {
+      setLoading(true);
+    }
+    listDeploymentEvents(deploymentDetails._id, pageIndex, pageSize)
       .then((response) => {
-        if (response.error) {
-          console.error('Error fetching deployment events', response.error);
+        if (!response.isSuccessful && response.code !== 401) {
+          toast.error(response.error);
           return;
         }
         setDeploymentEvents(response.data);
+        setPagination(response.pagination);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [deploymentDetails._id]);
+  }, [deploymentDetails?.latest_status]);
+
+  const nextFunction = () => {
+    if (pageIndex === pagination?.last_page) {
+      return;
+    }
+
+    listDeploymentEvents(deploymentDetails._id, pageIndex + 1, pageSize).then((response) => {
+      if (!response.isSuccessful && response.code !== 401) {
+        toast.error(response.error);
+        return;
+      }
+      setPageIndex((prev) => prev + 1);
+      setDeploymentEvents(response.data);
+      setPagination(response.pagination as PaginationType);
+    });
+  };
+
+  const prevFunction = () => {
+    if (pageIndex === 1) {
+      return;
+    }
+    listDeploymentEvents(deploymentDetails._id, pageIndex - 1, pageSize).then((response) => {
+      if (!response.isSuccessful && response.code !== 401) {
+        toast.error(response.error);
+        return;
+      }
+      setPageIndex((prev) => prev - 1);
+      setDeploymentEvents(response.data);
+      setPagination(response.pagination as PaginationType);
+    });
+  };
 
   return (
     <div>
@@ -106,17 +151,13 @@ const EventPage: NextPage = () => {
         <AppTable<DeploymentEventType>
           showHeader={false}
           showCaption={false}
-          totalPageCount={1}
+          totalPageCount={pagination?.last_page}
           data={deploymentEvents}
           columns={columns}
-          pageIndex={1}
-          pageSize={1}
-          next={() => {
-            console.log('');
-          }}
-          prev={() => {
-            console.log('');
-          }}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          next={nextFunction}
+          prev={prevFunction}
         />
       )}
     </div>

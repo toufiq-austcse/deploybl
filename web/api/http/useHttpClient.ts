@@ -1,14 +1,16 @@
 import React from 'react';
 import axios, { AxiosError } from 'axios';
-import FormData from 'form-data';
 import {
-  DeploymentDetailsType, DeploymentEventType,
+  DeploymentDetailsType,
+  DeploymentEventType,
   DeploymentLatestStatusType,
-  DeploymentType, PaginationType,
-  RepoDetailsType, TPaginationResponse, TResponse, UpdateDeploymentReqBody
+  DeploymentType,
+  RepoDetailsType,
+  TPaginationResponse,
+  TResponse,
+  UpdateDeploymentReqBody
 } from '@/api/http/types/deployment_type';
 import { useAuthContext } from '@/contexts/useAuthContext';
-import { DeploymentEvent } from '@/app/deployments/[id]/events/page';
 
 export function useHttpClient() {
   const [loading, setLoading] = React.useState(false);
@@ -348,9 +350,9 @@ export function useHttpClient() {
       setLoading(false);
     }
   };
-  const getDeploymentEvents = async (deploymentId: string): Promise<TPaginationResponse<DeploymentEventType[]>> => {
+  const listDeploymentEvents = async (deploymentId: string, page: number, limit: number): Promise<TPaginationResponse<DeploymentEventType[]>> => {
     try {
-      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/${deploymentId}/events`;
+      let url = `${process.env.NEXT_PUBLIC_JUST_DEPLOY_API_URL}/api/v1/deployments/${deploymentId}/events?page=${page}&limit=${limit}`;
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${currentUser?.accessToken}`
@@ -390,7 +392,7 @@ export function useHttpClient() {
     restartDeployment,
     stopDeployment,
     getRepoBranches,
-    getDeploymentEvents,
+    listDeploymentEvents,
     loading
   };
 }
