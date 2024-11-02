@@ -45,7 +45,6 @@ func NewDeploymentController(
 	runRepoWorker *worker.RunRepoWorker,
 	stopRepoWorker *worker.StopRepoWorker,
 	preRunRepoWorker *worker.PreRunRepoWorker,
-
 ) *DeploymentController {
 	return &DeploymentController{
 		githubHttpClient:  githubHttpClient,
