@@ -12,6 +12,7 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
 	userModel "github.com/toufiq-austcse/deployit/internal/api/users/model"
 	"github.com/toufiq-austcse/deployit/pkg/http_clients/github/api_res"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func MapCreateDeploymentReqToSave(
@@ -27,6 +28,7 @@ func MapCreateDeploymentReqToSave(
 	}
 
 	return &model.Deployment{
+		Id:                 primitive.NewObjectID(),
 		UserId:             user.Id,
 		Title:              dto.Title,
 		SubDomainName:      subDomainName,
@@ -118,10 +120,7 @@ func ToDeploymentListRes(deploymentModels []*model.Deployment) []res.DeploymentR
 	return deployments
 }
 
-func ToPullRepoWorkerPayload(
-	deployment *model.Deployment,
-	event *model.Event,
-) payloads.PullRepoWorkerPayload {
+func ToPullRepoWorkerPayload(deployment *model.Deployment, event *model.Event) payloads.PullRepoWorkerPayload {
 	return payloads.PullRepoWorkerPayload{
 		DeploymentId:   deployment.Id.Hex(),
 		BranchName:     deployment.BranchName,
@@ -143,7 +142,6 @@ func ToBuildRepoWorkerPayload(
 		DockerFilePath: payload.DockerFilePath,
 		BranchName:     payload.BranchName,
 		Env:            payload.Env,
-		EventId:        payload.EventId,
 	}
 }
 
@@ -152,7 +150,6 @@ func ToPreRunRepoWorkerPayload(
 ) payloads.PreRunRepoWorkerPayload {
 	return payloads.PreRunRepoWorkerPayload{
 		DeploymentId: payload.DeploymentId,
-		EventId:      payload.EventId,
 	}
 }
 
