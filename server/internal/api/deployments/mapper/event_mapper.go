@@ -50,12 +50,14 @@ func ToDeploymentEvent(event *model.Event) res.EventRes {
 
 func GenerateTitle(event *model.Event) string {
 	switch event.Type {
-	case deployment_events_enums.NEW_DEPLOYMENT:
-		return "New deployment started"
+	case deployment_events_enums.RESTART_DEPLOYMENT:
+		return "Restart deployment"
 	case deployment_events_enums.STOP_DEPLOYMENT:
-		return "Deployment stopped"
+		return "Stop deployment"
 	case deployment_events_enums.INITIAL_DEPLPYMENT:
 		return "First deployment started"
+	case deployment_events_enums.REBUILD_DEPLOYMENT:
+		return "Rebuild deployment"
 	default:
 		return ""
 	}

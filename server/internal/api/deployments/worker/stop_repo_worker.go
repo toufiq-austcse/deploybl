@@ -51,7 +51,7 @@ func (worker *StopRepoWorker) InitStopRepoSubscriber() {
 		deployItConfig.AppConfig.RABBIT_MQ_CONFIG.REPOSITORY_PULL_QUEUE,
 	)
 	if err != nil {
-		fmt.Println("error in run repo subscriber ", err.Error())
+		fmt.Println("error in stop repo subscriber ", err.Error())
 		return
 	}
 	go worker.ProcessStopRepoMessages(messages)
@@ -61,7 +61,7 @@ func (worker *StopRepoWorker) ProcessStopRepoMessages(messages <-chan *message.M
 	for msg := range messages {
 		deploymentId, event, err := worker.ProcessStopRepoMessage(msg)
 		if err != nil {
-			fmt.Println("error in processing run repo message ", err.Error())
+			fmt.Println("error in processing stop repo message ", err.Error())
 
 			if deploymentId != "" {
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
@@ -100,11 +100,8 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 	if deployment.ContainerId == nil {
 		return consumedPayload.DeploymentId, event, app_errors.ContainerNotFoundError
 	}
-	if !worker.deploymentService.IsStopAble(deployment) {
-		return consumedPayload.DeploymentId, event, app_errors.DeploymentNotStoppableError
-	}
-	if err := worker.dockerService.StopContainer(*deployment.ContainerId); err != nil {
-		return consumedPayload.DeploymentId, event, err
+	if stopErr := worker.dockerService.StopContainer(*deployment.ContainerId); stopErr != nil {
+		return consumedPayload.DeploymentId, event, stopErr
 	}
 
 	_, err = worker.deploymentService.UpdateLatestStatus(

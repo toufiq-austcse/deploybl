@@ -37,15 +37,18 @@ func (service *EventService) Create(model *model.Event, ctx context.Context) err
 	return err
 }
 
-func (service *EventService) FindByDeploymentIdAndStatus(
+func (service *EventService) FindLatestEventByDeploymentIdAndStatus(
 	deploymentId primitive.ObjectID,
 	status string,
 	ctx context.Context,
 ) (*model.Event, error) {
 	var event *model.Event
+
+	opts := options.FindOne().SetSort(bson.D{{Key: "created_at", Value: -1}})
 	err := service.eventCollection.FindOne(
 		ctx,
 		bson.M{"deployment_id": deploymentId, "status": status},
+		opts,
 	).Decode(&event)
 	if err != nil {
 		return nil, err

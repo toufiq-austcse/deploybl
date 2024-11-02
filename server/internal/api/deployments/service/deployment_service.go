@@ -183,7 +183,8 @@ func (service *DeploymentService) UpdateDeployment(
 	updatedDeployment := service.FindById(deploymentId, ctx)
 
 	if updates["latest_status"] != nil && existingEvent != nil {
-		eventStatus := service.GetEventStatusByDeploymentStatus(existingEvent, updates["latest_status"].(string))
+		eventStatus := service.GetEventStatusByDeploymentStatus(existingEvent, updatedDeployment.LatestStatus)
+		fmt.Println("event status ", eventStatus)
 		service.eventService.UpdateStatusById(existingEvent.Id, eventStatus, ctx)
 	}
 	return updatedDeployment, nil
@@ -325,8 +326,17 @@ func (service *DeploymentService) GetEventStatusByDeploymentStatus(
 	event *model.Event,
 	deploymentStatus string,
 ) string {
+	fmt.Println("event type ", event.Type, " deployment status ", deploymentStatus)
 	switch event.Type {
-	case deployment_events_enums.NEW_DEPLOYMENT:
+	case deployment_events_enums.RESTART_DEPLOYMENT:
+		if deploymentStatus == enums.LIVE {
+			return deployment_event_status_enums.SUCCESS
+		} else if deploymentStatus == enums.FAILED {
+			return deployment_event_status_enums.FAILED
+		} else {
+			return deployment_event_status_enums.PROCESSING
+		}
+	case deployment_events_enums.REBUILD_DEPLOYMENT:
 		if deploymentStatus == enums.LIVE {
 			return deployment_event_status_enums.SUCCESS
 		} else if deploymentStatus == enums.FAILED {

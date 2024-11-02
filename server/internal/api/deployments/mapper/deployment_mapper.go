@@ -166,8 +166,18 @@ func ToRunRepoWorkerPayloadFromDeployment(
 	}
 }
 
-func ToStopRepoWorkerPayload(deployment model.Deployment) payloads.StopRepoWorkerPayload {
-	return payloads.StopRepoWorkerPayload{DeploymentId: deployment.Id.Hex()}
+func ToPreRunRepoFromDeployment(
+	deployment model.Deployment,
+	event model.Event,
+) payloads.PreRunRepoWorkerPayload {
+	return payloads.PreRunRepoWorkerPayload{
+		DeploymentId: deployment.Id.Hex(),
+		EventId:      event.Id,
+	}
+}
+
+func ToStopRepoWorkerPayload(deployment model.Deployment, event *model.Event) payloads.StopRepoWorkerPayload {
+	return payloads.StopRepoWorkerPayload{DeploymentId: deployment.Id.Hex(), EventId: event.Id}
 }
 
 func GetDomainUrl(subDomainName string) string {

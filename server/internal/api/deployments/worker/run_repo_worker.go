@@ -60,12 +60,14 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 		deploymentId, lastDeploymentInitiateAt, event, err := worker.ProcessRunRepoMessage(msg)
 		if err != nil {
 			if deploymentId != "" {
+				fmt.Println("error in processing run repo message ", err.Error())
 				if err.Error() == app_errors.ContainerPortNotFoundError.Error() &&
 					lastDeploymentInitiateAt != nil {
 					timeElapsed := time.Since(*lastDeploymentInitiateAt)
 					if int(
 						timeElapsed.Minutes(),
 					) < deployItConfig.AppConfig.MAX_DEPLOYING_STATUS_TIME_IN_MINUTES {
+						fmt.Println("time elapsed ", timeElapsed.Minutes())
 						continue
 					}
 				}

@@ -1,10 +1,8 @@
 package reasons
 
 const (
-	ENV_UPDATED        string = "Env updated"
-	RESTART_DEPLOYMENT string = "Restart deployment"
-	REBUILD_DEPLOYMENT string = "Rebuild deployment"
-	STOP_DEPLOYMENT    string = "Stop deployment"
+	ENV_UPDATED             string = "Env update"
+	TRIGGERED_VIA_DASHBOARD string = "Triggered via dashboard"
 )
 
 func GetReasonPtr(reason string) *string {
