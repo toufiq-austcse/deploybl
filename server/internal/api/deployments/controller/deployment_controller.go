@@ -293,10 +293,10 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 
 	newEvent := mapper.MapEventModelToSave(
 		deployment.Id,
-		deployment_events_enums.INITIAL_DEPLPYMENT,
+		deployment_events_enums.REBUILD_DEPLOYMENT,
 		deployment_events_triggered_by.USER,
 		user.Id.Hex(),
-		nil,
+		reasons.GetReasonPtr(reasons.SETTINGS_UPDATE),
 	)
 	eventErr := controller.eventService.Create(newEvent, context)
 	if eventErr != nil {
