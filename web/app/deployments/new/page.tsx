@@ -2,10 +2,10 @@
 import { NextPage } from 'next';
 import { Input } from '@/components/ui/input';
 import EnvironmentComponent, { EnvironmentVariableType } from '@/components/ui/environment-component';
+import * as React from 'react';
 import { useState } from 'react';
 import { RepoDetailsType } from '@/api/http/types/deployment_type';
 import { z } from 'zod';
-import * as React from 'react';
 import { useHttpClient } from '@/api/http/useHttpClient';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -101,7 +101,7 @@ const NewDeploymentPage: NextPage = () => {
       root_dir: values.root_directory === '' ? null : values.root_directory,
     });
     if (data) {
-      router.push(`/deployments/${data._id}/environments`);
+      router.push(`/deployments/${data._id}/events`);
     } else {
       console.log('err ', error);
       setError(error);
