@@ -142,6 +142,7 @@ func ToBuildRepoWorkerPayload(
 		DockerFilePath: payload.DockerFilePath,
 		BranchName:     payload.BranchName,
 		Env:            payload.Env,
+		EventId:        payload.EventId,
 	}
 }
 
