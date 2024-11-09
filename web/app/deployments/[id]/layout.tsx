@@ -8,6 +8,7 @@ import { DeploymentContextProvider } from '@/contexts/useDeploymentContext';
 import PrivateRoute from '@/components/private-route';
 
 const DeploymentDetailsLayout = ({ children, params }: { children: React.ReactNode; params: { id: string } }) => {
+  console.log('params', params);
   return (
     <div>
       <DeploymentContextProvider params={params}>
