@@ -22,7 +22,6 @@ const EventPage: NextPage = () => {
 
   const [deploymentEvents, setDeploymentEvents] = React.useState<DeploymentEventType[]>([]);
 
-
   const getDeploymentEventIcon = (status: string) => {
     switch (status) {
       case DEPLOYMENT_EVENT_STATUS.SUCCESS:
@@ -76,7 +75,6 @@ const EventPage: NextPage = () => {
       });
   }, []);
 
-
   const initColumns = () => {
     setColumns([
       {
@@ -95,11 +93,11 @@ const EventPage: NextPage = () => {
               </div>
             </div>
           );
-        }
+        },
       },
       {
         accessorKey: 'triggered_by',
-        header: 'Triggered By'
+        header: 'Triggered By',
       },
       {
         accessorKey: 'created_at',
@@ -110,11 +108,11 @@ const EventPage: NextPage = () => {
             day: 'numeric',
             year: 'numeric',
             hour: 'numeric',
-            minute: '2-digit'
+            minute: '2-digit',
           }).format(new Date(row.original.created_at));
           return <div>{formatted}</div>;
-        }
-      }
+        },
+      },
     ]);
   };
   const nextFunction = () => {
