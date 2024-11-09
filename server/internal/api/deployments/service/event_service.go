@@ -143,3 +143,29 @@ func (service *EventService) ListEvent(
 		PerPage:     limit,
 	}, nil
 }
+
+func (service *EventService) FindLatestProcessingEventsByDeploymentIds(
+	deploymentIds []primitive.ObjectID,
+	ctx context.Context,
+) ([]*model.Event, error) {
+	events := []*model.Event{}
+
+	filter := bson.M{"deployment_id": bson.M{"$in": deploymentIds}, "status": "processing"}
+
+	cursor, err := service.eventCollection.Find(ctx, filter)
+	if err != nil {
+		return events, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var event *model.Event
+		decodeErr := cursor.Decode(&event)
+		if decodeErr != nil {
+			return events, decodeErr
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
+}

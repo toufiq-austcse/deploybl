@@ -10,4 +10,8 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+      resources:
+        limits:
+          cpus: "0.5"
+
 
