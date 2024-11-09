@@ -50,19 +50,6 @@ const DeploymentDetails = () => {
     toast('Deployment stopping...');
   };
 
-  let interval: NodeJS.Timeout;
-
-  useEffect(() => {
-    interval = setInterval(
-      () => {
-        updateLatestDeploymentStatus(deploymentDetails._id);
-      },
-      +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string),
-    );
-
-    return () => clearInterval(interval);
-  }, [deploymentDetails]);
-
   return (
     deploymentDetails && (
       <div>

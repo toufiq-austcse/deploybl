@@ -18,54 +18,17 @@ const EventPage: NextPage = () => {
   let pageSize = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_EVENT_LIST_PAGE_SIZE) || 10;
   let [pageIndex, setPageIndex] = useState(1);
   let [pagination, setPagination] = useState<PaginationType>();
+  const [columns, setColumns] = useState<ColumnDef<DeploymentEventType>[]>([]);
 
   const [deploymentEvents, setDeploymentEvents] = React.useState<DeploymentEventType[]>([]);
 
-  const columns: ColumnDef<DeploymentEventType>[] = [
-    {
-      accessorKey: 'title',
-      header: 'Title',
-      cell: ({ row }) => {
-        let latestStatus = row.original.status;
-        return (
-          <div>
-            <div className="flex flex-row gap-2">
-              {getDeploymentEventIcon(latestStatus)}
-              <div>
-                <p className="text-base font-semibold">{row.original.title}</p>
-                {row.original.reason && <p className="text-sm text-gray-500">{row.original.reason}</p>}
-              </div>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'triggered_by',
-      header: 'Triggered By',
-    },
-    {
-      accessorKey: 'created_at',
-      header: 'Created At',
-      cell: ({ row }) => {
-        const formatted = new Intl.DateTimeFormat('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-        }).format(new Date(row.original.created_at));
-        return <div>{formatted}</div>;
-      },
-    },
-  ];
 
   const getDeploymentEventIcon = (status: string) => {
     switch (status) {
       case DEPLOYMENT_EVENT_STATUS.SUCCESS:
         return <GoCheckCircleFill className="text-green-800/80 mt-1" size={16} />;
       case DEPLOYMENT_EVENT_STATUS.FAILED:
-        return <GoXCircleFill className="text-red-800/80 mt-1" size={16} />;
+        return <GoXCircleFill className="text-destructive mt-1" size={16} />;
       default:
         return (
           <div className="mt-1">
@@ -106,12 +69,54 @@ const EventPage: NextPage = () => {
         }
         setDeploymentEvents(response.data);
         setPagination(response.pagination);
+        initColumns();
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [deploymentDetails?.latest_status]);
+  }, []);
 
+
+  const initColumns = () => {
+    setColumns([
+      {
+        accessorKey: 'title',
+        header: 'Title',
+        cell: ({ row }) => {
+          let latestStatus = row.original.status;
+          return (
+            <div>
+              <div className="flex flex-row gap-2">
+                {getDeploymentEventIcon(latestStatus)}
+                <div>
+                  <p className="text-base font-semibold">{row.original.title}</p>
+                  {row.original.reason && <p className="text-sm text-gray-500">{row.original.reason}</p>}
+                </div>
+              </div>
+            </div>
+          );
+        }
+      },
+      {
+        accessorKey: 'triggered_by',
+        header: 'Triggered By'
+      },
+      {
+        accessorKey: 'created_at',
+        header: 'Created At',
+        cell: ({ row }) => {
+          const formatted = new Intl.DateTimeFormat('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          }).format(new Date(row.original.created_at));
+          return <div>{formatted}</div>;
+        }
+      }
+    ]);
+  };
   const nextFunction = () => {
     if (pageIndex === pagination?.last_page) {
       return;

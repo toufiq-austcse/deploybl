@@ -24,6 +24,7 @@ export const useDeploymentContext = () => {
 };
 
 export const DeploymentContextProvider = ({ children, params }: DeploymentContextProviderProps) => {
+  let interval: NodeJS.Timeout;
   const [deploymentDetails, setDeploymentDetails] = React.useState<DeploymentDetailsType | null>(null);
   const {
     getDeploymentDetails,
@@ -32,141 +33,154 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
     updateDeploymentEnv,
     restartDeployment,
     rebuildAndDeploy,
-    stopDeployment,
+    stopDeployment
   } = useHttpClient();
   const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
-    getDeploymentDetails(params.id)
-      .then((response) => {
-        if (!response.isSuccessful && response.code !== 401) {
-          toast.error(response.error);
-          return;
-        }
-        setDeploymentDetails(response.data);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+    if (!deploymentDetails) {
+      getDeploymentDetails(params.id)
+        .then((response) => {
+          if (!response.isSuccessful && response.code !== 401) {
+            toast.error(response.error);
+            return;
+          }
+          setDeploymentDetails(response.data);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+
+    }
+    if (deploymentDetails) {
+      interval = setInterval(
+        () => {
+          updateLatestDeploymentStatus(deploymentDetails._id);
+        },
+        +(process.env.NEXT_PUBLIC_PULL_DELAY_MS as string)
+      );
+
+      return () => clearInterval(interval);
+    }
+  }, [deploymentDetails]);
 
   const updateDeploymentDetails = async (
     deploymentId: string,
-    body: UpdateDeploymentReqBody,
+    body: UpdateDeploymentReqBody
   ): Promise<{
     error: string | null;
   }> => {
     let response = await updateDeployment(deploymentId, body);
     if (!response.isSuccessful && response.code !== 401) {
       return {
-        error: response.error,
+        error: response.error
       };
     }
     console.log(response);
     setDeploymentDetails((prevState: any) => {
       return {
         ...prevState,
-        ...response.data,
+        ...response.data
       };
     });
     return {
-      error: null,
+      error: null
     };
   };
 
   const updateLatestDeploymentStatus = async (
-    deploymentId: string,
+    deploymentId: string
   ): Promise<{
     error: string | null;
   }> => {
     let response = await getDeploymentLatestStatus([deploymentId]);
     if (!response.isSuccessful && response.code !== 401) {
       return {
-        error: response.error,
+        error: response.error
       };
     }
     setDeploymentDetails((prevState: any) => {
       return {
         ...prevState,
-        ...response.data?.[0],
+        ...response.data?.[0]
       };
     });
     return {
-      error: null,
+      error: null
     };
   };
 
   const updateEnv = async (
     deploymentId: string,
-    env: object,
+    env: object
   ): Promise<{
     error: string | null;
   }> => {
     let response = await updateDeploymentEnv(deploymentId, env);
     if (!response.isSuccessful && response.code !== 401) {
       return {
-        error: response.error,
+        error: response.error
       };
     }
     setDeploymentDetails((prevState: any) => {
       return {
         ...prevState,
-        ...response.data,
+        ...response.data
       };
     });
     return {
-      error: null,
+      error: null
     };
   };
   const restartDeploymentContext = async (deploymentId: string) => {
     let response = await restartDeployment(deploymentId);
     if (!response.isSuccessful && response.code !== 401) {
       return {
-        error: response.error,
+        error: response.error
       };
     }
     setDeploymentDetails((prevState: any) => {
       return {
         ...prevState,
-        ...response.data,
+        ...response.data
       };
     });
     return {
-      error: null,
+      error: null
     };
   };
   const rebuildAndDeployContext = async (deploymentId: string) => {
     let response = await rebuildAndDeploy(deploymentId);
     if (!response.isSuccessful && response.code !== 401) {
       return {
-        error: response.error,
+        error: response.error
       };
     }
     setDeploymentDetails((prevState: any) => {
       return {
         ...prevState,
-        ...response.data,
+        ...response.data
       };
     });
     return {
-      error: null,
+      error: null
     };
   };
   const stopDeploymentContext = async (deploymentId: string) => {
     let response = await stopDeployment(deploymentId);
     if (!response.isSuccessful && response.code !== 401) {
       return {
-        error: response.error,
+        error: response.error
       };
     }
     setDeploymentDetails((prevState: any) => {
       return {
         ...prevState,
-        ...response.data,
+        ...response.data
       };
     });
     return {
-      error: null,
+      error: null
     };
   };
 
@@ -178,7 +192,7 @@ export const DeploymentContextProvider = ({ children, params }: DeploymentContex
     loading,
     restartDeploymentContext,
     rebuildAndDeployContext,
-    stopDeploymentContext,
+    stopDeploymentContext
   };
   return (
     <DeploymentContext.Provider value={value}>{loading ? <div>Loading...</div> : children}</DeploymentContext.Provider>
