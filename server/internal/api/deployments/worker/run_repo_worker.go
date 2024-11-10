@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/toufiq-austcse/deployit/pkg/utils"
+
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -120,6 +122,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, app_errors.ContainerPortNotFoundError
 	}
 	fmt.Println("port found ", *port)
+	utils.WriteToFile("Detected service running port " + *port)
 	if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, removeErr
 	}
@@ -131,6 +134,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, updateErr
 	}
 
+	utils.WriteToFile("running your service")
 	containerId, runErr := worker.dockerService.RunContainer(
 		*deployment.DockerImageTag,
 		deployment.Env,
@@ -140,6 +144,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, runErr
 	}
 	fmt.Println("docker image run successfully...")
+	utils.WriteToFile("deployed successfully")
 
 	_, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,

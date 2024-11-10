@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/toufiq-austcse/deployit/pkg/utils"
+
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -122,6 +124,7 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 	}
 
 	fmt.Println("docker image pre run successfully...")
+	utils.WriteToFile("identifying port")
 
 	_, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,

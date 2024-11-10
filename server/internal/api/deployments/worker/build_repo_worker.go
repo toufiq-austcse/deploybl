@@ -98,11 +98,14 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (st
 		fmt.Println("error in finding event ", err.Error())
 	}
 
-	dockerImageTag, buildRepoErr := worker.BuildRepo(consumedPayload)
+	utils.WriteToFile("building dockerfile")
+	dockerImageTag, buildLogs, buildRepoErr := worker.BuildRepo(consumedPayload)
 	if buildRepoErr != nil {
 		return consumedPayload.DeploymentId, event, buildRepoErr
 	}
 	fmt.Println("Docker image built successfully")
+	utils.WriteToFile(*buildLogs)
+	utils.WriteToFile("docker image built successfully")
 	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 		"docker_image_tag": dockerImageTag,
 	}, event, context.Background()); updateErr != nil {
@@ -133,7 +136,7 @@ func (worker *BuildRepoWorker) PublishBuildRepoJob(
 	return publisher.Close()
 }
 
-func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload) (*string, error) {
+func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload) (*string, *string, error) {
 	localDir := utils.GetLocalRepoPath(payload.DeploymentId, payload.BranchName)
 	dockerFilePath := localDir
 	if payload.DockerFilePath != "." {
@@ -146,12 +149,12 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 		"traefik.enable": "true",
 		fmt.Sprintf("traefik.http.routers.%s.rule", payload.DeploymentId): hostRule,
 	}
-	_, err := worker.dockerService.BuildImage(dockerFilePath, localDir, dockerImageTag, labels)
+	buildLogs, err := worker.dockerService.BuildImage(dockerFilePath, localDir, dockerImageTag, labels)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &dockerImageTag, nil
+	return &dockerImageTag, buildLogs, nil
 }
 
 func (worker *BuildRepoWorker) PublishPreRunRepoWork(
