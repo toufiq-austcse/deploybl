@@ -101,7 +101,10 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (stri
 	if _, updateErr := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.PULLING, existingEvent, context.Background()); updateErr != nil {
 		return consumedPayload.DeploymentId, nil, nil, updateErr
 	}
-	utils.WriteToFile("Cloning repository from "+consumedPayload.GitUrl+" branch "+consumedPayload.BranchName, existingEvent)
+	utils.WriteToFile(
+		"Cloning repository from "+consumedPayload.GitUrl+" branch "+consumedPayload.BranchName,
+		existingEvent,
+	)
 
 	localRepoDir := utils.GetLocalRepoPath(consumedPayload.DeploymentId, consumedPayload.BranchName)
 	if removeErr := os.RemoveAll(localRepoDir); removeErr != nil {

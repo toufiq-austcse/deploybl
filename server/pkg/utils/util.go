@@ -3,9 +3,10 @@ package utils
 import (
 	"context"
 	"fmt"
-	depkloymentModel "github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 	"os"
 	"strings"
+
+	depkloymentModel "github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 
 	deployItConfig "github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker/payloads"
@@ -55,7 +56,7 @@ func WriteToFile(text string, event *depkloymentModel.Event) {
 func createDirIfNotExists(dirPath string) error {
 	_, err := os.Stat(dirPath)
 	if os.IsNotExist(err) {
-		err = os.MkdirAll(dirPath, 0755)
+		err = os.MkdirAll(dirPath, 0o755)
 		if err != nil {
 			return err
 		}
