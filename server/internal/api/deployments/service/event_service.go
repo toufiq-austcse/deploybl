@@ -66,22 +66,6 @@ func (service *EventService) FindById(id primitive.ObjectID) (*model.Event, erro
 	return event, nil
 }
 
-func (service *EventService) UpdateStatusByDeploymentId(
-	deploymentId primitive.ObjectID,
-	status string,
-	ctx context.Context,
-) (*model.Event, error) {
-	_, err := service.eventCollection.UpdateOne(
-		ctx,
-		bson.M{"deployment_id": deploymentId},
-		bson.M{"$set": bson.M{"status": status}},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return service.FindById(deploymentId)
-}
-
 func (service *EventService) UpdateStatusById(
 	id primitive.ObjectID,
 	status string,

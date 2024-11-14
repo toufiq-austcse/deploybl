@@ -129,7 +129,7 @@ func (dockerService *DockerService) BuildImage(
 	}
 	output, err := cmd_runner.RunCommand("docker", args)
 	if err != nil {
-		return nil, err
+		return output, err
 	}
 	return output, nil
 }

@@ -11,9 +11,10 @@ func RunCommand(name string, args []string) (*string, error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		outputString := string(output)
 		fmt.Printf("Error: %s\n", err)
-		fmt.Printf("Output: %s\n", string(output))
-		return nil, err
+		fmt.Printf("Output: %s\n", outputString)
+		return &outputString, err
 	}
 
 	outputString := string(output)

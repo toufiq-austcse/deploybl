@@ -20,6 +20,7 @@ type (
 		BASE_DOMAIN                          string `env:"BASE_DOMAIN,required"`
 		TRAEFIK_NETWORK_NAME                 string `env:"TRAEFIK_NETWORK_NAME,required"`
 		MAX_DEPLOYING_STATUS_TIME_IN_MINUTES int    `env:"MAX_DEPLOYING_STATUS_TIME_IN_MINUTES,required"`
+		EVENT_LOGS_PATH                      string `env:"EVENT_LOGS_PATH,required"`
 	}
 	DB_CONFIG struct {
 		DB_NAME       string `env:"DB_NAME"`
