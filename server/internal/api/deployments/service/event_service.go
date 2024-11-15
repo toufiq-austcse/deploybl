@@ -3,13 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
+	"os"
+	"time"
+
 	deployItConfig "github.com/toufiq-austcse/deployit/config"
 	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
 	"github.com/toufiq-austcse/deployit/pkg/aws/s3"
 	"github.com/toufiq-austcse/deployit/pkg/utils"
-	"math"
-	"os"
-	"time"
 
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -73,7 +74,12 @@ func (service *EventService) FindById(id primitive.ObjectID) (*model.Event, erro
 	}
 	return event, nil
 }
-func (service *EventService) UpdateEvent(id primitive.ObjectID, updates map[string]interface{}, ctx context.Context) (*model.Event, error) {
+
+func (service *EventService) UpdateEvent(
+	id primitive.ObjectID,
+	updates map[string]interface{},
+	ctx context.Context,
+) (*model.Event, error) {
 	_, err := service.eventCollection.UpdateByID(
 		ctx,
 		id,
@@ -82,7 +88,8 @@ func (service *EventService) UpdateEvent(id primitive.ObjectID, updates map[stri
 	if err != nil {
 		return nil, err
 	}
-	if updates["status"] == deployment_event_status_enums.SUCCESS || updates["status"] == deployment_event_status_enums.FAILED {
+	if updates["status"] == deployment_event_status_enums.SUCCESS ||
+		updates["status"] == deployment_event_status_enums.FAILED {
 		go func() {
 			fileKey, uploadErr := service.UploadLogFile(id.Hex())
 			if uploadErr != nil {
@@ -93,11 +100,9 @@ func (service *EventService) UpdateEvent(id primitive.ObjectID, updates map[stri
 			if updateErr != nil {
 				fmt.Println("error in updating log file key ", updateErr.Error())
 			}
-
 		}()
 	}
 	return service.FindById(id)
-
 }
 
 func (service *EventService) UpdateStatusById(
@@ -107,9 +112,13 @@ func (service *EventService) UpdateStatusById(
 ) (*model.Event, error) {
 	return service.UpdateEvent(id, bson.M{"status": status}, ctx)
 }
+
 func (service *EventService) UploadLogFile(eventId string) (*string, error) {
 	logFilePath := utils.GetEventLogFilePath(eventId)
-	fileKey, err := service.s3ManagerService.UploadFile(logFilePath, deployItConfig.AppConfig.AWS_CONFIG.AWS_S3_EVENT_LOG_PATH)
+	fileKey, err := service.s3ManagerService.UploadFile(
+		logFilePath,
+		deployItConfig.AppConfig.AWS_CONFIG.AWS_S3_EVENT_LOG_PATH,
+	)
 	if err != nil {
 		return nil, err
 	}
