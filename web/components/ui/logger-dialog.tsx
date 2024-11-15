@@ -9,10 +9,10 @@ import { formatDateTime } from '@/lib/utils';
 import { useHttpClient } from '@/api/http/useHttpClient';
 
 const LoggerDialog = ({
-                        open,
-                        setOpen,
-                        loggingEvent
-                      }: {
+  open,
+  setOpen,
+  loggingEvent,
+}: {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   loggingEvent: DeploymentEventType;
@@ -43,7 +43,7 @@ const LoggerDialog = ({
               language="javascript"
               style={dracula}
               customStyle={{
-                fontSize: '16px'
+                fontSize: '16px',
               }}
             >
               {logContent}
