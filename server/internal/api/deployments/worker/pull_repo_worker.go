@@ -67,9 +67,9 @@ func (worker *PullRepoWorker) ProcessPullRepoMessages(messages <-chan *message.M
 		if err != nil {
 			fmt.Println("error in processing pull repo message ", err.Error())
 			if logs != nil {
-				utils.WriteToFile(*logs, event)
+				worker.eventService.WriteToFile(*logs, event)
 			}
-			utils.WriteToFile("error in pulling repository", event)
+			worker.eventService.WriteToFile("error in pulling repository", event)
 
 			if deploymentId != "" {
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
@@ -101,7 +101,7 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (stri
 	if _, updateErr := worker.deploymentService.UpdateLatestStatus(consumedPayload.DeploymentId, enums.PULLING, existingEvent, context.Background()); updateErr != nil {
 		return consumedPayload.DeploymentId, nil, nil, updateErr
 	}
-	utils.WriteToFile(
+	worker.eventService.WriteToFile(
 		"Cloning repository from "+consumedPayload.GitUrl+" branch "+consumedPayload.BranchName,
 		existingEvent,
 	)
@@ -116,7 +116,7 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (stri
 		return consumedPayload.DeploymentId, existingEvent, logs, cloneError
 	}
 	fmt.Println("repository cloned successfully...")
-	utils.WriteToFile("cloned successfully", existingEvent)
+	worker.eventService.WriteToFile("cloned successfully", existingEvent)
 
 	if buildRepoWorkPublishErr := worker.PublishBuildRepoWork(consumedPayload); buildRepoWorkPublishErr != nil {
 		return consumedPayload.DeploymentId, existingEvent, logs, buildRepoWorkPublishErr

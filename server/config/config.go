@@ -21,6 +21,7 @@ type (
 		TRAEFIK_NETWORK_NAME                 string `env:"TRAEFIK_NETWORK_NAME,required"`
 		MAX_DEPLOYING_STATUS_TIME_IN_MINUTES int    `env:"MAX_DEPLOYING_STATUS_TIME_IN_MINUTES,required"`
 		EVENT_LOGS_PATH                      string `env:"EVENT_LOGS_PATH,required"`
+		AWS_CONFIG                           AWS_CONFIG
 	}
 	DB_CONFIG struct {
 		DB_NAME       string `env:"DB_NAME"`
@@ -47,6 +48,14 @@ type (
 		REPOSITORY_STOP_QUEUE                    string `env:"RABBIT_MQ_REPOSITORY_STOP_QUEUE,required"`
 		RABBIT_MQ_REPOSITORY_PRE_RUN_ROUTING_KEY string `env:"RABBIT_MQ_REPOSITORY_PRE_RUN_ROUTING_KEY,required"`
 		RABBIT_MQ_REPOSITORY_PRE_RUN_QUEUE       string `env:"RABBIT_MQ_REPOSITORY_PRE_RUN_QUEUE,required"`
+	}
+	AWS_CONFIG struct {
+		REGION                string `env:"AWS_REGION,required"`
+		ACCESS_KEY_ID         string `env:"AWS_ACCESS_KEY_ID,required"`
+		SECRET_ACCESS_KEY     string `env:"AWS_SECRET_ACCESS_KEY,required"`
+		BUCKET_NAME           string `env:"AWS_S3_BUCKET_NAME,required"`
+		AWS_S3_EVENT_LOG_PATH string `env:"AWS_S3_EVENT_LOG_PATH,required"`
+		AWS_S3_BUCKET_URL     string `env:"AWS_S3_BUCKET_URL,required"`
 	}
 )
 

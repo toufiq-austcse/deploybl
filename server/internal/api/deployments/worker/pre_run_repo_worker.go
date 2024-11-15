@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/toufiq-austcse/deployit/pkg/utils"
-
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/model"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -64,7 +62,7 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessages(messages <-chan *messa
 		deploymentId, event, err := worker.ProcessPreRunRepoMessage(msg)
 		if err != nil {
 			fmt.Println("error in processing pre run repo message ", err.Error())
-			utils.WriteToFile("error in identifying port: "+err.Error(), event)
+			worker.eventService.WriteToFile("error in identifying port: "+err.Error(), event)
 
 			if deploymentId != "" {
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
@@ -125,7 +123,7 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 	}
 
 	fmt.Println("docker image pre run successfully...")
-	utils.WriteToFile("identifying port", event)
+	worker.eventService.WriteToFile("identifying port", event)
 
 	_, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,
