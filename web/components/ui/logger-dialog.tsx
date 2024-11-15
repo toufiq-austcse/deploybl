@@ -7,11 +7,14 @@ import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { DeploymentEventType } from '@/api/http/types/deployment_type';
 import { formatDateTime } from '@/lib/utils';
 
-
-const LoggerDialog = ({ open, setOpen, loggingEvent }: {
+const LoggerDialog = ({
+  open,
+  setOpen,
+  loggingEvent,
+}: {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  loggingEvent: DeploymentEventType
+  loggingEvent: DeploymentEventType;
 }) => {
   const logContent = `
 Cloning repository from https://github.com/toufiq-austcse/test-deployitd.git branch master
@@ -94,23 +97,31 @@ Detected service running port 3000
 running your service
 deployed successfully
  `;
-  return loggingEvent && <Dialog open={open} onOpenChange={setOpen}>
-    <DialogContent className="max-w-5xl w-full">
-      <DialogHeader>
-        <DialogTitle>{loggingEvent.title} log</DialogTitle>
-        <DialogDescription>
-          {loggingEvent.reason} - {formatDateTime(loggingEvent.created_at)}
-        </DialogDescription>
-      </DialogHeader>
-      <div className="rounded-md shadow-md overflow-auto max-h-96">
-        <SyntaxHighlighter language="javascript" style={dracula} customStyle={{
-          fontSize: '16px'
-        }}>
-          {logContent}
-        </SyntaxHighlighter>
-      </div>
-    </DialogContent>
-  </Dialog>;
+  return (
+    loggingEvent && (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-5xl w-full">
+          <DialogHeader>
+            <DialogTitle>{loggingEvent.title} log</DialogTitle>
+            <DialogDescription>
+              {loggingEvent.reason} - {formatDateTime(loggingEvent.created_at)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-md shadow-md overflow-auto max-h-96">
+            <SyntaxHighlighter
+              language="javascript"
+              style={dracula}
+              customStyle={{
+                fontSize: '16px',
+              }}
+            >
+              {logContent}
+            </SyntaxHighlighter>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  );
 };
 
 export default LoggerDialog;

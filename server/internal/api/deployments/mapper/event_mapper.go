@@ -64,6 +64,7 @@ func GenerateTitle(event *model.Event) string {
 		return ""
 	}
 }
+
 func GetEventLogFileUrl(event *model.Event) *string {
 	if event.LogFileKey == nil {
 		return nil
