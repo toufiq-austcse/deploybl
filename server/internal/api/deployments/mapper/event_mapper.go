@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	appConfig "github.com/toufiq-austcse/deployit/config"
 	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
 	deployment_events_enums "github.com/toufiq-austcse/deployit/enums/deployment_events"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/dto/res"
@@ -35,16 +36,17 @@ func ToDeploymentEventsList(events []*model.Event) []res.EventRes {
 
 func ToDeploymentEvent(event *model.Event) res.EventRes {
 	return res.EventRes{
-		Id:             event.Id.Hex(),
-		DeploymentId:   event.DeploymentId.Hex(),
-		Title:          GenerateTitle(event),
-		Type:           event.Type,
-		TriggeredBy:    event.TriggeredBy,
-		TriggeredValue: event.TriggeredValue,
-		Status:         event.Status,
-		Reason:         event.Reason,
-		CreatedAt:      event.CreatedAt,
-		UpdatedAt:      event.UpdatedAt,
+		Id:              event.Id.Hex(),
+		DeploymentId:    event.DeploymentId.Hex(),
+		Title:           GenerateTitle(event),
+		Type:            event.Type,
+		TriggeredBy:     event.TriggeredBy,
+		TriggeredValue:  event.TriggeredValue,
+		Status:          event.Status,
+		Reason:          event.Reason,
+		EventLogFileUrl: GetEventLogFileUrl(event),
+		CreatedAt:       event.CreatedAt,
+		UpdatedAt:       event.UpdatedAt,
 	}
 }
 
@@ -61,4 +63,11 @@ func GenerateTitle(event *model.Event) string {
 	default:
 		return ""
 	}
+}
+func GetEventLogFileUrl(event *model.Event) *string {
+	if event.LogFileKey == nil {
+		return nil
+	}
+	logFileUrl := appConfig.AppConfig.AWS_CONFIG.AWS_S3_BUCKET_URL + "/" + appConfig.AppConfig.AWS_CONFIG.AWS_S3_EVENT_LOG_PATH + "/" + *event.LogFileKey
+	return &logFileUrl
 }

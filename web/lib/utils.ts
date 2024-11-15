@@ -36,3 +36,13 @@ export const onCopyUrlClicked = async (url: string) => {
   await navigator.clipboard.writeText(url as string);
   toast('Copied to clipboard');
 };
+
+export const formatDateTime = (date: Date) => {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(new Date(date));
+};
