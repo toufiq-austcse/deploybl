@@ -41,7 +41,8 @@ func (s3ManagerService S3ManagerService) UploadFile(filePath string, s3Folder st
 		return nil, err
 	}
 
-	key := fmt.Sprintf("%s/%s", s3Folder, fileInfo.Name())
+	fileName := fileInfo.Name()
+	key := fmt.Sprintf("%s/%s", s3Folder, fileName)
 	_, putErr := s3ManagerService.client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: &appConfig.AppConfig.AWS_CONFIG.BUCKET_NAME,
 		Key:    &key,
@@ -55,6 +56,6 @@ func (s3ManagerService S3ManagerService) UploadFile(filePath string, s3Folder st
 	if removeErr := os.Remove(filePath); removeErr != nil {
 		fmt.Println("error in removing file ", removeErr.Error())
 	}
-	return &key, nil
+	return &fileName, nil
 
 }

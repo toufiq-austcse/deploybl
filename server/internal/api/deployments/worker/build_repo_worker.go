@@ -70,9 +70,9 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessages(messages <-chan *message
 		if err != nil {
 			fmt.Println("error in processing build repo message ", err.Error())
 			if buildLogs != nil {
-				worker.eventService.WriteToFile(*buildLogs, event)
+				worker.eventService.WriteEventLogToFile(*buildLogs, event)
 			}
-			worker.eventService.WriteToFile("error in building docker image: "+err.Error(), event)
+			worker.eventService.WriteEventLogToFile("error in building docker image: "+err.Error(), event)
 
 			if deploymentId != "" {
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
@@ -103,14 +103,14 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (st
 		fmt.Println("error in finding event ", err.Error())
 	}
 
-	worker.eventService.WriteToFile("building dockerfile", event)
+	worker.eventService.WriteEventLogToFile("building dockerfile", event)
 	dockerImageTag, buildLogs, buildRepoErr := worker.BuildRepo(consumedPayload)
 	if buildRepoErr != nil {
 		return consumedPayload.DeploymentId, event, buildLogs, buildRepoErr
 	}
 	fmt.Println("Docker image built successfully")
-	worker.eventService.WriteToFile(*buildLogs, event)
-	worker.eventService.WriteToFile("docker image built successfully", event)
+	worker.eventService.WriteEventLogToFile(*buildLogs, event)
+	worker.eventService.WriteEventLogToFile("docker image built successfully", event)
 	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 		"docker_image_tag": dockerImageTag,
 	}, event, context.Background()); updateErr != nil {

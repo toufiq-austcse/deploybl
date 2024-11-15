@@ -91,12 +91,12 @@ func (service *EventService) UpdateEvent(
 	if updates["status"] == deployment_event_status_enums.SUCCESS ||
 		updates["status"] == deployment_event_status_enums.FAILED {
 		go func() {
-			fileKey, uploadErr := service.UploadLogFile(id.Hex())
+			fileName, uploadErr := service.UploadLogFile(id.Hex())
 			if uploadErr != nil {
 				fmt.Println("error in uploading log file ", uploadErr.Error())
 				return
 			}
-			_, updateErr := service.UpdateEvent(id, bson.M{"log_file_key": fileKey}, ctx)
+			_, updateErr := service.UpdateEvent(id, bson.M{"log_file_key": fileName}, ctx)
 			if updateErr != nil {
 				fmt.Println("error in updating log file key ", updateErr.Error())
 			}
@@ -115,14 +115,14 @@ func (service *EventService) UpdateStatusById(
 
 func (service *EventService) UploadLogFile(eventId string) (*string, error) {
 	logFilePath := utils.GetEventLogFilePath(eventId)
-	fileKey, err := service.s3ManagerService.UploadFile(
+	fileName, err := service.s3ManagerService.UploadFile(
 		logFilePath,
 		deployItConfig.AppConfig.AWS_CONFIG.AWS_S3_EVENT_LOG_PATH,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return fileKey, nil
+	return fileName, nil
 }
 
 func (service *EventService) ListEvent(
@@ -197,7 +197,7 @@ func (service *EventService) FindLatestProcessingEventsByDeploymentIds(
 	return events, nil
 }
 
-func (service *EventService) WriteToFile(text string, event *model.Event) {
+func (service *EventService) WriteEventLogToFile(text string, event *model.Event) {
 	if event == nil {
 		return
 	}
