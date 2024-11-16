@@ -1,6 +1,5 @@
 import { FaChevronDown, FaGithub, FaRegCopy } from 'react-icons/fa';
 import * as React from 'react';
-import { useEffect } from 'react';
 import moment from 'moment';
 import DeploymentStatusBadge from '@/components/ui/deployment-status-badge';
 import { useDeploymentContext } from '@/contexts/useDeploymentContext';
@@ -9,7 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
