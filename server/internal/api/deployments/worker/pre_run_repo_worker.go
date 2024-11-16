@@ -62,6 +62,7 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessages(messages <-chan *messa
 		deploymentId, event, err := worker.ProcessPreRunRepoMessage(msg)
 		if err != nil {
 			fmt.Println("error in processing pre run repo message ", err.Error())
+			worker.eventService.WriteEventLogToFile("error in identifying port: "+err.Error(), event)
 
 			if deploymentId != "" {
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
@@ -103,10 +104,13 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 		return consumedPayload.DeploymentId, event, app_errors.DockerImageTagNotFoundError
 	}
 	if deployment.ContainerId != nil {
+		worker.eventService.WriteEventLogToFile("old container found\nremoving old container", event)
+
 		if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
 			return consumedPayload.DeploymentId, event, removeErr
 		}
 
+		worker.eventService.WriteEventLogToFile("old container removed", event)
 		fmt.Println("container removed ", deployment.ContainerId)
 		if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 			"container_id": nil,
@@ -122,6 +126,7 @@ func (worker *PreRunRepoWorker) ProcessPreRunRepoMessage(msg *message.Message) (
 	}
 
 	fmt.Println("docker image pre run successfully...")
+	worker.eventService.WriteEventLogToFile("identifying port", event)
 
 	_, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,

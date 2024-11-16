@@ -90,6 +90,7 @@ export interface DeploymentEventType {
   triggered_value: string;
   status: string;
   reason: string;
+  event_log_file_url: string;
   created_at: Date;
   updated_at: Date;
 }

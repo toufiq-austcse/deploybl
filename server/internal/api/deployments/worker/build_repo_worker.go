@@ -65,9 +65,14 @@ func (worker *BuildRepoWorker) InitBuildRepoSubscriber() {
 
 func (worker *BuildRepoWorker) ProcessBuildRepoMessages(messages <-chan *message.Message) {
 	for msg := range messages {
-		deploymentId, event, err := worker.ProcessBuildRepoMessage(msg)
+		deploymentId, event, buildLogs, err := worker.ProcessBuildRepoMessage(msg)
+		fmt.Println("buildLogs ", buildLogs)
 		if err != nil {
 			fmt.Println("error in processing build repo message ", err.Error())
+			if buildLogs != nil {
+				worker.eventService.WriteEventLogToFile(*buildLogs, event)
+			}
+			worker.eventService.WriteEventLogToFile("error in building docker image: "+err.Error(), event)
 
 			if deploymentId != "" {
 				_, updateErr := worker.deploymentService.UpdateLatestStatus(
@@ -84,13 +89,13 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessages(messages <-chan *message
 	}
 }
 
-func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (string, *model.Event, error) {
+func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (string, *model.Event, *string, error) {
 	defer msg.Ack()
 
 	consumedPayload := payloads.BuildRepoWorkerPayload{}
 	err := json.Unmarshal(msg.Payload, &consumedPayload)
 	if err != nil {
-		return "", nil, err
+		return "", nil, nil, err
 	}
 	fmt.Println("consumed build job ", consumedPayload)
 	event, err := worker.eventService.FindById(consumedPayload.EventId)
@@ -98,22 +103,25 @@ func (worker *BuildRepoWorker) ProcessBuildRepoMessage(msg *message.Message) (st
 		fmt.Println("error in finding event ", err.Error())
 	}
 
-	dockerImageTag, buildRepoErr := worker.BuildRepo(consumedPayload)
+	worker.eventService.WriteEventLogToFile("building dockerfile", event)
+	dockerImageTag, buildLogs, buildRepoErr := worker.BuildRepo(consumedPayload)
 	if buildRepoErr != nil {
-		return consumedPayload.DeploymentId, event, buildRepoErr
+		return consumedPayload.DeploymentId, event, buildLogs, buildRepoErr
 	}
 	fmt.Println("Docker image built successfully")
+	worker.eventService.WriteEventLogToFile(*buildLogs, event)
+	worker.eventService.WriteEventLogToFile("docker image built successfully", event)
 	if _, updateErr := worker.deploymentService.UpdateDeployment(consumedPayload.DeploymentId, map[string]interface{}{
 		"docker_image_tag": dockerImageTag,
 	}, event, context.Background()); updateErr != nil {
-		return consumedPayload.DeploymentId, event, updateErr
+		return consumedPayload.DeploymentId, event, buildLogs, updateErr
 	}
 
 	if publishRunRepoError := worker.PublishPreRunRepoWork(consumedPayload); publishRunRepoError != nil {
-		return consumedPayload.DeploymentId, event, publishRunRepoError
+		return consumedPayload.DeploymentId, event, buildLogs, publishRunRepoError
 	}
 
-	return consumedPayload.DeploymentId, event, nil
+	return consumedPayload.DeploymentId, event, buildLogs, nil
 }
 
 func (worker *BuildRepoWorker) PublishBuildRepoJob(
@@ -133,7 +141,7 @@ func (worker *BuildRepoWorker) PublishBuildRepoJob(
 	return publisher.Close()
 }
 
-func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload) (*string, error) {
+func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload) (*string, *string, error) {
 	localDir := utils.GetLocalRepoPath(payload.DeploymentId, payload.BranchName)
 	dockerFilePath := localDir
 	if payload.DockerFilePath != "." {
@@ -146,12 +154,12 @@ func (worker *BuildRepoWorker) BuildRepo(payload payloads.BuildRepoWorkerPayload
 		"traefik.enable": "true",
 		fmt.Sprintf("traefik.http.routers.%s.rule", payload.DeploymentId): hostRule,
 	}
-	_, err := worker.dockerService.BuildImage(dockerFilePath, localDir, dockerImageTag, labels)
+	buildLogs, err := worker.dockerService.BuildImage(dockerFilePath, localDir, dockerImageTag, labels)
 	if err != nil {
-		return nil, err
+		return nil, buildLogs, err
 	}
 
-	return &dockerImageTag, nil
+	return &dockerImageTag, buildLogs, nil
 }
 
 func (worker *BuildRepoWorker) PublishPreRunRepoWork(

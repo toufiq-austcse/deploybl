@@ -375,8 +375,26 @@ export function useHttpClient() {
         pagination: null
       };
     }
+  };
 
-
+  const getLogContents = async (logUrl: string): Promise<TResponse<string>> => {
+    try {
+      const response = await axios.get(logUrl);
+      return {
+        isSuccessful: true,
+        code: response.status,
+        data: response.data,
+        error: null
+      };
+    } catch (err) {
+      let { code, error } = await handleError(err);
+      return {
+        isSuccessful: false,
+        data: '',
+        error,
+        code
+      };
+    }
   };
 
 
@@ -393,6 +411,7 @@ export function useHttpClient() {
     stopDeployment,
     getRepoBranches,
     listDeploymentEvents,
+    getLogContents,
     loading
   };
 }

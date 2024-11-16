@@ -61,6 +61,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessages(messages <-chan *message.Mes
 		if err != nil {
 			if deploymentId != "" {
 				fmt.Println("error in processing run repo message ", err.Error())
+				worker.eventService.WriteEventLogToFile("error in running docker container: "+err.Error(), event)
 				if err.Error() == app_errors.ContainerPortNotFoundError.Error() &&
 					lastDeploymentInitiateAt != nil {
 					timeElapsed := time.Since(*lastDeploymentInitiateAt)
@@ -120,6 +121,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, app_errors.ContainerPortNotFoundError
 	}
 	fmt.Println("port found ", *port)
+	worker.eventService.WriteEventLogToFile("detected service running port "+*port, existingEvent)
 	if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, removeErr
 	}
@@ -131,6 +133,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, updateErr
 	}
 
+	worker.eventService.WriteEventLogToFile("running your service", existingEvent)
 	containerId, runErr := worker.dockerService.RunContainer(
 		*deployment.DockerImageTag,
 		deployment.Env,
@@ -140,6 +143,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, runErr
 	}
 	fmt.Println("docker image run successfully...")
+	worker.eventService.WriteEventLogToFile("deployed successfully", existingEvent)
 
 	_, updateErr := worker.deploymentService.UpdateDeployment(
 		consumedPayload.DeploymentId,

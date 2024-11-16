@@ -1,7 +1,6 @@
 'use client';
 import { NextPage } from 'next';
 import { ColumnDef } from '@tanstack/react-table';
-import AppTable from '@/components/ui/app-table';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { GoCheckCircleFill, GoXCircleFill } from 'react-icons/go';
@@ -10,6 +9,17 @@ import { useDeploymentContext } from '@/contexts/useDeploymentContext';
 import { DeploymentEventType, PaginationType } from '@/api/http/types/deployment_type';
 import { DEPLOYMENT_EVENT_STATUS } from '@/lib/constant';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal } from 'lucide-react';
+import AppTable from '@/components/ui/app-table';
+import LoggerDialog from '@/components/ui/logger-dialog';
+import { formatDateTime } from '@/lib/utils';
 
 const EventPage: NextPage = () => {
   const { deploymentDetails } = useDeploymentContext();
@@ -19,6 +29,8 @@ const EventPage: NextPage = () => {
   let [pageIndex, setPageIndex] = useState(1);
   let [pagination, setPagination] = useState<PaginationType>();
   const [columns, setColumns] = useState<ColumnDef<DeploymentEventType>[]>([]);
+  const [isOpenLoggerDialog, setIsOpenLoggerDialog] = useState(false);
+  const [loggingEvent, setLoggingEvent] = useState<DeploymentEventType | null>(null);
 
   const [deploymentEvents, setDeploymentEvents] = React.useState<DeploymentEventType[]>([]);
 
@@ -83,13 +95,11 @@ const EventPage: NextPage = () => {
         cell: ({ row }) => {
           let latestStatus = row.original.status;
           return (
-            <div>
-              <div className="flex flex-row gap-2">
-                {getDeploymentEventIcon(latestStatus)}
-                <div>
-                  <p className="text-base font-semibold">{row.original.title}</p>
-                  {row.original.reason && <p className="text-sm text-gray-500">{row.original.reason}</p>}
-                </div>
+            <div className="flex flex-row gap-2">
+              {getDeploymentEventIcon(latestStatus)}
+              <div>
+                <p className="text-base font-semibold">{row.original.title}</p>
+                {row.original.reason && <p className="text-sm text-gray-500">{row.original.reason}</p>}
               </div>
             </div>
           );
@@ -103,14 +113,35 @@ const EventPage: NextPage = () => {
         accessorKey: 'created_at',
         header: 'Created At',
         cell: ({ row }) => {
-          const formatted = new Intl.DateTimeFormat('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-          }).format(new Date(row.original.created_at));
-          return <div>{formatted}</div>;
+          return <div>{formatDateTime(row.original.created_at)}</div>;
+        },
+      },
+      {
+        id: 'actions',
+        enableHiding: false,
+        cell: ({ row }) => {
+          const event = row.original;
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => {
+                    setLoggingEvent(event);
+                    setIsOpenLoggerDialog(true);
+                  }}
+                >
+                  View logs
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
         },
       },
     ]);
@@ -151,17 +182,20 @@ const EventPage: NextPage = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <AppTable<DeploymentEventType>
-          showHeader={false}
-          showCaption={false}
-          totalPageCount={pagination?.last_page}
-          data={deploymentEvents}
-          columns={columns}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          next={nextFunction}
-          prev={prevFunction}
-        />
+        <div>
+          <LoggerDialog open={isOpenLoggerDialog} setOpen={setIsOpenLoggerDialog} loggingEvent={loggingEvent} />
+          <AppTable<DeploymentEventType>
+            showHeader={false}
+            showCaption={false}
+            totalPageCount={pagination?.last_page}
+            data={deploymentEvents}
+            columns={columns}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            next={nextFunction}
+            prev={prevFunction}
+          />
+        </div>
       )}
     </div>
   );

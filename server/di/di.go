@@ -7,6 +7,7 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker"
 	repoController "github.com/toufiq-austcse/deployit/internal/api/repositories/controller"
 	userService "github.com/toufiq-austcse/deployit/internal/api/users/service"
+	"github.com/toufiq-austcse/deployit/pkg/aws/s3"
 	"github.com/toufiq-austcse/deployit/pkg/db/providers/mongodb"
 	firebaseClient "github.com/toufiq-austcse/deployit/pkg/firebase"
 
@@ -20,6 +21,7 @@ func NewDiContainer() (*dig.Container, error) {
 		mongodb.New,
 		github.NewGithubHttpClient,
 		firebaseClient.NewFirebaseClient,
+		s3.NewS3ManagerService,
 		service.NewDeploymentService,
 		service.NewEventService,
 		userService.NewUserService,

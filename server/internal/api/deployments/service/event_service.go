@@ -2,8 +2,15 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"math"
+	"os"
 	"time"
+
+	deployItConfig "github.com/toufiq-austcse/deployit/config"
+	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
+	"github.com/toufiq-austcse/deployit/pkg/aws/s3"
+	"github.com/toufiq-austcse/deployit/pkg/utils"
 
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,15 +24,17 @@ import (
 )
 
 type EventService struct {
-	eventCollection *mongo.Collection
-	dockerService   *DockerService
+	eventCollection  *mongo.Collection
+	dockerService    *DockerService
+	s3ManagerService *s3.S3ManagerService
 }
 
 func NewEventService(
 	database *mongo.Database,
+	s3ManagerService *s3.S3ManagerService,
 ) *EventService {
 	collection := database.Collection("events")
-	return &EventService{eventCollection: collection}
+	return &EventService{eventCollection: collection, s3ManagerService: s3ManagerService}
 }
 
 func (service *EventService) Create(model *model.Event, ctx context.Context) error {
@@ -66,20 +75,34 @@ func (service *EventService) FindById(id primitive.ObjectID) (*model.Event, erro
 	return event, nil
 }
 
-func (service *EventService) UpdateStatusByDeploymentId(
-	deploymentId primitive.ObjectID,
-	status string,
+func (service *EventService) UpdateEvent(
+	id primitive.ObjectID,
+	updates map[string]interface{},
 	ctx context.Context,
 ) (*model.Event, error) {
-	_, err := service.eventCollection.UpdateOne(
+	_, err := service.eventCollection.UpdateByID(
 		ctx,
-		bson.M{"deployment_id": deploymentId},
-		bson.M{"$set": bson.M{"status": status}},
+		id,
+		bson.M{"$set": updates},
 	)
 	if err != nil {
 		return nil, err
 	}
-	return service.FindById(deploymentId)
+	if updates["status"] == deployment_event_status_enums.SUCCESS ||
+		updates["status"] == deployment_event_status_enums.FAILED {
+		go func() {
+			fileName, uploadErr := service.UploadLogFile(id.Hex())
+			if uploadErr != nil {
+				fmt.Println("error in uploading log file ", uploadErr.Error())
+				return
+			}
+			_, updateErr := service.UpdateEvent(id, bson.M{"log_file_key": fileName}, ctx)
+			if updateErr != nil {
+				fmt.Println("error in updating log file key ", updateErr.Error())
+			}
+		}()
+	}
+	return service.FindById(id)
 }
 
 func (service *EventService) UpdateStatusById(
@@ -87,15 +110,19 @@ func (service *EventService) UpdateStatusById(
 	status string,
 	ctx context.Context,
 ) (*model.Event, error) {
-	_, err := service.eventCollection.UpdateOne(
-		ctx,
-		bson.M{"_id": id},
-		bson.M{"$set": bson.M{"status": status}},
+	return service.UpdateEvent(id, bson.M{"status": status}, ctx)
+}
+
+func (service *EventService) UploadLogFile(eventId string) (*string, error) {
+	logFilePath := utils.GetEventLogFilePath(eventId)
+	fileName, err := service.s3ManagerService.UploadFile(
+		logFilePath,
+		deployItConfig.AppConfig.AWS_CONFIG.AWS_S3_EVENT_LOG_PATH,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return service.FindById(id)
+	return fileName, nil
 }
 
 func (service *EventService) ListEvent(
@@ -168,4 +195,25 @@ func (service *EventService) FindLatestProcessingEventsByDeploymentIds(
 	}
 
 	return events, nil
+}
+
+func (service *EventService) WriteEventLogToFile(text string, event *model.Event) {
+	if event == nil {
+		return
+	}
+	createErr := utils.CreateDirIfNotExists(deployItConfig.AppConfig.EVENT_LOGS_PATH)
+	if createErr != nil {
+		fmt.Println("error in creating dir ", createErr.Error())
+		return
+	}
+	fileName := utils.GetEventLogFilePath(event.Id.Hex())
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		fmt.Println("error in opening file ", err.Error())
+	} else {
+		defer file.Close()
+		if _, writeErr := file.WriteString(text + "\n"); writeErr != nil {
+			fmt.Println("error in writing file ", writeErr.Error())
+		}
+	}
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"os"
 	"strings"
 
 	deployItConfig "github.com/toufiq-austcse/deployit/config"
@@ -26,4 +27,19 @@ func ParseRepositoryUrl(repoUrl string) string {
 
 func GetUserFromContext(ctx context.Context) *model.User {
 	return ctx.Value("user").(*model.User)
+}
+
+func CreateDirIfNotExists(dirPath string) error {
+	_, err := os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(dirPath, 0o755)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func GetEventLogFilePath(eventId string) string {
+	return deployItConfig.AppConfig.EVENT_LOGS_PATH + "/" + eventId + "_log.txt"
 }
