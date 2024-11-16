@@ -13,7 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
@@ -100,23 +100,26 @@ const EventPage: NextPage = () => {
               <div>
                 <p
                   className="text-base font-semibold hover:underline hover:decoration-2 hover:text-blue-400 cursor-pointer"
-                  onClick={() => onViewLogClicked(row.original)}>{row.original.title}</p>
+                  onClick={() => onViewLogClicked(row.original)}
+                >
+                  {row.original.title}
+                </p>
                 {row.original.reason && <p className="text-sm text-gray-500">{row.original.reason}</p>}
               </div>
             </div>
           );
-        }
+        },
       },
       {
         accessorKey: 'triggered_by',
-        header: 'Triggered By'
+        header: 'Triggered By',
       },
       {
         accessorKey: 'created_at',
         header: 'Created At',
         cell: ({ row }) => {
           return <div>{formatDateTime(row.original.created_at)}</div>;
-        }
+        },
       },
       {
         id: 'actions',
@@ -133,16 +136,12 @@ const EventPage: NextPage = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => onViewLogClicked(event)}
-                >
-                  View logs
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onViewLogClicked(event)}>View logs</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           );
-        }
-      }
+        },
+      },
     ]);
   };
   const onViewLogClicked = (event: DeploymentEventType) => {
