@@ -85,7 +85,7 @@ const EventPage: NextPage = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [deploymentDetails.latest_status]);
 
   const initColumns = () => {
     setColumns([
@@ -98,7 +98,12 @@ const EventPage: NextPage = () => {
             <div className="flex flex-row gap-2">
               {getDeploymentEventIcon(latestStatus)}
               <div>
-                <p className="text-base font-semibold">{row.original.title}</p>
+                <p
+                  className="text-base font-semibold hover:underline hover:decoration-2 hover:text-blue-400 cursor-pointer"
+                  onClick={() => onViewLogClicked(row.original)}
+                >
+                  {row.original.title}
+                </p>
                 {row.original.reason && <p className="text-sm text-gray-500">{row.original.reason}</p>}
               </div>
             </div>
@@ -131,20 +136,17 @@ const EventPage: NextPage = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => {
-                    setLoggingEvent(event);
-                    setIsOpenLoggerDialog(true);
-                  }}
-                >
-                  View logs
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onViewLogClicked(event)}>View logs</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           );
         },
       },
     ]);
+  };
+  const onViewLogClicked = (event: DeploymentEventType) => {
+    setLoggingEvent(event);
+    setIsOpenLoggerDialog(true);
   };
   const nextFunction = () => {
     if (pageIndex === pagination?.last_page) {
