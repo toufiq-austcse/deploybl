@@ -97,7 +97,7 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 		return consumedPayload.DeploymentId, nil, app_errors.DeploymentNotFoundError
 	}
 	event, err := worker.eventService.FindById(consumedPayload.EventId)
-	worker.eventService.WriteEventLogToFile("Deployment stop initiated", event)
+	worker.eventService.WriteEventLogToFile("deployment stop initiated", event)
 
 	if deployment.ContainerId == nil {
 		return consumedPayload.DeploymentId, event, app_errors.ContainerNotFoundError
@@ -106,7 +106,7 @@ func (worker *StopRepoWorker) ProcessStopRepoMessage(msg *message.Message) (stri
 		return consumedPayload.DeploymentId, event, stopErr
 	}
 
-	worker.eventService.WriteEventLogToFile("Deployment stopped", event)
+	worker.eventService.WriteEventLogToFile("deployment stopped", event)
 
 	_, err = worker.deploymentService.UpdateLatestStatus(
 		consumedPayload.DeploymentId,

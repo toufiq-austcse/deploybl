@@ -18,14 +18,21 @@ const LoggerDialog = ({
   loggingEvent: DeploymentEventType;
 }) => {
   const { getLogContents } = useHttpClient();
-  const [logContent, setLogContent] = React.useState<string>('');
+  const [logContent, setLogContent] = React.useState<string>(null);
   React.useEffect(() => {
     if (loggingEvent) {
-      getLogContents(loggingEvent.event_log_file_url).then((response) => {
-        if (response.isSuccessful) {
-          setLogContent(response.data);
-        }
-      });
+      if (loggingEvent.event_log_file_url === null) {
+        setLogContent('No log available yet');
+      } else {
+        getLogContents(loggingEvent.event_log_file_url).then((response) => {
+          console.log('response', response);
+          if (response.isSuccessful) {
+            setLogContent(response.data);
+          } else {
+            setLogContent('Failed to get log content');
+          }
+        });
+      }
     }
   }, [loggingEvent]);
   return (

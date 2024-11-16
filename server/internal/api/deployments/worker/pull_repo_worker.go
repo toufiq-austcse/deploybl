@@ -102,7 +102,7 @@ func (worker *PullRepoWorker) ProcessPullRepoMessage(msg *message.Message) (stri
 		return consumedPayload.DeploymentId, nil, nil, updateErr
 	}
 	worker.eventService.WriteEventLogToFile(
-		"Cloning repository from "+consumedPayload.GitUrl+" branch "+consumedPayload.BranchName,
+		"cloning repository from "+consumedPayload.GitUrl+" branch "+consumedPayload.BranchName,
 		existingEvent,
 	)
 

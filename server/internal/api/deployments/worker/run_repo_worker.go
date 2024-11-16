@@ -121,7 +121,7 @@ func (worker *RunRepoWorker) ProcessRunRepoMessage(
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, app_errors.ContainerPortNotFoundError
 	}
 	fmt.Println("port found ", *port)
-	worker.eventService.WriteEventLogToFile("Detected service running port "+*port, existingEvent)
+	worker.eventService.WriteEventLogToFile("detected service running port "+*port, existingEvent)
 	if removeErr := worker.dockerService.RemoveContainer(*deployment.ContainerId); removeErr != nil {
 		return consumedPayload.DeploymentId, deployment.LastDeploymentInitiatedAt, existingEvent, removeErr
 	}
