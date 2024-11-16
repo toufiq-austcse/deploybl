@@ -13,7 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
@@ -103,18 +103,18 @@ const EventPage: NextPage = () => {
               </div>
             </div>
           );
-        }
+        },
       },
       {
         accessorKey: 'triggered_by',
-        header: 'Triggered By'
+        header: 'Triggered By',
       },
       {
         accessorKey: 'created_at',
         header: 'Created At',
         cell: ({ row }) => {
           return <div>{formatDateTime(row.original.created_at)}</div>;
-        }
+        },
       },
       {
         id: 'actions',
@@ -142,8 +142,8 @@ const EventPage: NextPage = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           );
-        }
-      }
+        },
+      },
     ]);
   };
   const nextFunction = () => {
