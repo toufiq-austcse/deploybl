@@ -9,7 +9,6 @@ func Setup(
 	group *gin.RouterGroup,
 	controller *controller.AuthController,
 ) {
-
 	group.POST("signup", controller.SignUp)
 	group.POST("login", controller.Login)
 }
