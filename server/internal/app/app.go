@@ -2,9 +2,10 @@ package app
 
 import (
 	"fmt"
-	auth "github.com/toufiq-austcse/deployit/internal/api/auth/controller"
 	"net/http"
 	"time"
+
+	auth "github.com/toufiq-austcse/deployit/internal/api/auth/controller"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
