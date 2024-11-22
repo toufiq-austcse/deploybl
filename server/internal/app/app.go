@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	auth "github.com/toufiq-austcse/deployit/internal/api/auth/controller"
 	"net/http"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/toufiq-austcse/deployit/config"
 	"github.com/toufiq-austcse/deployit/di"
 	"github.com/toufiq-austcse/deployit/docs"
+	authRouter "github.com/toufiq-austcse/deployit/internal/api/auth/router"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
 	deploymentRouter "github.com/toufiq-austcse/deployit/internal/api/deployments/router"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker"
@@ -76,12 +78,16 @@ func SetupRouters(apiServer *server.Server, container *dig.Container) error {
 	err := container.Invoke(func(deploymentController *controller.DeploymentController,
 		repoController *repoController.RepoController,
 		eventController *controller.EventController,
+		authController *auth.AuthController,
 		subscriber *worker.PullRepoWorker,
 		firebaseClient *firebase.Client,
 		userService *service.UserService,
 	) {
 		indexRouterGroup := apiServer.GinEngine.Group("")
 		indexRouter.Setup(indexRouterGroup)
+
+		authRouterGroup := apiServer.GinEngine.Group("api/v1/auth")
+		authRouter.Setup(authRouterGroup, authController)
 
 		deploymentsRouterGroup := apiServer.GinEngine.Group("api/v1/deployments")
 		deploymentsRouterGroup.Use(middleware.AuthMiddleware(firebaseClient, userService))

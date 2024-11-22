@@ -2,6 +2,7 @@ package di
 
 import (
 	_ "github.com/lib/pq" // <------------ here
+	auth "github.com/toufiq-austcse/deployit/internal/api/auth/controller"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/controller"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/service"
 	"github.com/toufiq-austcse/deployit/internal/api/deployments/worker"
@@ -28,6 +29,7 @@ func NewDiContainer() (*dig.Container, error) {
 		service.NewDockerService,
 		controller.NewDeploymentController,
 		controller.NewEventController,
+		auth.NewAuthController,
 		repoController.NewRepoController,
 		worker.NewPullRepoWorker,
 		worker.NewBuildRepoWorker,
