@@ -3,12 +3,13 @@ package s3
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	appConfig "github.com/toufiq-austcse/deployit/config"
-	"os"
 )
 
 type S3ManagerService struct {
@@ -16,7 +17,11 @@ type S3ManagerService struct {
 }
 
 func NewS3ManagerService() (*S3ManagerService, error) {
-	creds := credentials.NewStaticCredentialsProvider(appConfig.AppConfig.AWS_CONFIG.ACCESS_KEY_ID, appConfig.AppConfig.AWS_CONFIG.SECRET_ACCESS_KEY, "")
+	creds := credentials.NewStaticCredentialsProvider(
+		appConfig.AppConfig.AWS_CONFIG.ACCESS_KEY_ID,
+		appConfig.AppConfig.AWS_CONFIG.SECRET_ACCESS_KEY,
+		"",
+	)
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion(appConfig.AppConfig.AWS_CONFIG.REGION),
 		config.WithCredentialsProvider(creds),
@@ -57,5 +62,4 @@ func (s3ManagerService S3ManagerService) UploadFile(filePath string, s3Folder st
 		fmt.Println("error in removing file ", removeErr.Error())
 	}
 	return &fileName, nil
-
 }
