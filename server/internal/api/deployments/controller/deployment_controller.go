@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	deployment_event_status_enums "github.com/toufiq-austcse/deployit/enums/deployment_event_status"
 	"github.com/toufiq-austcse/deployit/enums/deployment_events_triggered_by"
 	"github.com/toufiq-austcse/deployit/enums/reasons"
 
@@ -837,21 +836,39 @@ func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 func (controller *DeploymentController) DeployingCheckCron(context *gin.Context) {
 	count := 0
 
-	deployments := controller.deploymentService.FindByDeploymentStatus(enums.DEPLOYING)
-	for _, deployment := range deployments {
-		event, err := controller.eventService.FindLatestEventByDeploymentIdAndStatus(
-			deployment.Id,
-			deployment_event_status_enums.PROCESSING,
-			context,
+	events, err := controller.eventService.GetLatestProcessingEventsByDeployments(context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
 		)
-		if err != nil {
-			fmt.Println("error in finding event ", err.Error())
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+
+	deploymentIds := controller.eventService.GetDeploymentIdFromEvents(events)
+	deployments, err := controller.deploymentService.GetDeploymentsByIds(deploymentIds, context)
+	if err != nil {
+		errRes := api_response.BuildErrorResponse(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			err.Error(),
+			nil,
+		)
+		context.AbortWithStatusJSON(errRes.Code, errRes)
+		return
+	}
+
+	for _, deployment := range deployments {
+		event := controller.eventService.FindEventByDeploymentId(events, deployment.Id)
+		if event == nil {
 			continue
 		}
-
 		runRepoPayload := mapper.ToRunRepoWorkerPayloadFromDeployment(deployment, *event)
-		if err := controller.runRepoWorker.PublishRunRepoJob(runRepoPayload); err != nil {
-			fmt.Println("error while publishing job ", err.Error())
+		if publishErr := controller.runRepoWorker.PublishRunRepoJob(runRepoPayload); publishErr != nil {
+			fmt.Println("error while publishing job ", publishErr.Error())
 		} else {
 			count++
 		}
@@ -861,5 +878,5 @@ func (controller *DeploymentController) DeployingCheckCron(context *gin.Context)
 		http.StatusText(http.StatusOK),
 		count,
 	)
-	context.JSON(cronRes.Code, cronRes)
+	context.JSON(http.StatusOK, cronRes)
 }

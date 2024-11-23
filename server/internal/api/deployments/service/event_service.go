@@ -217,3 +217,65 @@ func (service *EventService) WriteEventLogToFile(text string, event *model.Event
 		}
 	}
 }
+
+func (service *EventService) GetLatestProcessingEventsByDeployments(ctx context.Context) ([]model.Event, error) {
+	var results []model.Event
+
+	pipeline := mongo.Pipeline{
+		// First $match stage
+		{
+			{"$match", bson.D{
+				{"status", "processing"},
+			}},
+		},
+		// $setWindowFields stage
+		{
+			{"$setWindowFields", bson.D{
+				{"partitionBy", "$deploymentId"},
+				{"sortBy", bson.D{
+					{"timestamp", -1},
+				}},
+				{"output", bson.D{
+					{"rank", bson.D{
+						{"$rank", bson.D{}},
+					}},
+				}},
+			}},
+		},
+		// Second $match stage
+		{
+			{"$match", bson.D{
+				{"rank", 1},
+			}},
+		},
+	}
+	cursor, err := service.eventCollection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return results, err
+	}
+	defer cursor.Close(ctx)
+	if err = cursor.All(ctx, &results); err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
+func (service *EventService) GetDeploymentIdFromEvents(events []model.Event) []primitive.ObjectID {
+	deploymentIds := []primitive.ObjectID{}
+	for _, event := range events {
+		deploymentIds = append(deploymentIds, event.DeploymentId)
+	}
+	return deploymentIds
+}
+
+func (service *EventService) FindEventByDeploymentId(
+	events []model.Event,
+	deploymentId primitive.ObjectID,
+) *model.Event {
+	for _, event := range events {
+		if event.DeploymentId == deploymentId {
+			return &event
+		}
+	}
+	return nil
+}
