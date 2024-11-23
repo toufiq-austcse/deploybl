@@ -6,3 +6,5 @@ bin
 repos
 deploybl-7a03d-firebase-adminsdk-snvhm-7e1ee4d952.json
 *.txt
+.mongo
+.docker-conf
