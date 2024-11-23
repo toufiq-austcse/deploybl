@@ -322,6 +322,27 @@ func (service *DeploymentService) CountDeploymentByRepositoryName(
 	return service.deploymentCollection.CountDocuments(ctx, filter)
 }
 
+func (service *DeploymentService) GetDeploymentsByIds(
+	ids []primitive.ObjectID,
+	ctx context.Context,
+) ([]model.Deployment, error) {
+	var deployments []model.Deployment
+	filter := bson.M{"_id": bson.M{"$in": ids}}
+	cursor, err := service.deploymentCollection.Find(context.Background(), filter)
+	if err != nil {
+		return deployments, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var deployment model.Deployment
+		if decodeErr := cursor.Decode(&deployment); decodeErr != nil {
+			continue
+		}
+		deployments = append(deployments, deployment)
+	}
+	return deployments, nil
+}
+
 func (service *DeploymentService) GetEventStatusByDeploymentStatus(
 	event *model.Event,
 	deploymentStatus string,
