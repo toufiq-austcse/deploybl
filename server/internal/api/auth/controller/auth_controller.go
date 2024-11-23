@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"net/http"
+
 	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/toufiq-austcse/deployit/internal/api/auth/dto/req"
@@ -9,7 +11,6 @@ import (
 	userService "github.com/toufiq-austcse/deployit/internal/api/users/service"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"github.com/toufiq-austcse/deployit/pkg/firebase"
-	"net/http"
 )
 
 type AuthController struct {
@@ -18,7 +19,8 @@ type AuthController struct {
 }
 
 func NewAuthController(
-	firebaseClient *firebase.Client, userService *userService.UserService) *AuthController {
+	firebaseClient *firebase.Client, userService *userService.UserService,
+) *AuthController {
 	return &AuthController{
 		firebaseClient: firebaseClient,
 		userService:    userService,
@@ -97,5 +99,4 @@ func (controller *AuthController) SignUp(context *gin.Context) {
 }
 
 func (controller *AuthController) Login(context *gin.Context) {
-
 }
