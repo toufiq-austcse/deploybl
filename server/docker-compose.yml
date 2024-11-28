@@ -29,6 +29,10 @@ services:
     build: .
     restart: always
     hostname: deploybl-server
+    container_name: deploybl-server
+    depends_on:
+      - mongodb
+      - rabbitmq
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.deploy.rule=Host(`${DEPLOYBL_TREAFIK_HOST}`)"
@@ -40,6 +44,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "3000:3000"
+    networks:
+      - web
+      - default
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
 networks:
   web:
     external: true
