@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  deploybl-server:
+    build: .
+    restart: always
+    hostname: deploybl-server
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.deploy.rule=Host(`api.deploybl.com`)"
+    env_file:
+      - .env
+    volumes:
+      - ./repos:$REPOSITORIES_PATH
+      - ./event_logs:$EVENT_LOGS_PATH
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "3000:3000"
+    networks:
+      - web
+networks:
+  web:
+    external: true

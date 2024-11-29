@@ -1,13 +1,50 @@
 version: '3.9'
 
 services:
-  just-deploy:
+  mongodb:
+    image: mongo
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    ports:
+      - 27017:27017
+    volumes:
+      - .mongo/data/db:/data/db
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - .docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - .docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+
+  deploybl-server:
     build: .
-    restart: always
-    hostname: just-deploy
+    hostname: deploybl-server
+    container_name: deploybl-server
+    restart: on-failure
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.deploy.rule=Host(`api.deploybl.com`)"
+      - "traefik.http.routers.deploy.rule=Host(`${DEPLOYBL_TREAFIK_HOST}`)"
     env_file:
       - .env
     volumes:
@@ -18,6 +55,8 @@ services:
       - "3000:3000"
     networks:
       - web
+      - default
+
 networks:
   web:
     external: true

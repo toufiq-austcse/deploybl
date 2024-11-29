@@ -4,7 +4,8 @@ const withImages = require('next-images')
 const nextConfig = {
   images: {
    domains:["cdn.toufiq.dev"],
-  }
+  },
+  output: 'standalone',
 };
 
 module.exports = withPlugins([[withImages]], nextConfig)
