@@ -3,4 +3,3 @@ tmp
 node_modules
 pnpm-lock.yaml
 event_logs
-**/.env
