@@ -3,6 +3,12 @@ version: '3.9'
 services:
   mongodb:
     image: mongo
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
     ports:
       - 27017:27017
     volumes:
@@ -11,10 +17,11 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
-      interval: 5s
-      timeout: 15s
-      retries: 10
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
     ports:
       - 5672:5672
       - 15672:15672
@@ -27,12 +34,14 @@ services:
 
   deploybl-server:
     build: .
-    restart: always
     hostname: deploybl-server
     container_name: deploybl-server
+    restart: on-failure
     depends_on:
-      - mongodb
-      - rabbitmq
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.deploy.rule=Host(`${DEPLOYBL_TREAFIK_HOST}`)"
@@ -47,11 +56,6 @@ services:
     networks:
       - web
       - default
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
 
 networks:
   web:

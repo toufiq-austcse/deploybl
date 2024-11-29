@@ -1,17 +1,10 @@
-version: "3.7"
+version: '3.9'
 services:
-  video-touch-web:
-    image: 578965/video-touch-web
-    container_name: video-touch-web
+  deploybl-web:
+    build: .
+    restart: on-failure
+    container_name: deploybl-web
     ports:
-      - "3009:3000"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          cpus: "0.5"
+      - "3001:3000"
 
 
