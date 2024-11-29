@@ -15,3 +15,6 @@ tools-install:
 format:
 	chmod +x ./scripts/format.sh
 	./scripts/format.sh
+setup-cron:
+	chmod +x ./scripts/setup-cron.sh
+	 ./scripts/setup-cron.sh
