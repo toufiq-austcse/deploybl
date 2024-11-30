@@ -324,10 +324,11 @@ func (service *DeploymentService) CountDeploymentByRepositoryName(
 
 func (service *DeploymentService) GetDeploymentsByIds(
 	ids []primitive.ObjectID,
+	status string,
 	ctx context.Context,
 ) ([]model.Deployment, error) {
 	var deployments []model.Deployment
-	filter := bson.M{"_id": bson.M{"$in": ids}}
+	filter := bson.M{"_id": bson.M{"$in": ids}, "latest_status": status}
 	cursor, err := service.deploymentCollection.Find(context.Background(), filter)
 	if err != nil {
 		return deployments, err

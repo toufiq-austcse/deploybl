@@ -849,7 +849,7 @@ func (controller *DeploymentController) DeployingCheckCron(context *gin.Context)
 	}
 
 	deploymentIds := controller.eventService.GetDeploymentIdFromEvents(events)
-	deployments, err := controller.deploymentService.GetDeploymentsByIds(deploymentIds, context)
+	deployments, err := controller.deploymentService.GetDeploymentsByIds(deploymentIds, enums.DEPLOYING, context)
 	if err != nil {
 		errRes := api_response.BuildErrorResponse(
 			http.StatusInternalServerError,
