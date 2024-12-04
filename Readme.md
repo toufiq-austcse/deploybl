@@ -29,7 +29,6 @@ Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and ma
 * [shadcn/ui](https://ui.shadcn.com/) - UI compoenent
 * [Tailwind CSS](https://tailwindcss.com/) - For styling
 * [Docker](https://www.docker.com/) - For deployment
-* [Github Actions](https://github.com/features/actions) - For CI
 
 <a id="frontend"></a>
 ## Frontend
