@@ -1,6 +1,6 @@
 # Deploybl
->Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and management of applications.
-> 
+Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and management of applications.
+
 <img src ="images/dashboard.jpeg"></img>
 ## Table Of Contents
 
@@ -28,7 +28,6 @@
 
 <a id="technologies"></a>
 ### Technologies
----
 
 * [Go](https://golang.org/) - As Backend Language
 * [Gin](https://github.com/gin-gonic/gin) - As Web Framework
@@ -45,8 +44,7 @@
 
 <a id="frontend"></a>
 ### Frontend
----
- <p> Signup Page </p>
+<p> Signup Page </p>
 <img src ="images/signup.jpeg">
  <p> Login Page </p>
 <img src ="images/login.jpeg">
