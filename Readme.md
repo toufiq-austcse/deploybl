@@ -4,7 +4,7 @@ Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and ma
 <img src ="images/dashboard.jpeg"></img>
 ## Table Of Contents
 - [Features](#features)
-- [Technologies](#technologies---libraries)
+- [Technologies](#technologies)
 - [Frontend](#frontend)
 
 <a id="features"></a>
