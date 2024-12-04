@@ -1,7 +1,7 @@
 # Deploybl
-
-> Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and management of applications.
-
+>Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and management of applications.
+> 
+<img src ="images/dashboard.jpeg">
 ## Table Of Contents
 
 - [The goals of this project](#goal)
