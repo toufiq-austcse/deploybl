@@ -27,7 +27,7 @@ Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and ma
 * View Deployment Logs
 
 <a id="technologies"></a>
-### Technologies
+## Technologies
 
 * [Go](https://golang.org/) - As Backend Language
 * [Gin](https://github.com/gin-gonic/gin) - As Web Framework
@@ -43,7 +43,7 @@ Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and ma
 * [Github Actions](https://github.com/features/actions) - For CI
 
 <a id="frontend"></a>
-### Frontend
+## Frontend
 <p> Signup Page </p>
 <img src ="images/signup.jpeg">
  <p> Login Page </p>
