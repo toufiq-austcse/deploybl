@@ -7,7 +7,6 @@ Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and ma
 - [The goals of this project](#goal)
 - [Features](#features)
 - [Technologies](#technologies---libraries)
-- [Documentation Apis](#documentation-apis)
 - [Frontend](#frontend)
 
 <a id="goal"></a>
