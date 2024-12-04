@@ -1,7 +1,7 @@
 # Deploybl
 >Deploybl is a Platform as a Service (PaaS) that simplifies the deployment and management of applications.
 > 
-<img src ="images/dashboard.jpeg">
+<img src ="images/dashboard.jpeg"></img>
 ## Table Of Contents
 
 - [The goals of this project](#goal)
@@ -12,16 +12,13 @@
 
 <a id="goal"></a>
 ## The Goals Of This Project
----
-
 * Deploy any type of application (Node.js, Java, Go, etc.). No need to buy and configure a server.
 * Generate a unique URL for each deployment. No need to buy and configure a domain.
 * Using RabbitMQ as a Job Queue
 * Building a simple dashboard with Next.js and shadcn/ui
 
 <a id="features"></a>
-### Features
----
+## Features
 
 * User Login/Registration
 * Deploy any application from git repository
