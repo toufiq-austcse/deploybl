@@ -1,4 +1,17 @@
 definitions:
+  api_response.Response:
+    properties:
+      code:
+        description: This is Name
+        type: integer
+      data: {}
+      errors:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+    type: object
   req.CreateDeploymentReqDto:
     properties:
       branch_name:
@@ -29,6 +42,75 @@ definitions:
       root_dir:
         type: string
       title:
+        type: string
+    type: object
+  res.DeploymentDetailsRes:
+    properties:
+      _id:
+        type: string
+      branch_name:
+        type: string
+      container_id:
+        type: string
+      created_at:
+        type: string
+      docker_file_path:
+        type: string
+      docker_image_tag:
+        type: string
+      domain_url:
+        type: string
+      env:
+        additionalProperties:
+          type: string
+        type: object
+      last_deployed_at:
+        type: string
+      latest_status:
+        type: string
+      repository_name:
+        type: string
+      repository_provider:
+        type: string
+      repository_url:
+        type: string
+      root_directory:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  res.DeploymentLatestStatusRes:
+    properties:
+      _id:
+        type: string
+      domain_url:
+        type: string
+      last_deployed_at:
+        type: string
+      latest_status:
+        type: string
+    type: object
+  res.DeploymentRes:
+    properties:
+      _id:
+        type: string
+      branch_name:
+        type: string
+      created_at:
+        type: string
+      domain_url:
+        type: string
+      last_deployed_at:
+        type: string
+      latest_status:
+        type: string
+      repository_provider:
+        type: string
+      title:
+        type: string
+      updated_at:
         type: string
     type: object
 info:
@@ -64,6 +146,15 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/res.DeploymentRes'
+                  type: array
+              type: object
       summary: Deployment Index
       tags:
       - Deployments
@@ -82,6 +173,15 @@ paths:
       responses:
         "200":
           description: OK
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.DeploymentRes'
+              type: object
       summary: Create Deployment
       tags:
       - Deployments
@@ -100,6 +200,13 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.DeploymentDetailsRes'
+              type: object
       summary: Show Deployment
       tags:
       - Deployments
@@ -123,6 +230,13 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.DeploymentDetailsRes'
+              type: object
       summary: Update Deployment
       tags:
       - Deployments
@@ -141,6 +255,13 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.DeploymentDetailsRes'
+              type: object
       summary: Update Deployment Env
       tags:
       - Deployments
@@ -156,6 +277,11 @@ paths:
       - description: Limit
         in: query
         name: limit
+        type: string
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
         type: string
       produces:
       - application/json
@@ -180,6 +306,13 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.DeploymentDetailsRes'
+              type: object
       summary: Rebuild and Deploy Deployment
       tags:
       - Deployments
@@ -198,6 +331,13 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.DeploymentDetailsRes'
+              type: object
       summary: Restart Deployment
       tags:
       - Deployments
@@ -216,6 +356,13 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.DeploymentDetailsRes'
+              type: object
       summary: Stop Deployment
       tags:
       - Deployments
@@ -258,6 +405,15 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/res.DeploymentLatestStatusRes'
+                  type: array
+              type: object
       summary: Deployments Latest Status
       tags:
       - Deployments
