@@ -65,6 +65,7 @@ func NewDeploymentController(
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments [get]
+// @Success  200      {object}  api_response.Response{data=[]res.DeploymentRes}
 func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
 
@@ -108,8 +109,9 @@ func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 // @Tags     Deployments
 // @Accept   json
 // @Produce  json
-// @Success  200
+// @Success  201
 // @Router   /api/v1/deployments [post]
+// @Success  201     {object}  api_response.Response{data=res.DeploymentRes}
 func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
 	body := &req.CreateDeploymentReqDto{}
@@ -207,6 +209,7 @@ func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/{id} [patch]
+// @Success  200    {object}  api_response.Response{data=res.DeploymentDetailsRes}
 func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -324,6 +327,7 @@ func (controller *DeploymentController) DeploymentUpdate(context *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/{id}/env [put]
+// @Success  200    {object}  api_response.Response{data=res.DeploymentDetailsRes}
 func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 	var envBody map[string]string
 	if err := context.BindJSON(&envBody); err != nil {
@@ -440,6 +444,7 @@ func (controller *DeploymentController) EnvUpdate(context *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/{id} [get]
+// @Success  200    {object}  api_response.Response{data=res.DeploymentDetailsRes}
 func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -475,6 +480,7 @@ func (controller *DeploymentController) DeploymentShow(context *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/{id}/restart [post]
+// @Success  200    {object}  api_response.Response{data=res.DeploymentDetailsRes}
 func (controller *DeploymentController) DeploymentRestart(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -559,6 +565,7 @@ func (controller *DeploymentController) DeploymentRestart(context *gin.Context) 
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/{id}/rebuild-and-redeploy [post]
+// @Success  200    {object}  api_response.Response{data=res.DeploymentDetailsRes}
 func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -636,6 +643,7 @@ func (controller *DeploymentController) DeploymentRebuildAndReDeploy(context *gi
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/{id}/stop [post]
+// @Success  200    {object}  api_response.Response{data=res.DeploymentDetailsRes}
 func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 	deploymentId := context.Param("id")
 	user := utils.GetUserFromContext(context)
@@ -725,6 +733,7 @@ func (controller *DeploymentController) DeploymentStop(context *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/latest-status [get]
+// @Success  200    {object}  api_response.Response{data=[]res.DeploymentLatestStatusRes}
 func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Context) {
 	idsQuery, ok := context.GetQuery("ids")
 	user := utils.GetUserFromContext(context)
@@ -782,6 +791,7 @@ func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Cont
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/check-stopped-cron [post]
+// @Success  200    {object}  api_response.Response{data=int}
 func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 	runningContainerIds, err := controller.dockerService.ListRunningContainerIds()
 	if err != nil {
@@ -833,6 +843,7 @@ func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/check-deploying-cron [post]
+// @Success  200    {object}  api_response.Response{data=int}
 func (controller *DeploymentController) DeployingCheckCron(context *gin.Context) {
 	count := 0
 

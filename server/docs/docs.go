@@ -62,7 +62,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/res.DeploymentRes"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
@@ -89,8 +107,23 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/res.DeploymentRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -109,7 +142,22 @@ const docTemplate = `{
                 "summary": "Check Deploying state Deployments",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -128,7 +176,22 @@ const docTemplate = `{
                 "summary": "Check Stopped Deployments",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -156,7 +219,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/res.DeploymentLatestStatusRes"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -184,7 +265,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/res.DeploymentDetailsRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
@@ -219,7 +315,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/res.DeploymentDetailsRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -247,7 +358,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/res.DeploymentDetailsRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -276,11 +402,36 @@ const docTemplate = `{
                         "description": "Limit",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/res.EventRes"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -308,7 +459,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/res.DeploymentDetailsRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -336,7 +502,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/res.DeploymentDetailsRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -364,7 +545,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/res.DeploymentDetailsRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -392,7 +588,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/res.RepoDetailsRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -420,13 +631,50 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api_response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/res.RepoBranchRes"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
+        "api_response.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "This is Name",
+                    "type": "integer"
+                },
+                "data": {},
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "req.CreateDeploymentReqDto": {
             "type": "object",
             "required": [
@@ -471,6 +719,171 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "res.DeploymentDetailsRes": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "branch_name": {
+                    "type": "string"
+                },
+                "container_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "docker_file_path": {
+                    "type": "string"
+                },
+                "docker_image_tag": {
+                    "type": "string"
+                },
+                "domain_url": {
+                    "type": "string"
+                },
+                "env": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "last_deployed_at": {
+                    "type": "string"
+                },
+                "latest_status": {
+                    "type": "string"
+                },
+                "repository_name": {
+                    "type": "string"
+                },
+                "repository_provider": {
+                    "type": "string"
+                },
+                "repository_url": {
+                    "type": "string"
+                },
+                "root_directory": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "res.DeploymentLatestStatusRes": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "domain_url": {
+                    "type": "string"
+                },
+                "last_deployed_at": {
+                    "type": "string"
+                },
+                "latest_status": {
+                    "type": "string"
+                }
+            }
+        },
+        "res.DeploymentRes": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "branch_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "domain_url": {
+                    "type": "string"
+                },
+                "last_deployed_at": {
+                    "type": "string"
+                },
+                "latest_status": {
+                    "type": "string"
+                },
+                "repository_provider": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "res.EventRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deployment_id": {
+                    "type": "string"
+                },
+                "event_log_file_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "triggered_by": {
+                    "type": "string"
+                },
+                "triggered_value": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "res.RepoBranchRes": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "res.RepoDetailsRes": {
+            "type": "object",
+            "properties": {
+                "default_branch": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "svn_url": {
                     "type": "string"
                 }
             }
