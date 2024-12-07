@@ -109,7 +109,7 @@ func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 // @Tags     Deployments
 // @Accept   json
 // @Produce  json
-// @Success  200
+// @Success  201
 // @Router   /api/v1/deployments [post]
 // @Success  201     {object}  api_response.Response{data=res.DeploymentRes}
 func (controller *DeploymentController) DeploymentCreate(context *gin.Context) {
@@ -791,6 +791,7 @@ func (controller *DeploymentController) DeploymentLatestStatus(context *gin.Cont
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/check-stopped-cron [post]
+// @Success  200    {object}  api_response.Response{data=int}
 func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 	runningContainerIds, err := controller.dockerService.ListRunningContainerIds()
 	if err != nil {
@@ -842,6 +843,7 @@ func (controller *DeploymentController) LiveCheckCron(context *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/check-deploying-cron [post]
+// @Success  200    {object}  api_response.Response{data=int}
 func (controller *DeploymentController) DeployingCheckCron(context *gin.Context) {
 	count := 0
 

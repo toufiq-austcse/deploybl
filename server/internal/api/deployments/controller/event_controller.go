@@ -30,6 +30,7 @@ func NewEventController(eventService *service.EventService) *EventController {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/deployments/{id}/events [get]
+// @Success  200    {object}  api_response.Response{data=[]res.EventRes}
 func (controller *EventController) EventIndex(context *gin.Context) {
 	id := context.Param("id")
 	page, _ := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
