@@ -28,7 +28,7 @@ func NewRepoController(githubHttpClient *github.GithubHttpClient) *RepoControlle
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/repositories [get]
-// @Success  200    {object}  api_response.Response{data=res.RepoDetailsRes}
+// @Success  200  {object}  api_response.Response{data=res.RepoDetailsRes}
 func (controller *RepoController) GetRepoDetails(context *gin.Context) {
 	repoUrl, isExist := context.GetQuery("repo_url")
 	if !isExist {
@@ -67,7 +67,7 @@ func (controller *RepoController) GetRepoDetails(context *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /api/v1/repositories/branches [get]
-// @Success  200    {object}  api_response.Response{data=[]res.RepoBranchRes}
+// @Success  200  {object}  api_response.Response{data=[]res.RepoBranchRes}
 func (controller *RepoController) GetRepoBranches(context *gin.Context) {
 	repoUrl, isExist := context.GetQuery("repo_url")
 	if !isExist {
