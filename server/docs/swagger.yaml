@@ -138,6 +138,20 @@ definitions:
       updated_at:
         type: string
     type: object
+  res.RepoBranchRes:
+    properties:
+      name:
+        type: string
+    type: object
+  res.RepoDetailsRes:
+    properties:
+      default_branch:
+        type: string
+      name:
+        type: string
+      svn_url:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -478,6 +492,13 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/res.RepoDetailsRes'
+              type: object
       summary: Get Repo Details
       tags:
       - Repositories
@@ -496,6 +517,15 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api_response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/res.RepoBranchRes'
+                  type: array
+              type: object
       summary: Get Repo Branches
       tags:
       - Repositories
