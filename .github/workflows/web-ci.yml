@@ -4,7 +4,7 @@ on:
     branches:
       - master
     paths:
-      - server/**
+      - web/**
 jobs:
   setup-build-publish:
     name: Setup, Build, and Publish Docker Image
