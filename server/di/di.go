@@ -20,7 +20,35 @@ func NewDiContainer() (*dig.Container, error) {
 	providers := []interface{}{
 		mongodb.New,
 		github.NewGithubHttpClient,
-		firebaseClient.NewFirebaseClient,
+		firebaseClient.NewE2eFirebaseClient,
+		s3.NewS3ManagerService,
+		service.NewDeploymentService,
+		service.NewEventService,
+		userService.NewUserService,
+		service.NewDockerService,
+		controller.NewDeploymentController,
+		controller.NewEventController,
+		repoController.NewRepoController,
+		worker.NewPullRepoWorker,
+		worker.NewBuildRepoWorker,
+		worker.NewPreRunRepoWorker,
+		worker.NewRunRepoWorker,
+		worker.NewStopRepoWorker,
+	}
+	for _, provider := range providers {
+		if err := c.Provide(provider); err != nil {
+			return nil, err
+		}
+	}
+	return c, nil
+}
+
+func NewE2eDiContainer() (*dig.Container, error) {
+	c := dig.New()
+	providers := []interface{}{
+		mongodb.New,
+		github.NewGithubHttpClient,
+		firebaseClient.NewE2eFirebaseClient,
 		s3.NewS3ManagerService,
 		service.NewDeploymentService,
 		service.NewEventService,

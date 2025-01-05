@@ -30,3 +30,8 @@ func NewFirebaseClient() (*Client, error) {
 		AuthClient: authClient,
 	}, nil
 }
+
+func NewE2eFirebaseClient() (*Client, error) {
+	fmt.Println("called e2e firebase client")
+	return nil, nil
+}
