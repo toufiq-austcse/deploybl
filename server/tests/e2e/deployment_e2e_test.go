@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"reflect"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	. "github.com/onsi/ginkgo/v2"
@@ -15,9 +19,6 @@ import (
 	"github.com/toufiq-austcse/deployit/internal/server"
 	"github.com/toufiq-austcse/deployit/pkg/api_response"
 	"github.com/toufiq-austcse/deployit/pkg/firebase"
-	"net/http"
-	"net/http/httptest"
-	"reflect"
 )
 
 var _ = Describe("DeploymentE2e", Ordered, func() {
@@ -44,7 +45,6 @@ var _ = Describe("DeploymentE2e", Ordered, func() {
 		invokeErr := container.Invoke(func(deploymentController *controller.DeploymentController,
 
 			firebaseClient *firebase.Client,
-
 		) {
 			customToken, err := firebaseClient.AuthClient.CustomToken(context.Background(), config.AppConfig.TEST_UID)
 			if err != nil {
@@ -56,7 +56,6 @@ var _ = Describe("DeploymentE2e", Ordered, func() {
 				Fail("Error in verifying custom token")
 			}
 			accessToken = verifyRes.IDToken
-
 		})
 		if invokeErr != nil {
 			Fail("Error in invoking container")
@@ -85,7 +84,6 @@ var _ = Describe("DeploymentE2e", Ordered, func() {
 					Get("api/v1/deployments")
 				Expect(err).To(BeNil())
 				Expect(response.StatusCode()).To(Equal(http.StatusUnauthorized))
-
 			})
 		})
 		When("list deployments is called with valid Auth Token", func() {
@@ -105,7 +103,6 @@ var _ = Describe("DeploymentE2e", Ordered, func() {
 				Expect(err).To(BeNil())
 				Expect(reflect.TypeOf(responseBody.Data).Kind()).To(Equal(reflect.Slice))
 				Expect(responseBody.Pagination).ShouldNot(BeNil())
-
 			})
 		})
 	})
