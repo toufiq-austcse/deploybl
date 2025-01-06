@@ -22,6 +22,10 @@ type (
 		MAX_DEPLOYING_STATUS_TIME_IN_MINUTES int    `env:"MAX_DEPLOYING_STATUS_TIME_IN_MINUTES,required"`
 		EVENT_LOGS_PATH                      string `env:"EVENT_LOGS_PATH,required"`
 		AWS_CONFIG                           AWS_CONFIG
+		FIREBASE_CONFIG_FILE_PATH            string `env:"FIREBASE_CONFIG_FILE_PATH,required"`
+		FIREBASE_API_KEY                     string `env:"FIREBASE_API_KEY"`
+		GOOGLE_API_BASE_URL                  string `env:"GOOGLE_API_BASE_URL,required"`
+		TEST_UID                             string `env:"TEST_UID"`
 	}
 	DB_CONFIG struct {
 		DB_NAME       string `env:"DB_NAME"`

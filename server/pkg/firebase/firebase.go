@@ -2,7 +2,11 @@ package firebase
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/go-resty/resty/v2"
+	"github.com/toufiq-austcse/deployit/config"
+	"github.com/toufiq-austcse/deployit/pkg/firebase/api_res"
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
@@ -12,10 +16,11 @@ import (
 
 type Client struct {
 	AuthClient *auth.Client
+	restyReq   *resty.Request
 }
 
 func NewFirebaseClient() (*Client, error) {
-	opt := option.WithCredentialsFile("deploybl-7a03d-firebase-adminsdk-snvhm-7e1ee4d952.json")
+	opt := option.WithCredentialsFile(config.AppConfig.FIREBASE_CONFIG_FILE_PATH)
 	newApp, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		fmt.Println("error in creating firebase app ", err.Error())
@@ -28,10 +33,26 @@ func NewFirebaseClient() (*Client, error) {
 	}
 	return &Client{
 		AuthClient: authClient,
+		restyReq: resty.
+			New().
+			SetBaseURL(config.AppConfig.GOOGLE_API_BASE_URL).
+			SetHeader("Content-Type", "application/json").
+			R(),
 	}, nil
 }
 
-func NewE2eFirebaseClient() (*Client, error) {
-	fmt.Println("called e2e firebase client")
-	return nil, nil
+func (client *Client) VerifyCustomToken(customToken string) (*api_res.VerifyCustomTokenRes, error) {
+	var customTokenRes *api_res.VerifyCustomTokenRes
+
+	response, err := client.restyReq.SetBody(map[string]interface{}{
+		"token":             customToken,
+		"returnSecureToken": true,
+	}).SetResult(&customTokenRes).Post("/identitytoolkit/v3/relyingparty/verifyCustomToken?key=" + config.AppConfig.FIREBASE_API_KEY)
+	if err != nil {
+		return nil, err
+	}
+	if response == nil {
+		return nil, errors.New("error in verifying custom token")
+	}
+	return customTokenRes, nil
 }

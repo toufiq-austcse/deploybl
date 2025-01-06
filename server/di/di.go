@@ -20,7 +20,7 @@ func NewDiContainer() (*dig.Container, error) {
 	providers := []interface{}{
 		mongodb.New,
 		github.NewGithubHttpClient,
-		firebaseClient.NewE2eFirebaseClient,
+		firebaseClient.NewFirebaseClient,
 		s3.NewS3ManagerService,
 		service.NewDeploymentService,
 		service.NewEventService,
@@ -48,7 +48,7 @@ func NewE2eDiContainer() (*dig.Container, error) {
 	providers := []interface{}{
 		mongodb.New,
 		github.NewGithubHttpClient,
-		firebaseClient.NewE2eFirebaseClient,
+		firebaseClient.NewFirebaseClient,
 		s3.NewS3ManagerService,
 		service.NewDeploymentService,
 		service.NewEventService,
