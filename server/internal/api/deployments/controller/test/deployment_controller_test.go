@@ -4,6 +4,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	mock_service "github.com/toufiq-austcse/deployit/internal/api/deployments/mocks/service"
+	model2 "github.com/toufiq-austcse/deployit/internal/api/deployments/model"
+	"go.uber.org/mock/gomock"
+
 	"github.com/gin-gonic/gin"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -16,6 +20,8 @@ var _ = Describe("DeploymentController", func() {
 		deploymentController *controller.DeploymentController
 		router               *gin.Engine
 		w                    *httptest.ResponseRecorder
+
+		mockDeploymentService *mock_service.MockIDeploymentService
 	)
 
 	BeforeEach(func() {
@@ -25,7 +31,11 @@ var _ = Describe("DeploymentController", func() {
 			context.Set("user", &model.User{})
 		})
 		w = httptest.NewRecorder()
-		deploymentController = controller.NewDeploymentController(nil, nil, nil, nil, nil, nil, nil)
+
+		mockController := gomock.NewController(GinkgoT())
+		mockDeploymentService = mock_service.NewMockIDeploymentService(mockController)
+
+		deploymentController = controller.NewDeploymentController(nil, mockDeploymentService, nil, nil, nil, nil, nil)
 
 		router.GET("/api/v1/deployments", deploymentController.DeploymentIndex)
 	})
@@ -33,6 +43,9 @@ var _ = Describe("DeploymentController", func() {
 	Context("DeploymentIndex", func() {
 		When("there are no deployments", func() {
 			It("should return an empty array", func() {
+				mockDeploymentService.EXPECT().
+					ListDeployment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return([]*model2.Deployment{}, nil, nil)
 				req := httptest.NewRequest(http.MethodGet, "/api/v1/deployments", nil)
 				router.ServeHTTP(w, req)
 

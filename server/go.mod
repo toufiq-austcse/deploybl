@@ -23,6 +23,7 @@ require (
 	github.com/swaggo/swag v1.16.1
 	go.mongodb.org/mongo-driver v1.16.1
 	go.uber.org/dig v1.17.0
+	go.uber.org/mock v0.5.0
 	google.golang.org/api v0.170.0
 )
 
