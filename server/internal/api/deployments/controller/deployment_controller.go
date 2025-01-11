@@ -27,7 +27,7 @@ import (
 
 type DeploymentController struct {
 	githubHttpClient  *github.GithubHttpClient
-	deploymentService *service.DeploymentService
+	deploymentService service.IDeploymentService
 	dockerService     *service.DockerService
 	eventService      *service.EventService
 	pullRepoWorker    *worker.PullRepoWorker
@@ -38,7 +38,7 @@ type DeploymentController struct {
 
 func NewDeploymentController(
 	githubHttpClient *github.GithubHttpClient,
-	deploymentService *service.DeploymentService,
+	deploymentService service.IDeploymentService,
 	eventService *service.EventService,
 	pullRepoWorker *worker.PullRepoWorker,
 	runRepoWorker *worker.RunRepoWorker,

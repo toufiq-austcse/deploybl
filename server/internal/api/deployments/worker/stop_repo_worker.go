@@ -20,13 +20,13 @@ import (
 
 type StopRepoWorker struct {
 	config            amqp.Config
-	deploymentService *service.DeploymentService
+	deploymentService service.IDeploymentService
 	dockerService     *service.DockerService
 	eventService      *service.EventService
 }
 
 func NewStopRepoWorker(
-	deploymentService *service.DeploymentService,
+	deploymentService service.IDeploymentService,
 	eventService *service.EventService,
 ) *StopRepoWorker {
 	return &StopRepoWorker{

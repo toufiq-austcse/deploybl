@@ -21,14 +21,14 @@ import (
 
 type BuildRepoWorker struct {
 	config            amqp.Config
-	deploymentService *service.DeploymentService
+	deploymentService service.IDeploymentService
 	preRunRepoWorker  *PreRunRepoWorker
 	dockerService     *service.DockerService
 	eventService      *service.EventService
 }
 
 func NewBuildRepoWorker(
-	deploymentService *service.DeploymentService,
+	deploymentService service.IDeploymentService,
 	preRunRepoWorker *PreRunRepoWorker,
 	dockerService *service.DockerService,
 	eventService *service.EventService,

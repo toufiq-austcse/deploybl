@@ -21,12 +21,12 @@ import (
 
 type RunRepoWorker struct {
 	config            amqp.Config
-	deploymentService *service.DeploymentService
+	deploymentService service.IDeploymentService
 	dockerService     *service.DockerService
 	eventService      *service.EventService
 }
 
-func NewRunRepoWorker(deploymentService *service.DeploymentService, eventService *service.EventService) *RunRepoWorker {
+func NewRunRepoWorker(deploymentService service.IDeploymentService, eventService *service.EventService) *RunRepoWorker {
 	return &RunRepoWorker{
 		config: rabbit_mq.New(deployItConfig.AppConfig.RABBIT_MQ_CONFIG.EXCHANGE,
 			"topic",

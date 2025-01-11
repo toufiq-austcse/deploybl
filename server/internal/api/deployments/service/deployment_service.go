@@ -22,6 +22,24 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type IDeploymentService interface {
+	Create(model *model.Deployment, ctx context.Context) (*model.Event, error)
+	FindBySubDomainName(domainName *string, ctx context.Context) *model.Deployment
+	FindById(id string, ctx context.Context) *model.Deployment
+	FindUserDeploymentById(id string, userId primitive.ObjectID, ctx context.Context) *model.Deployment
+	ListDeployment(page, limit int64, userId primitive.ObjectID, ctx context.Context) ([]*model.Deployment, *api_response.Pagination, error)
+	UpdateDeployment(deploymentId string, updates map[string]interface{}, existingEvent *model.Event, ctx context.Context) (*model.Deployment, error)
+	GetLatestStatusByIds(ids []string, userId primitive.ObjectID, ctx context.Context) ([]*model.Deployment, error)
+	FindByDeploymentStatus(status string) []model.Deployment
+	GetContainerIdsFromDeployments(deployments []model.Deployment) []string
+	UpdateDeploymentStatusByContainerIds(skipContainerIds []string, currentStatus string, updatedStatus string, ctx context.Context) (int64, error)
+	UpdateLatestStatus(deploymentId string, status string, existingEvent *model.Event, context context.Context) (*model.Deployment, error)
+	CountDeploymentByRepositoryName(repositoryName string, ctx context.Context) (int64, error)
+	GetDeploymentsByIds(ids []primitive.ObjectID, status string, ctx context.Context) ([]model.Deployment, error)
+	IsRestartable(deployment *model.Deployment) bool
+	IsRebuildAble(deployment *model.Deployment) bool
+	IsStopAble(deployment *model.Deployment) bool
+}
 type DeploymentService struct {
 	deploymentCollection *mongo.Collection
 	dockerService        *DockerService
@@ -32,7 +50,7 @@ func NewDeploymentService(
 	database *mongo.Database,
 	dockerService *DockerService,
 	eventService *EventService,
-) *DeploymentService {
+) IDeploymentService {
 	collection := database.Collection("deployments")
 	go model.CreateDeploymentIndex(collection)
 	return &DeploymentService{

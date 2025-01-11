@@ -22,13 +22,13 @@ import (
 
 type PullRepoWorker struct {
 	config            amqp.Config
-	deploymentService *service.DeploymentService
+	deploymentService service.IDeploymentService
 	eventService      *service.EventService
 	buildRepoWorker   *BuildRepoWorker
 }
 
 func NewPullRepoWorker(
-	deploymentService *service.DeploymentService,
+	deploymentService service.IDeploymentService,
 	eventService *service.EventService,
 	buildRepoWorker *BuildRepoWorker,
 ) *PullRepoWorker {
