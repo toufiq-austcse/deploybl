@@ -27,13 +27,32 @@ type IDeploymentService interface {
 	FindBySubDomainName(domainName *string, ctx context.Context) *model.Deployment
 	FindById(id string, ctx context.Context) *model.Deployment
 	FindUserDeploymentById(id string, userId primitive.ObjectID, ctx context.Context) *model.Deployment
-	ListDeployment(page, limit int64, userId primitive.ObjectID, ctx context.Context) ([]*model.Deployment, *api_response.Pagination, error)
-	UpdateDeployment(deploymentId string, updates map[string]interface{}, existingEvent *model.Event, ctx context.Context) (*model.Deployment, error)
+	ListDeployment(
+		page, limit int64,
+		userId primitive.ObjectID,
+		ctx context.Context,
+	) ([]*model.Deployment, *api_response.Pagination, error)
+	UpdateDeployment(
+		deploymentId string,
+		updates map[string]interface{},
+		existingEvent *model.Event,
+		ctx context.Context,
+	) (*model.Deployment, error)
 	GetLatestStatusByIds(ids []string, userId primitive.ObjectID, ctx context.Context) ([]*model.Deployment, error)
 	FindByDeploymentStatus(status string) []model.Deployment
 	GetContainerIdsFromDeployments(deployments []model.Deployment) []string
-	UpdateDeploymentStatusByContainerIds(skipContainerIds []string, currentStatus string, updatedStatus string, ctx context.Context) (int64, error)
-	UpdateLatestStatus(deploymentId string, status string, existingEvent *model.Event, context context.Context) (*model.Deployment, error)
+	UpdateDeploymentStatusByContainerIds(
+		skipContainerIds []string,
+		currentStatus string,
+		updatedStatus string,
+		ctx context.Context,
+	) (int64, error)
+	UpdateLatestStatus(
+		deploymentId string,
+		status string,
+		existingEvent *model.Event,
+		context context.Context,
+	) (*model.Deployment, error)
 	CountDeploymentByRepositoryName(repositoryName string, ctx context.Context) (int64, error)
 	GetDeploymentsByIds(ids []primitive.ObjectID, status string, ctx context.Context) ([]model.Deployment, error)
 	IsRestartable(deployment *model.Deployment) bool
