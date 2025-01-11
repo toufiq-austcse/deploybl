@@ -68,7 +68,6 @@ func NewDeploymentController(
 // @Success  200  {object}  api_response.Response{data=[]res.DeploymentRes}
 func (controller *DeploymentController) DeploymentIndex(context *gin.Context) {
 	user := utils.GetUserFromContext(context)
-
 	page, _ := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
 	limit, _ := strconv.ParseInt(context.DefaultQuery("limit", "10"), 10, 64)
 	if page < 1 {
