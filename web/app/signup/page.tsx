@@ -18,14 +18,14 @@ import { FcGoogle } from 'react-icons/fc';
 
 const formSchema = z.object({
   name: z.string({
-    required_error: 'Name is required'
+    required_error: 'Name is required',
   }),
   email: z.string().email({
-    message: 'Please enter a valid email address'
+    message: 'Please enter a valid email address',
   }),
   password: z.string({
-    required_error: 'Password is required'
-  })
+    required_error: 'Password is required',
+  }),
 });
 
 const SignUpPage: NextPage = () => {
@@ -34,7 +34,7 @@ const SignUpPage: NextPage = () => {
   const { signup, loginWithGithub, loginWithGoogle } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema)
+    resolver: zodResolver(formSchema),
   });
 
   // Add subtle animation effect when component mounts
@@ -69,16 +69,21 @@ const SignUpPage: NextPage = () => {
           <h2 className="mt-2 text-center text-4xl font-extrabold text-gray-900">Sign Up</h2>
           <p className="mt-2 text-center text-base text-gray-600">
             Already have an account?{' '}
-            <Link href={'login'}
-                  className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
+            <Link
+              href={'login'}
+              className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
+            >
               Login
             </Link>
           </p>
         </div>
 
-        <Card
-          className="shadow-2xl border border-gray-100 overflow-hidden mx-auto w-full rounded-lg transform transition-all duration-300 hover:shadow-3xl">
-          {error && <div className="px-6 pt-6"><ErrorAlert error={error} /></div>}
+        <Card className="shadow-2xl border border-gray-100 overflow-hidden mx-auto w-full rounded-lg transform transition-all duration-300 hover:shadow-3xl">
+          {error && (
+            <div className="px-6 pt-6">
+              <ErrorAlert error={error} />
+            </div>
+          )}
 
           <CardContent className="pt-6 px-8 pb-6">
             {/* GitHub Login Button */}
@@ -200,9 +205,14 @@ const SignUpPage: NextPage = () => {
 
           <CardFooter className="bg-gray-50 px-8 py-4 flex justify-center border-t border-gray-100">
             <p className="text-sm text-gray-500">
-              By signing up, you agree to our <Link href="#"
-                                                    className="text-blue-600 hover:text-blue-500 font-medium">Terms</Link> and <Link
-              href="#" className="text-blue-600 hover:text-blue-500 font-medium">Privacy</Link>
+              By signing up, you agree to our{' '}
+              <Link href="#" className="text-blue-600 hover:text-blue-500 font-medium">
+                Terms
+              </Link>{' '}
+              and{' '}
+              <Link href="#" className="text-blue-600 hover:text-blue-500 font-medium">
+                Privacy
+              </Link>
             </p>
           </CardFooter>
         </Card>
