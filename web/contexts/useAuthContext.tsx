@@ -8,7 +8,7 @@ import {
   signInWithPopup,
   signOut,
   updateProfile,
-  UserCredential
+  UserCredential,
 } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import '../firebase';
@@ -50,12 +50,12 @@ export const AuthProvider = ({ children }) => {
 
     // update profile
     await updateProfile(auth.currentUser, {
-      displayName: username
+      displayName: username,
     });
 
     const user = auth.currentUser;
     setCurrentUser({
-      ...user
+      ...user,
     } as any);
   };
 
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     loginWithGithub,
-    loginWithGoogle
+    loginWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
