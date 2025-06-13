@@ -1,11 +1,14 @@
 import {
   createUserWithEmailAndPassword,
   getAuth,
+  GithubAuthProvider,
+  GoogleAuthProvider,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   updateProfile,
-  UserCredential,
+  UserCredential
 } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import '../firebase';
@@ -16,6 +19,8 @@ type AuthContextType = {
   signup: (email: string, password: string, username: string) => Promise<void>;
   login: (email: string, password: string) => Promise<UserCredential>;
   logout: () => Promise<void>;
+  loginWithGithub: (provider: any) => Promise<UserCredential>;
+  loginWithGoogle: () => Promise<UserCredential>;
 };
 
 const AuthContext = createContext({} as AuthContextType);
@@ -45,12 +50,12 @@ export const AuthProvider = ({ children }) => {
 
     // update profile
     await updateProfile(auth.currentUser, {
-      displayName: username,
+      displayName: username
     });
 
     const user = auth.currentUser;
     setCurrentUser({
-      ...user,
+      ...user
     } as any);
   };
 
@@ -66,12 +71,23 @@ export const AuthProvider = ({ children }) => {
     await signOut(auth);
     router.push('/login');
   };
+  const loginWithGithub = async (provider: any) => {
+    const auth = getAuth();
+    return signInWithPopup(auth, new GithubAuthProvider());
+  };
+
+  const loginWithGoogle = async () => {
+    const auth = getAuth();
+    return signInWithPopup(auth, new GoogleAuthProvider());
+  };
 
   const value: AuthContextType = {
     currentUser,
     signup,
     login,
     logout,
+    loginWithGithub,
+    loginWithGoogle
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
